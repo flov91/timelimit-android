@@ -27,31 +27,49 @@ import io.timelimit.android.BuildConfig
 import io.timelimit.android.async.Threads
 
 object NetworkStatusUtil {
-    fun getSystemNetworkStatusLive(context: Context): LiveData<NetworkStatus> {
+    class NetworkStatusLiveData(private val context: Context) : MutableLiveData<NetworkStatus>() {
         val connectivityManager = context.applicationContext.getSystemService(Context.CONNECTIVITY_SERVICE) as ConnectivityManager
-        val status = MutableLiveData<NetworkStatus>()
 
-        status.value = NetworkStatus.Offline
-
-        if (BuildConfig.hasServer) {
-            context.applicationContext.registerReceiver(object : BroadcastReceiver() {
-                override fun onReceive(context: Context?, intent: Intent) {
-                    Threads.mainThreadHandler.post {
-                        val networkInfo = connectivityManager.activeNetworkInfo
-
-                        if (networkInfo == null) {
-                            status.value = NetworkStatus.Offline
-                        } else if (networkInfo.detailedState == NetworkInfo.DetailedState.CONNECTED) {
-                            status.value = NetworkStatus.Online
-                        } else {
-                            status.value = NetworkStatus.Offline
-                        }
-                    }
-                }
-            }, IntentFilter(ConnectivityManager.CONNECTIVITY_ACTION))
+        init {
+            value = NetworkStatus.Offline
         }
 
-        return status
+        val receiver = object : BroadcastReceiver() {
+            override fun onReceive(context: Context?, intent: Intent) {
+                Threads.mainThreadHandler.post {
+                    val networkInfo = connectivityManager.activeNetworkInfo
+                    if (networkInfo == null) {
+                        postValue(NetworkStatus.Offline)
+                    } else if (networkInfo.detailedState == NetworkInfo.DetailedState.CONNECTED) {
+                        postValue(NetworkStatus.Online)
+                    } else {
+                        postValue(NetworkStatus.Offline)
+                    }
+                }
+            }
+        }
+
+        override fun onActive() {
+            super.onActive()
+            if (BuildConfig.hasServer) {
+                context.applicationContext.registerReceiver(receiver,
+                        IntentFilter(ConnectivityManager.CONNECTIVITY_ACTION))
+            }
+        }
+
+        override fun onInactive() {
+            super.onInactive()
+            context.applicationContext.unregisterReceiver(receiver)
+        }
+    }
+
+    private var networkStatusLiveData : NetworkStatusLiveData? = null
+
+    fun getSystemNetworkStatusLive(context: Context): LiveData<NetworkStatus> {
+        if (networkStatusLiveData == null) {
+            networkStatusLiveData = NetworkStatusLiveData(context)
+        }
+        return networkStatusLiveData!!
     }
 }
 
