@@ -1302,7 +1302,8 @@
     <string name="purchase_required_dialog_title">Premium version required</string>
     <string name="purchase_required_dialog_text">
         The feature requires the premium version.
-        You can find the option to buy it at the App start screen in the tab \"About\".
+        You can find the option to buy it in the about screen.
+        You can open the about screen from the TimeLimit overview/title screen using the menu.
     </string>
 
     <string name="purchase_required_info_only_networking">This feature is only available in the premium version.</string>

@@ -1259,7 +1259,8 @@
     <string name="purchase_required_dialog_title">Vollversion erforderlich</string>
     <string name="purchase_required_dialog_text">
         Diese Funktion benötigt die Vollversion.
-        Sie finden die Kaufoption auf der Startseite in dem Tab \"Über\".
+        Sie finden die Kaufoption im Über-Bildschirm.
+        Der Über-Bildschirm kann von der TimeLimit-Startseite/Übersicht aus über das Menü geöffnet werden.
     </string>
 
     <string name="purchase_required_info_only_networking">Diese Funktion ist nur in der Vollversion verfügbar.</string>
