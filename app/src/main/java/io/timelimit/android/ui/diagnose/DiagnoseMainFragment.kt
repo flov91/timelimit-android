@@ -1,5 +1,5 @@
 /*
- * TimeLimit Copyright <C> 2019 - 2021 Jonas Lochmann
+ * TimeLimit Copyright <C> 2019 - 2022 Jonas Lochmann
  *
  * This program is free software: you can redistribute it and/or modify
  * it under the terms of the GNU General Public License as published by
@@ -98,6 +98,13 @@ class DiagnoseMainFragment : Fragment(), FragmentWithCustomTitle {
             if (auth.requestAuthenticationOrReturnTrue()) {
                 DiagnoseOrganizationNameDialogFragment.newInstance().show(parentFragmentManager)
             }
+        }
+
+        binding.diagnoseExitReasonsButton.setOnClickListener {
+            navigation.safeNavigate(
+                DiagnoseMainFragmentDirections.actionDiagnoseMainFragmentToDiagnoseExitReasonFragment(),
+                R.id.diagnoseMainFragment
+            )
         }
 
         AuthenticationFab.manageAuthenticationFab(

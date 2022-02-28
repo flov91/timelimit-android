@@ -583,6 +583,9 @@
     <string name="diagnose_don_no_owner_toast">TimeLimit is NOT set as device owner</string>
     <string name="diagnose_don_not_supported_toast">Your system does not support setting the organization name</string>
 
+    <string name="diagnose_er_title">Exit Reasons</string>
+    <string name="diagnose_er_empty">there is no data; this data is only available at Android 11 and newer</string>
+
     <string name="dont_ask_password_on_device_title">Password prompts</string>
     <string name="dont_ask_password_on_device_text_enabled">
         Password prompts are enabled at the device.
