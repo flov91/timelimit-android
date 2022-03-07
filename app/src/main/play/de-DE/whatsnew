@@ -1,4 +1,5 @@
-- Fehlerbehebungen
-  - Manipulationswarnungen durch die Autofill-Funktion
-  - falsche Aktualisierungen von Sitzungsdauern
-  - fehlende Extrazeit nach der Erledigung von Aufgaben
+- Anzeigen von mehr Details beim Blockieren von Hintergrundwiedergaben
+- Option zum Anzeigen der vom System gemeldeten Exit-Reasons hinzugefügt
+- Textänderungen
+- manuell aktivierbare neue Methode zum Erkennen der laufenden App hinzugefügt
+- neues Verhalten bei Manipulationen, wenn die Geräte-Besitzer-Berechtigung vorliegt
