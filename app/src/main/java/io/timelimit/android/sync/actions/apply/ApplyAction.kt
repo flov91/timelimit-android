@@ -1,5 +1,5 @@
 /*
- * TimeLimit Copyright <C> 2019 - 2020 Jonas Lochmann
+ * TimeLimit Copyright <C> 2019 - 2022 Jonas Lochmann
  *
  * This program is free software: you can redistribute it and/or modify
  * it under the terms of the GNU General Public License as published by
@@ -27,7 +27,6 @@ import io.timelimit.android.data.model.PendingSyncActionType
 import io.timelimit.android.data.model.UserType
 import io.timelimit.android.integration.platform.PlatformIntegration
 import io.timelimit.android.logic.AppLogic
-import io.timelimit.android.logic.ManipulationLogic
 import io.timelimit.android.sync.SyncUtil
 import io.timelimit.android.sync.actions.*
 import io.timelimit.android.sync.actions.dispatch.LocalDatabaseAppLogicActionDispatcher
@@ -48,7 +47,6 @@ object ApplyActionUtil {
                 action = action,
                 database = appLogic.database,
                 syncUtil = appLogic.syncUtil,
-                manipulationLogic = appLogic.manipulationLogic,
                 ignoreIfDeviceIsNotConfigured = ignoreIfDeviceIsNotConfigured
         )
     }
@@ -57,7 +55,6 @@ object ApplyActionUtil {
             action: AppLogicAction,
             database: Database,
             syncUtil: SyncUtil,
-            manipulationLogic: ManipulationLogic,
             ignoreIfDeviceIsNotConfigured: Boolean
     ) {
         // uncomment this if you need to know what's dispatching an action
@@ -79,7 +76,7 @@ object ApplyActionUtil {
                     return@runInTransaction
                 }
 
-                LocalDatabaseAppLogicActionDispatcher.dispatchAppLogicActionSync(action, ownDeviceId!!, database, manipulationLogic)
+                LocalDatabaseAppLogicActionDispatcher.dispatchAppLogicActionSync(action, ownDeviceId!!, database)
 
                 if (isSyncEnabled(database)) {
                     if (action is AddUsedTimeActionVersion2) {

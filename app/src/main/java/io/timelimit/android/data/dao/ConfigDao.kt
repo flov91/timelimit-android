@@ -214,9 +214,6 @@ abstract class ConfigDao {
         updateValueSync(ConfigurationItemType.ShownHints, null)
     }
 
-    fun wasDeviceLockedSync() = getValueOfKeySync(ConfigurationItemType.WasDeviceLocked) == "true"
-    fun setWasDeviceLockedSync(value: Boolean) = updateValueSync(ConfigurationItemType.WasDeviceLocked, if (value) "true" else "false")
-
     fun getLastAppVersionWhichSynced() = getValueOfKeySync(ConfigurationItemType.LastAppVersionWhichSynced)
     fun setLastAppVersionWhichSynced(version: String) = updateValueSync(ConfigurationItemType.LastAppVersionWhichSynced, version)
 

@@ -117,14 +117,6 @@ data class DiagnoseExperimentalFlagItem(
     companion object {
         val items = listOf(
                 DiagnoseExperimentalFlagItem(
-                        label = R.string.diagnose_exf_lom,
-                        enableFlags = ExperimentalFlags.DISABLE_BLOCK_ON_MANIPULATION,
-                        disableFlags = ExperimentalFlags.DISABLE_BLOCK_ON_MANIPULATION,
-                        enable = { flags ->
-                            (!BuildConfig.storeCompilant) and ((flags and ExperimentalFlags.MANIPULATION_ANNOY_USER_ONLY) == 0L)
-                        }
-                ),
-                DiagnoseExperimentalFlagItem(
                         label = R.string.diagnose_exf_slb,
                         enableFlags = ExperimentalFlags.SYSTEM_LEVEL_BLOCKING,
                         disableFlags = ExperimentalFlags.SYSTEM_LEVEL_BLOCKING,
@@ -134,12 +126,6 @@ data class DiagnoseExperimentalFlagItem(
                         label = R.string.diagnose_exf_nas,
                         enableFlags = ExperimentalFlags.NETWORKTIME_AT_SYSTEMLEVEL,
                         disableFlags = ExperimentalFlags.NETWORKTIME_AT_SYSTEMLEVEL,
-                        enable = { !BuildConfig.storeCompilant }
-                ),
-                DiagnoseExperimentalFlagItem(
-                        label = R.string.diagnose_exf_mau,
-                        enableFlags = ExperimentalFlags.MANIPULATION_ANNOY_USER,
-                        disableFlags = ExperimentalFlags.MANIPULATION_ANNOY_USER_ONLY,
                         enable = { !BuildConfig.storeCompilant }
                 ),
                 DiagnoseExperimentalFlagItem(

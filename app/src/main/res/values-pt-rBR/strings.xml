@@ -1,6 +1,6 @@
 <?xml version="1.0" encoding="utf-8"?>
 <!--
-  TimeLimit Copyright <C> 2019 - 2021 Jonas Lochmann
+  TimeLimit Copyright <C> 2019 - 2022 Jonas Lochmann
   This program is free software: you can redistribute it and/or modify
   it under the terms of the GNU General Public License as published by
   the Free Software Foundation version 3 of the License.
@@ -428,9 +428,7 @@ por exemplo, quando você quer adicionar o uso de tela
     <string name="diagnose_fga_query_range_min">Mínimo (Padrão)</string>
 
     <string name="diagnose_exf_title">Marcado res experimentais</string>
-    <string name="diagnose_exf_lom">Desativar o travamento após manipulações</string>
     <string name="diagnose_exf_slb">Bloqueio de Aplicativos no nível de sistema</string>
-    <string name="diagnose_exf_mau">Irrita o usuário após a manipulação</string>
     <string name="diagnose_exf_isc">Ignorar o status da conexão do sistema</string>
     <string name="diagnose_exf_chs">TimeLimit como lançador</string>
     <string name="diagnose_exf_chd">Atraso no redirecionamento do lançador</string>
@@ -948,8 +946,6 @@ Esta %s só é permitida em algumas redes, mas nenhuma conexão com tal rede foi
         O endereço de e-mail %s já está vinculado a um outro usuário e
         não pode ser vinculada a um usuário adicional
     </string>
-
-    <string name="manipulation_activity_intro">Houve uma manipulação. Devido a isso, este dispositivo deve ser desbloqueado por os Pais.</string>
 
     <string name="must_read_child_manipulation">
         Porque alguns usuários não se dão conta disso:

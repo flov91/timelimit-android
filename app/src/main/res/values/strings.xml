@@ -153,11 +153,13 @@
     <string name="add_user_authentication_required_btn">Authenticate</string>
 
     <string name="annoy_info">
-        There was a manipulation of TimeLimit. Due to that, this device is locked for a moment.
+        There was a manipulation of TimeLimit. Due to that, this device is locked now.
     </string>
     <string name="annoy_timer">
-        The device will be unlocked in %s.
+        The device can be unlocked in %s.
     </string>
+    <string name="annoy_unlock_temp_button">Unlock for a moment</string>
+    <string name="annoy_unlock_parent_button">Unlock a bit longer</string>
     <string name="annoy_reason">
         This was manipulated: %s
     </string>
@@ -555,9 +557,7 @@
     <string name="diagnose_fga_query_range_min">Minimum (Default)</string>
 
     <string name="diagnose_exf_title">Experimental flags</string>
-    <string name="diagnose_exf_lom">Disable locking after manipulations</string>
     <string name="diagnose_exf_slb">Block Apps at system level</string>
-    <string name="diagnose_exf_mau">Annoy user after manipulation</string>
     <string name="diagnose_exf_isc">Ignore system connection status</string>
     <string name="diagnose_exf_chs">TimeLimit as launcher</string>
     <string name="diagnose_exf_chd">Delay launcher redirection</string>
@@ -1124,8 +1124,6 @@
         The mail address %s is already linked to an other user and
         can not be linked to an additional user
     </string>
-
-    <string name="manipulation_activity_intro">There was a manipulation. Due to that, this device must be unlocked by a parent.</string>
 
     <string name="must_read_child_manipulation">
         Because some users do not realize it:

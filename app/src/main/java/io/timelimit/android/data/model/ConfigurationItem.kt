@@ -84,7 +84,7 @@ enum class ConfigurationItemType {
     DeviceAuthToken,
     FullVersionUntil,
     ShownHints,
-    WasDeviceLocked,
+    ObsoleteWasDeviceLocked,
     LastAppVersionWhichSynced,
     LastScreenOnTime,
     ServerMessage,
@@ -135,7 +135,7 @@ object ConfigurationItemTypeUtil {
             ConfigurationItemType.DeviceAuthToken,
             ConfigurationItemType.FullVersionUntil,
             ConfigurationItemType.ShownHints,
-            ConfigurationItemType.WasDeviceLocked,
+            ConfigurationItemType.ObsoleteWasDeviceLocked,
             ConfigurationItemType.LastAppVersionWhichSynced,
             ConfigurationItemType.LastScreenOnTime,
             ConfigurationItemType.ServerMessage,
@@ -161,7 +161,7 @@ object ConfigurationItemTypeUtil {
         ConfigurationItemType.DeviceAuthToken -> DEVICE_AUTH_TOKEN
         ConfigurationItemType.FullVersionUntil -> FULL_VERSION_UNTIL
         ConfigurationItemType.ShownHints -> SHOWN_HINTS
-        ConfigurationItemType.WasDeviceLocked -> WAS_DEVICE_LOCKED
+        ConfigurationItemType.ObsoleteWasDeviceLocked -> WAS_DEVICE_LOCKED
         ConfigurationItemType.LastAppVersionWhichSynced -> LAST_APP_VERSION_WHICH_SYNCED
         ConfigurationItemType.LastScreenOnTime -> LAST_SCREEN_ON_TIME
         ConfigurationItemType.ServerMessage -> SERVER_MESSAGE
@@ -187,7 +187,7 @@ object ConfigurationItemTypeUtil {
         DEVICE_AUTH_TOKEN -> ConfigurationItemType.DeviceAuthToken
         FULL_VERSION_UNTIL -> ConfigurationItemType.FullVersionUntil
         SHOWN_HINTS -> ConfigurationItemType.ShownHints
-        WAS_DEVICE_LOCKED -> ConfigurationItemType.WasDeviceLocked
+        WAS_DEVICE_LOCKED -> ConfigurationItemType.ObsoleteWasDeviceLocked
         LAST_APP_VERSION_WHICH_SYNCED -> ConfigurationItemType.LastAppVersionWhichSynced
         LAST_SCREEN_ON_TIME -> ConfigurationItemType.LastScreenOnTime
         SERVER_MESSAGE -> ConfigurationItemType.ServerMessage
@@ -227,10 +227,9 @@ object HintsToShow {
 }
 
 object ExperimentalFlags {
-    const val DISABLE_BLOCK_ON_MANIPULATION = 1L
+    private const val OBSOLETE_DISABLE_BLOCK_ON_MANIPULATION = 1L
     const val SYSTEM_LEVEL_BLOCKING = 2L
-    const val MANIPULATION_ANNOY_USER_ONLY = 4L
-    const val MANIPULATION_ANNOY_USER = MANIPULATION_ANNOY_USER_ONLY or DISABLE_BLOCK_ON_MANIPULATION // otherwise there would be a conflict between both features
+    private const val OBSOLETE_MANIPULATION_ANNOY_USER_ONLY = 4L
     const val IGNORE_SYSTEM_CONNECTION_STATUS = 8L
     const val CUSTOM_HOME_SCREEN = 16L
     const val CUSTOM_HOMESCREEN_DELAY = 32L

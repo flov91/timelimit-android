@@ -1,5 +1,5 @@
 /*
- * TimeLimit Copyright <C> 2019 - 2020 Jonas Lochmann
+ * TimeLimit Copyright <C> 2019 - 2022 Jonas Lochmann
  *
  * This program is free software: you can redistribute it and/or modify
  * it under the terms of the GNU General Public License as published by
@@ -18,7 +18,6 @@ package io.timelimit.android.integration.platform.android
 import android.app.admin.DeviceAdminReceiver
 import android.content.Context
 import android.content.Intent
-import android.os.UserHandle
 import io.timelimit.android.R
 import io.timelimit.android.coroutines.runAsync
 import io.timelimit.android.logic.DefaultAppLogic
@@ -48,17 +47,5 @@ class AdminReceiver: DeviceAdminReceiver() {
         }
 
         return context.getString(R.string.admin_disable_warning)
-    }
-
-    override fun onPasswordSucceeded(context: Context, intent: Intent) {
-        super.onPasswordSucceeded(context, intent)
-
-        DefaultAppLogic.with(context).manipulationLogic.reportManualUnlock()
-    }
-
-    override fun onPasswordSucceeded(context: Context, intent: Intent, user: UserHandle) {
-        super.onPasswordSucceeded(context, intent, user)
-
-        DefaultAppLogic.with(context).manipulationLogic.reportManualUnlock()
     }
 }

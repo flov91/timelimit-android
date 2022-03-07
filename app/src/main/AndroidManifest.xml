@@ -1,6 +1,6 @@
 <?xml version="1.0" encoding="utf-8"?>
 <!--
-  TimeLimit Copyright <C> 2019 - 2021 Jonas Lochmann
+  TimeLimit Copyright <C> 2019 - 2022 Jonas Lochmann
   This program is free software: you can redistribute it and/or modify
   it under the terms of the GNU General Public License as published by
   the Free Software Foundation version 3 of the License.
@@ -73,15 +73,6 @@
             android:supportsPictureInPicture="false"
             android:taskAffinity=":lock"
             tools:ignore="UnusedAttribute" />
-
-        <activity
-            tools:ignore="UnusedAttribute"
-            android:excludeFromRecents="true"
-            android:autoRemoveFromRecents="true"
-            android:taskAffinity=":manipulationwarning"
-            android:showOnLockScreen="true"
-            android:exported="false"
-            android:name=".ui.manipulation.UnlockAfterManipulationActivity" />
 
         <activity
             tools:ignore="UnusedAttribute"

@@ -91,7 +91,7 @@ class DummyIntegration(
         launchLockScreenForPackage = currentPackageName
     }
 
-    override fun showAnnoyScreen(annoyDuration: Long) {
+    override fun showAnnoyScreen() {
         // ignore
     }
 

@@ -1,5 +1,5 @@
 /*
- * TimeLimit Copyright <C> 2019 - 2021 Jonas Lochmann
+ * TimeLimit Copyright <C> 2019 - 2022 Jonas Lochmann
  *
  * This program is free software: you can redistribute it and/or modify
  * it under the terms of the GNU General Public License as published by
@@ -24,13 +24,12 @@ import io.timelimit.android.integration.platform.NewPermissionStatusUtil
 import io.timelimit.android.integration.platform.ProtectionLevelUtil
 import io.timelimit.android.integration.platform.RuntimePermissionStatusUtil
 import io.timelimit.android.logic.BackgroundTaskLogic
-import io.timelimit.android.logic.ManipulationLogic
 import io.timelimit.android.sync.actions.*
 
 object LocalDatabaseAppLogicActionDispatcher {
     private const val LOG_TAG = "AppLogicAction"
 
-    fun dispatchAppLogicActionSync(action: AppLogicAction, deviceId: String, database: Database, manipulationLogic: ManipulationLogic) {
+    fun dispatchAppLogicActionSync(action: AppLogicAction, deviceId: String, database: Database) {
         DatabaseValidation.assertDeviceExists(database, deviceId)
 
         database.runInTransaction {
@@ -308,10 +307,6 @@ object LocalDatabaseAppLogicActionDispatcher {
 
                     database.device().updateDeviceEntry(device)
 
-                    if (device.hasActiveManipulationWarning) {
-                        manipulationLogic.lockDeviceSync()
-                    }
-
                     null
                 }
                 is TriedDisablingDeviceAdminAction -> {
@@ -322,8 +317,6 @@ object LocalDatabaseAppLogicActionDispatcher {
                                     manipulationTriedDisablingDeviceAdmin = true
                             )
                     )
-
-                    manipulationLogic.lockDeviceSync()
 
                     null
                 }

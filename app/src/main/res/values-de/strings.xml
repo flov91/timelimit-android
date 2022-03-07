@@ -109,11 +109,13 @@
     <string name="add_user_authentication_required_btn">Anmelden</string>
 
     <string name="annoy_info">
-        TimeLimit wurde manipuliert. Deshalb wird das Gerät für einen Moment gesperrt.
+        TimeLimit wurde manipuliert. Deshalb wurde das Gerät gesperrt.
     </string>
     <string name="annoy_timer">
-        Das Gerät wird in %s entsperrt.
+        Das Gerät kann in %s entsperrt werden.
     </string>
+    <string name="annoy_unlock_temp_button">kurz entsperren</string>
+    <string name="annoy_unlock_parent_button">länger entsperren</string>
     <string name="annoy_reason">
         Folgendes wurde manipuliert: %s
     </string>
@@ -502,9 +504,7 @@
     <string name="diagnose_fga_query_range_min">Minimal (Standard)</string>
 
     <string name="diagnose_exf_title">Experimentelle Parameter</string>
-    <string name="diagnose_exf_lom">Sperrung nach Manipulationen deaktivieren</string>
     <string name="diagnose_exf_slb">Apps auf Systemebene sperren</string>
-    <string name="diagnose_exf_mau">Nutzer nach Manipulation nerven</string>
     <string name="diagnose_exf_isc">Systemverbindungsstatus ignorieren</string>
     <string name="diagnose_exf_chs">TimeLimit als Startbildschirm</string>
     <string name="diagnose_exf_chd">Startbildschirmweiterleitung verzögern</string>
@@ -1079,8 +1079,6 @@
         Die E-Mail-Adresse %s ist bereits mit einem Benutzer verknüpft und
         kann nicht mit einem weiteren Benutzer verknüpft werden
     </string>
-
-    <string name="manipulation_activity_intro">Es gab eine Manipulation. Deswegen muss dieses Gerät durch ein Elternteil freigegeben werden.</string>
 
     <string name="must_read_child_manipulation">
         Da es manchmal nicht wahrgenommen wird:
