@@ -1,5 +1,5 @@
 /*
- * TimeLimit Copyright <C> 2019 - 2021 Jonas Lochmann
+ * TimeLimit Copyright <C> 2019 - 2022 Jonas Lochmann
  *
  * This program is free software: you can redistribute it and/or modify
  * it under the terms of the GNU General Public License as published by
@@ -21,6 +21,7 @@ import androidx.room.Database
 import androidx.room.InvalidationTracker
 import androidx.room.Room
 import androidx.room.RoomDatabase
+import androidx.sqlite.db.SupportSQLiteDatabase
 import io.timelimit.android.async.Threads
 import io.timelimit.android.data.dao.DerivedDataDao
 import io.timelimit.android.data.invalidation.Observer
@@ -79,53 +80,61 @@ abstract class RoomDatabase: RoomDatabase(), io.timelimit.android.data.Database 
 
         fun createOrOpenLocalStorageInstance(context: Context, name: String): io.timelimit.android.data.Database {
             return Room.databaseBuilder(
-                    context,
-                    io.timelimit.android.data.RoomDatabase::class.java,
-                    name
+                context,
+                io.timelimit.android.data.RoomDatabase::class.java,
+                name
             )
-                    .setJournalMode(JournalMode.TRUNCATE)
-                    .fallbackToDestructiveMigrationOnDowngrade()
-                    .addMigrations(
-                            DatabaseMigrations.MIGRATE_TO_V2,
-                            DatabaseMigrations.MIGRATE_TO_V3,
-                            DatabaseMigrations.MIGRATE_TO_V4,
-                            DatabaseMigrations.MIGRATE_TO_V5,
-                            DatabaseMigrations.MIGRATE_TO_V6,
-                            DatabaseMigrations.MIGRATE_TO_V7,
-                            DatabaseMigrations.MIGRATE_TO_V8,
-                            DatabaseMigrations.MIGRATE_TO_V9,
-                            DatabaseMigrations.MIGRATE_TO_V10,
-                            DatabaseMigrations.MIGRATE_TO_V11,
-                            DatabaseMigrations.MIGRATE_TO_V12,
-                            DatabaseMigrations.MIGRATE_TO_V13,
-                            DatabaseMigrations.MIGRATE_TO_V14,
-                            DatabaseMigrations.MIGRATE_TO_V15,
-                            DatabaseMigrations.MIGRATE_TO_V16,
-                            DatabaseMigrations.MIGRATE_TO_V17,
-                            DatabaseMigrations.MIGRATE_TO_V18,
-                            DatabaseMigrations.MIGRATE_TO_V19,
-                            DatabaseMigrations.MIGRATE_TO_V20,
-                            DatabaseMigrations.MIGRATE_TO_V21,
-                            DatabaseMigrations.MIGRATE_TO_V22,
-                            DatabaseMigrations.MIGRATE_TO_V23,
-                            DatabaseMigrations.MIGRATE_TO_V24,
-                            DatabaseMigrations.MIGRATE_TO_V25,
-                            DatabaseMigrations.MIGRATE_TO_V26,
-                            DatabaseMigrations.MIGRATE_TO_V27,
-                            DatabaseMigrations.MIGRATE_TO_V28,
-                            DatabaseMigrations.MIGRATE_TO_V29,
-                            DatabaseMigrations.MIGRATE_TO_V30,
-                            DatabaseMigrations.MIGRATE_TO_V31,
-                            DatabaseMigrations.MIGRATE_TO_V32,
-                            DatabaseMigrations.MIGRATE_TO_V33,
-                            DatabaseMigrations.MIGRATE_TO_V34,
-                            DatabaseMigrations.MIGRATE_TO_V35,
-                            DatabaseMigrations.MIGRATE_TO_V36,
-                            DatabaseMigrations.MIGRATE_TO_V37,
-                            DatabaseMigrations.MIGRATE_TO_V38
-                    )
-                    .setQueryExecutor(Threads.database)
-                    .build()
+                .setJournalMode(JournalMode.TRUNCATE)
+                .fallbackToDestructiveMigrationOnDowngrade()
+                .addMigrations(
+                    DatabaseMigrations.MIGRATE_TO_V2,
+                    DatabaseMigrations.MIGRATE_TO_V3,
+                    DatabaseMigrations.MIGRATE_TO_V4,
+                    DatabaseMigrations.MIGRATE_TO_V5,
+                    DatabaseMigrations.MIGRATE_TO_V6,
+                    DatabaseMigrations.MIGRATE_TO_V7,
+                    DatabaseMigrations.MIGRATE_TO_V8,
+                    DatabaseMigrations.MIGRATE_TO_V9,
+                    DatabaseMigrations.MIGRATE_TO_V10,
+                    DatabaseMigrations.MIGRATE_TO_V11,
+                    DatabaseMigrations.MIGRATE_TO_V12,
+                    DatabaseMigrations.MIGRATE_TO_V13,
+                    DatabaseMigrations.MIGRATE_TO_V14,
+                    DatabaseMigrations.MIGRATE_TO_V15,
+                    DatabaseMigrations.MIGRATE_TO_V16,
+                    DatabaseMigrations.MIGRATE_TO_V17,
+                    DatabaseMigrations.MIGRATE_TO_V18,
+                    DatabaseMigrations.MIGRATE_TO_V19,
+                    DatabaseMigrations.MIGRATE_TO_V20,
+                    DatabaseMigrations.MIGRATE_TO_V21,
+                    DatabaseMigrations.MIGRATE_TO_V22,
+                    DatabaseMigrations.MIGRATE_TO_V23,
+                    DatabaseMigrations.MIGRATE_TO_V24,
+                    DatabaseMigrations.MIGRATE_TO_V25,
+                    DatabaseMigrations.MIGRATE_TO_V26,
+                    DatabaseMigrations.MIGRATE_TO_V27,
+                    DatabaseMigrations.MIGRATE_TO_V28,
+                    DatabaseMigrations.MIGRATE_TO_V29,
+                    DatabaseMigrations.MIGRATE_TO_V30,
+                    DatabaseMigrations.MIGRATE_TO_V31,
+                    DatabaseMigrations.MIGRATE_TO_V32,
+                    DatabaseMigrations.MIGRATE_TO_V33,
+                    DatabaseMigrations.MIGRATE_TO_V34,
+                    DatabaseMigrations.MIGRATE_TO_V35,
+                    DatabaseMigrations.MIGRATE_TO_V36,
+                    DatabaseMigrations.MIGRATE_TO_V37,
+                    DatabaseMigrations.MIGRATE_TO_V38
+                )
+                .setQueryExecutor(Threads.database)
+                .addCallback(object: Callback() {
+                    override fun onOpen(db: SupportSQLiteDatabase) {
+                        super.onOpen(db)
+
+                        db.query("PRAGMA journal_mode = PERSIST").consume()
+                        db.query("PRAGMA journal_size_limit = 32768").consume()
+                    }
+                })
+                .build()
         }
     }
 
