@@ -1,5 +1,5 @@
 /*
- * TimeLimit Copyright <C> 2019 - 2021 Jonas Lochmann
+ * TimeLimit Copyright <C> 2019 - 2022 Jonas Lochmann
  *
  * This program is free software: you can redistribute it and/or modify
  * it under the terms of the GNU General Public License as published by
@@ -272,6 +272,12 @@ object DatabaseMigrations {
     val MIGRATE_TO_V38 = object: Migration(37, 38) {
         override fun migrate(database: SupportSQLiteDatabase) {
             database.execSQL("ALTER TABLE category ADD COLUMN block_notification_delay INTEGER NOT NULL DEFAULT 0")
+        }
+    }
+
+    val MIGRATE_TO_V39 = object: Migration(38, 39) {
+        override fun migrate(database: SupportSQLiteDatabase) {
+            // nothing to do, there was just a new config item type added
         }
     }
 }

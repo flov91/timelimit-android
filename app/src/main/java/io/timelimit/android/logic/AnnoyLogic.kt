@@ -15,11 +15,13 @@
  */
 package io.timelimit.android.logic
 
-import android.os.Build
+import android.util.Log
 import androidx.lifecycle.MutableLiveData
 import androidx.lifecycle.Observer
 import io.timelimit.android.BuildConfig
 import io.timelimit.android.async.Threads
+import io.timelimit.android.coroutines.executeAndWait
+import io.timelimit.android.coroutines.runAsync
 import io.timelimit.android.integration.platform.ProtectionLevel
 import io.timelimit.android.livedata.*
 
@@ -27,6 +29,7 @@ class AnnoyLogic (val appLogic: AppLogic) {
     // config
     companion object {
         private const val ENABLE = !BuildConfig.storeCompilant
+        private const val LOG_TAG = "AnnoyLogic"
 
         private const val TEMP_UNBLOCK_DURATION = 1000 * 45L
         private const val TEMP_UNBLOCK_PARENT_DURATION = 1000 * 60 * 10L
@@ -87,6 +90,7 @@ class AnnoyLogic (val appLogic: AppLogic) {
         nextManualUnblockTimestamp = now + manualUnblockDelay(manualUnblockCounter)
 
         enableTempDisabled(TEMP_UNBLOCK_DURATION)
+        saveManualUnblockCounterAsync()
     }
 
     // input: trigger temp unblock by parents (event)
@@ -95,13 +99,86 @@ class AnnoyLogic (val appLogic: AppLogic) {
         nextManualUnblockTimestamp = now()
 
         enableTempDisabled(TEMP_UNBLOCK_PARENT_DURATION)
+        saveManualUnblockCounterAsync()
     }
 
+    // helper functions
     private fun enableTempDisabled(duration: Long) {
         annoyTempDisabled.value = true
 
         Threads.mainThreadHandler.removeCallbacks(annoyTempDisabledSetFalse)
         Threads.mainThreadHandler.postDelayed(annoyTempDisabledSetFalse, duration)
         isManipulated.observeForever(resetTempDisabledObserver)
+    }
+
+    // state saving and restoring
+    private fun saveManualUnblockCounterAsync() {
+        Threads.mainThreadHandler.removeCallbacks(saveZeroUnblockCounterRunnable)
+
+        Threads.database.execute {
+            try {
+                appLogic.database.config().setAnoyManualUnblockCounterSync(manualUnblockCounter)
+            } catch (ex: Exception) {
+                if (BuildConfig.DEBUG) {
+                    Log.w(LOG_TAG, "could not save unblock counter value", ex)
+                }
+            }
+        }
+
+        eventuallyScheduleResetOfStoredCounter()
+    }
+
+    private fun eventuallyScheduleResetOfStoredCounter() {
+        if (manualUnblockCounter > 0) {
+            val now = now()
+            val resetTimestamp = nextManualUnblockTimestamp + manualUnblockDelay(manualUnblockCounter)
+            val resetDelay = resetTimestamp - now
+
+            if (resetDelay > 0) {
+                if (BuildConfig.DEBUG) {
+                    Log.d(LOG_TAG, "scheduled counter reset in ${resetDelay/1000} seconds")
+                }
+
+                Threads.mainThreadHandler.postDelayed(saveZeroUnblockCounterRunnable, resetDelay)
+            }
+        }
+    }
+
+    private val saveZeroUnblockCounterRunnable = Runnable {
+        Threads.database.execute {
+            if (BuildConfig.DEBUG) {
+                Log.d(LOG_TAG, "reset counter now")
+            }
+
+            try {
+                appLogic.database.config().setAnoyManualUnblockCounterSync(0)
+            } catch (ex: Exception) {
+                if (BuildConfig.DEBUG) {
+                    Log.w(LOG_TAG, "could not reset saved counter value", ex)
+                }
+            }
+        }
+    }
+
+    init {
+        runAsync {
+            try {
+                val counter = Threads.database.executeAndWait {
+                    appLogic.database.config().getAnnoyManualUnblockCounter()
+                }
+                val now = now()
+
+                if (counter > 0) {
+                    manualUnblockCounter = counter
+                    nextManualUnblockTimestamp = now + manualUnblockDelay(manualUnblockCounter)
+
+                    eventuallyScheduleResetOfStoredCounter()
+                }
+            } catch (ex: Exception) {
+                if (BuildConfig.DEBUG) {
+                    Log.w(LOG_TAG, "could not load saved counter", ex)
+                }
+            }
+        }
     }
 }

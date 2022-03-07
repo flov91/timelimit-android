@@ -99,7 +99,8 @@ enum class ConfigurationItemType {
     EnableUpdates,
     UpdateStatus,
     CustomOrganizationName,
-    ServerApiLevel
+    ServerApiLevel,
+    AnnoyManualUnblockCounter,
 }
 
 object ConfigurationItemTypeUtil {
@@ -126,6 +127,7 @@ object ConfigurationItemTypeUtil {
     private const val UPDATE_STATUS = 22
     private const val CUSTOM_ORGANIZATION_NAME = 23
     private const val SERVER_API_LEVEL = 24
+    private const val ANNOY_MANUAL_UNBLOCK_COUNTER = 25
 
     val TYPES = listOf(
             ConfigurationItemType.OwnDeviceId,
@@ -150,7 +152,8 @@ object ConfigurationItemTypeUtil {
             ConfigurationItemType.EnableUpdates,
             ConfigurationItemType.UpdateStatus,
             ConfigurationItemType.CustomOrganizationName,
-            ConfigurationItemType.ServerApiLevel
+            ConfigurationItemType.ServerApiLevel,
+            ConfigurationItemType.AnnoyManualUnblockCounter
     )
 
     fun serialize(value: ConfigurationItemType) = when(value) {
@@ -177,6 +180,7 @@ object ConfigurationItemTypeUtil {
         ConfigurationItemType.UpdateStatus -> UPDATE_STATUS
         ConfigurationItemType.CustomOrganizationName -> CUSTOM_ORGANIZATION_NAME
         ConfigurationItemType.ServerApiLevel -> SERVER_API_LEVEL
+        ConfigurationItemType.AnnoyManualUnblockCounter -> ANNOY_MANUAL_UNBLOCK_COUNTER
     }
 
     fun parse(value: Int) = when(value) {
@@ -203,6 +207,7 @@ object ConfigurationItemTypeUtil {
         UPDATE_STATUS -> ConfigurationItemType.UpdateStatus
         CUSTOM_ORGANIZATION_NAME -> ConfigurationItemType.CustomOrganizationName
         SERVER_API_LEVEL -> ConfigurationItemType.ServerApiLevel
+        ANNOY_MANUAL_UNBLOCK_COUNTER -> ConfigurationItemType.AnnoyManualUnblockCounter
         else -> throw IllegalArgumentException()
     }
 }

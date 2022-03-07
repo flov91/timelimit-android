@@ -327,4 +327,7 @@ abstract class ConfigDao {
     fun getServerApiLevelSync() = getValueOfKeySync(ConfigurationItemType.ServerApiLevel).let { it?.toInt() ?: 0 }
     fun getServerApiLevelLive() = getValueOfKeyAsync(ConfigurationItemType.ServerApiLevel).map { it?.toInt() ?: 0 }
     fun setServerApiLevelSync(serverApiLevel: Int) { updateValueSync(ConfigurationItemType.ServerApiLevel, serverApiLevel.toString()) }
+
+    fun getAnnoyManualUnblockCounter() = getValueOfKeySync(ConfigurationItemType.AnnoyManualUnblockCounter).let { it?.toInt() ?: 0 }
+    fun setAnoyManualUnblockCounterSync(counter: Int) { updateValueSync(ConfigurationItemType.AnnoyManualUnblockCounter, counter.toString()) }
 }
