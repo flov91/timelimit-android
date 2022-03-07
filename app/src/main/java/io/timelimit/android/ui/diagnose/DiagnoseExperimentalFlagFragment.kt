@@ -1,5 +1,5 @@
 /*
- * TimeLimit Copyright <C> 2019 - 2020 Jonas Lochmann
+ * TimeLimit Copyright <C> 2019 - 2022 Jonas Lochmann
  *
  * This program is free software: you can redistribute it and/or modify
  * it under the terms of the GNU General Public License as published by
@@ -195,7 +195,13 @@ data class DiagnoseExperimentalFlagItem(
                         enableFlags = ExperimentalFlags.SYNC_RELATED_NOTIFICATIONS,
                         disableFlags = ExperimentalFlags.SYNC_RELATED_NOTIFICATIONS,
                         enable = { true }
-                )
+                ),
+            DiagnoseExperimentalFlagItem(
+                label = R.string.diagnose_exf_ifd,
+                enableFlags = ExperimentalFlags.INSTANCE_ID_FG_APP_DETECTION,
+                disableFlags = ExperimentalFlags.INSTANCE_ID_FG_APP_DETECTION,
+                enable = { true }
+            )
         )
     }
 }

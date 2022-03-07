@@ -41,8 +41,8 @@ object AppAffectedByPrimaryDeviceUtil {
 
         val currentApps = try {
             logic.platformIntegration.getForegroundApps(
-                    logic.getForegroundAppQueryInterval(),
-                    logic.getEnableMultiAppDetection()
+                logic.getForegroundAppQueryInterval(),
+                deviceAndUserRelatedData.deviceRelatedData.experimentalFlags
             )
         } catch (ex: SecurityException) {
             emptySet<ForegroundApp>()

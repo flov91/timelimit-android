@@ -243,4 +243,5 @@ object ExperimentalFlags {
     const val HIDE_MANIPULATION_WARNING = 8192L
     const val ENABLE_SOFT_BLOCKING = 16384L
     const val SYNC_RELATED_NOTIFICATIONS = 32768L
+    const val INSTANCE_ID_FG_APP_DETECTION = 65536L
 }
