@@ -1,5 +1,5 @@
 /*
- * TimeLimit Copyright <C> 2019 - 2021 Jonas Lochmann
+ * TimeLimit Copyright <C> 2019 - 2022 Jonas Lochmann
  *
  * This program is free software: you can redistribute it and/or modify
  * it under the terms of the GNU General Public License as published by
@@ -29,6 +29,7 @@ import io.timelimit.android.data.model.*
 import io.timelimit.android.integration.platform.NewPermissionStatus
 import io.timelimit.android.integration.platform.ProtectionLevel
 import io.timelimit.android.integration.platform.RuntimePermissionStatus
+import io.timelimit.android.ui.setup.SetupUnprovisionedCheck
 import io.timelimit.android.ui.user.create.DefaultCategories
 import io.timelimit.android.util.AndroidVersion
 import io.timelimit.android.work.CheckUpdateWorker
@@ -57,6 +58,8 @@ class AppSetupLogic(private val appLogic: AppLogic) {
             appLogic.database.runInTransaction {
                 run {
                     val customServerUrl = appLogic.database.config().getCustomServerUrlSync()
+
+                    SetupUnprovisionedCheck.checkSync(appLogic.database)
 
                     // just for safety: delete everything except the custom server url
                     appLogic.database.deleteAllData()

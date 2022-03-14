@@ -1,5 +1,5 @@
 /*
- * TimeLimit Copyright <C> 2019 - 2020 Jonas Lochmann
+ * TimeLimit Copyright <C> 2019 - 2022 Jonas Lochmann
  *
  * This program is free software: you can redistribute it and/or modify
  * it under the terms of the GNU General Public License as published by
@@ -31,6 +31,7 @@ import io.timelimit.android.sync.ApplyServerDataStatus
 import io.timelimit.android.sync.network.ClientDataStatus
 import io.timelimit.android.sync.network.NewDeviceInfo
 import io.timelimit.android.sync.network.api.UnauthorizedHttpError
+import io.timelimit.android.ui.setup.SetupUnprovisionedCheck
 
 class SetupRemoteChildViewModel(application: Application): AndroidViewModel(application) {
     private val statusInternal = MutableLiveData<SetupRemoteChildStatus>().apply { value = SetupRemoteChildStatus.Idle }
@@ -61,6 +62,8 @@ class SetupRemoteChildViewModel(application: Application): AndroidViewModel(appl
                 Threads.database.executeAndWait {
                     logic.database.runInTransaction {
                         val customServerUrl = logic.database.config().getCustomServerUrlSync()
+
+                        SetupUnprovisionedCheck.checkSync(logic.database)
 
                         logic.database.deleteAllData()
                         logic.database.config().setCustomServerUrlSync(customServerUrl)

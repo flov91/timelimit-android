@@ -1,5 +1,5 @@
 /*
- * TimeLimit Copyright <C> 2019 - 2020 Jonas Lochmann
+ * TimeLimit Copyright <C> 2019 - 2022 Jonas Lochmann
  *
  * This program is free software: you can redistribute it and/or modify
  * it under the terms of the GNU General Public License as published by
@@ -37,6 +37,7 @@ import io.timelimit.android.sync.network.ParentPassword
 import io.timelimit.android.sync.network.StatusOfMailAddressResponse
 import io.timelimit.android.sync.network.api.ConflictHttpError
 import io.timelimit.android.sync.network.api.UnauthorizedHttpError
+import io.timelimit.android.ui.setup.SetupUnprovisionedCheck
 import io.timelimit.android.update.UpdateUtil
 import io.timelimit.android.work.PeriodicSyncInBackgroundWorker
 
@@ -106,6 +107,8 @@ class SetupParentModeModel(application: Application): AndroidViewModel(applicati
                     logic.database.runInTransaction {
                         val customServerUrl = logic.database.config().getCustomServerUrlSync()
 
+                        SetupUnprovisionedCheck.checkSync(logic.database)
+
                         database.deleteAllData()
 
                         database.config().setCustomServerUrlSync(customServerUrl)
@@ -174,6 +177,8 @@ class SetupParentModeModel(application: Application): AndroidViewModel(applicati
                 Threads.database.executeAndWait {
                     logic.database.runInTransaction {
                         val customServerUrl = logic.database.config().getCustomServerUrlSync()
+
+                        SetupUnprovisionedCheck.checkSync(logic.database)
 
                         database.deleteAllData()
 
