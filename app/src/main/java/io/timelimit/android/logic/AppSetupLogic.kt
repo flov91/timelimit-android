@@ -223,7 +223,7 @@ class AppSetupLogic(private val appLogic: AppLogic) {
                                     .map {
                                         CategoryApp(
                                                 categoryId = allowedAppsCategoryId,
-                                                packageName = it.packageName
+                                                appSpecifierString = it.packageName
                                         )
                                     }
                     )

@@ -1,5 +1,5 @@
 /*
- * TimeLimit Copyright <C> 2019 - 2021 Jonas Lochmann
+ * TimeLimit Copyright <C> 2019 - 2022 Jonas Lochmann
  *
  * This program is free software: you can redistribute it and/or modify
  * it under the terms of the GNU General Public License as published by
@@ -132,7 +132,8 @@ class SetupDeviceModel(application: Application): AndroidViewModel(application) 
 
                 val alreadyAssignedApps = Threads.database.executeAndWait {
                     logic.database.categoryApp().getCategoryAppsByUserIdSync(realUserId)
-                        .map { it.packageName }
+                        .filter { it.appSpecifier.deviceId == null }
+                        .map { it.appSpecifier.packageName }
                         .toSet()
                 }
 

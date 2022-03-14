@@ -194,7 +194,7 @@ class SetupDeviceFragment : Fragment(), FragmentWithCustomTitle {
 
         val appsAssignedToTheUser = categoriesOfTheSelectedUser.switchMap { categories ->
             logic.database.categoryApp().getCategoryApps(categories.map { it.id }).map { categoryApps ->
-                categoryApps.map { it.packageName }.toSet()
+                categoryApps.map { it.appSpecifierString }.toSet()
             }
         }
 

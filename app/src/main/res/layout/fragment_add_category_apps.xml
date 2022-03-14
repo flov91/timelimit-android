@@ -1,5 +1,5 @@
 <!--
-  TimeLimit Copyright <C> 2019 - 2020 Jonas Lochmann
+  TimeLimit Copyright <C> 2019 - 2022 Jonas Lochmann
   This program is free software: you can redistribute it and/or modify
   it under the terms of the GNU General Public License as published by
   the Free Software Foundation version 3 of the License.
@@ -68,6 +68,13 @@
                         android:checked="false"
                         android:id="@+id/show_apps_from_unassigned_devices"
                         android:text="@string/category_apps_add_dialog_show_from_other_devices"
+                        android:layout_width="match_parent"
+                        android:layout_height="wrap_content" />
+
+                    <CheckBox
+                        android:checked="false"
+                        android:id="@+id/assign_to_this_device_only"
+                        android:text="@string/category_apps_add_dialog_assign_current_device_only"
                         android:layout_width="match_parent"
                         android:layout_height="wrap_content" />
 

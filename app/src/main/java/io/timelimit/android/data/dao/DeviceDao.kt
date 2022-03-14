@@ -1,5 +1,5 @@
 /*
- * TimeLimit Copyright <C> 2019 - 2021 Jonas Lochmann
+ * TimeLimit Copyright <C> 2019 - 2022 Jonas Lochmann
  *
  * This program is free software: you can redistribute it and/or modify
  * it under the terms of the GNU General Public License as published by
@@ -17,9 +17,7 @@ package io.timelimit.android.data.dao
 
 import androidx.lifecycle.LiveData
 import androidx.room.*
-import io.timelimit.android.data.model.Device
-import io.timelimit.android.data.model.NetworkTime
-import io.timelimit.android.data.model.NetworkTimeAdapter
+import io.timelimit.android.data.model.*
 import io.timelimit.android.integration.platform.NewPermissionStatusConverter
 import io.timelimit.android.integration.platform.ProtectionLevelConverter
 import io.timelimit.android.integration.platform.RuntimePermissionStatusConverter
@@ -40,6 +38,9 @@ abstract class DeviceDao {
 
     @Query("SELECT * FROM device ORDER BY id")
     abstract fun getAllDevicesLive(): LiveData<List<Device>>
+
+    @Query("SELECT id, name FROM device")
+    abstract fun getDeviceNamesLive(): LiveData<List<DeviceName>>
 
     @Query("SELECT * FROM device")
     abstract fun getAllDevicesSync(): List<Device>
@@ -67,6 +68,9 @@ abstract class DeviceDao {
 
     @Query("SELECT * FROM device WHERE current_user_id = :userId")
     abstract fun getDevicesByUserId(userId: String): LiveData<List<Device>>
+
+    @Query("SELECT id FROM device WHERE current_user_id = :userId")
+    abstract fun getDevicesIdByUserId(userId: String): LiveData<List<DeviceId>>
 
     @Query("UPDATE device SET apps_version = \"\"")
     abstract fun deleteAllInstalledAppsVersions()

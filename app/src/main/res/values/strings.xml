@@ -281,6 +281,7 @@
     <string name="category_apps_add_dialog_show_sys_apps">Show system Apps</string>
     <string name="category_apps_add_dialog_show_assigned_to_other_category">Show Apps assigned to other categories</string>
     <string name="category_apps_add_dialog_show_from_other_devices">Show Apps from devices not assigned to this child</string>
+    <string name="category_apps_add_dialog_assign_current_device_only">Assign for this device only</string>
     <string name="category_apps_add_dialog_select_all">Select all</string>
     <plurals name="category_apps_add_dialog_hidden_entries">
         <item quantity="one">%d hidden entry selected</item>

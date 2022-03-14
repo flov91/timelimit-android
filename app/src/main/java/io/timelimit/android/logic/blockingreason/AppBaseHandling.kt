@@ -1,5 +1,5 @@
 /*
- * TimeLimit Copyright <C> 2019 - 2020 Jonas Lochmann
+ * TimeLimit Copyright <C> 2019 - 2022 Jonas Lochmann
  *
  * This program is free software: you can redistribute it and/or modify
  * it under the terms of the GNU General Public License as published by
@@ -73,15 +73,31 @@ sealed class AppBaseHandling {
             } else if (foregroundAppPackageName != null) {
                 val appCategory = run {
                     val tryActivityLevelBlocking = deviceRelatedData.deviceEntry.enableActivityLevelBlocking && foregroundAppActivityName != null
-                    val appLevelCategory = userRelatedData.findCategoryApp(foregroundAppPackageName) ?: run {
-                        if (isSystemImageApp) userRelatedData.findCategoryApp(DummyApps.NOT_ASSIGNED_SYSTEM_IMAGE_APP) else null
+                    val appLevelCategory = userRelatedData.findCategoryAppTryDeviceSpecificFirst(
+                        packageName = foregroundAppPackageName,
+                        activityName = null,
+                        deviceId = deviceRelatedData.deviceEntry.id
+                    ) ?: run {
+                        if (isSystemImageApp) userRelatedData.findCategoryAppTryDeviceSpecificFirst(
+                            packageName = DummyApps.NOT_ASSIGNED_SYSTEM_IMAGE_APP,
+                            activityName = null,
+                            deviceId = deviceRelatedData.deviceEntry.id
+                        ) else null
                     }
 
-                    (if (tryActivityLevelBlocking) {
-                        userRelatedData.findCategoryApp("$foregroundAppPackageName:$foregroundAppActivityName")
-                    } else {
-                        null
-                    }) ?: appLevelCategory
+                    if (tryActivityLevelBlocking) {
+                        val activityLevelCategory = userRelatedData.findCategoryAppTryDeviceSpecificFirst(
+                            packageName = foregroundAppPackageName,
+                            activityName = foregroundAppActivityName,
+                            deviceId = deviceRelatedData.deviceEntry.id
+                        )
+
+                        val appLevelCategoryMoreImportant = appLevelCategory != null && activityLevelCategory != null &&
+                                appLevelCategory.appSpecifier.deviceId != null &&
+                                activityLevelCategory.appSpecifier.deviceId == null
+
+                        if (activityLevelCategory == null || appLevelCategoryMoreImportant) appLevelCategory else activityLevelCategory
+                    } else appLevelCategory
                 }
 
                 val startCategory = userRelatedData.categoryById[appCategory?.categoryId]
@@ -95,8 +111,7 @@ sealed class AppBaseHandling {
                     return UseCategories(
                             categoryIds = categoryIds,
                             shouldCount = !pauseCounting,
-                            level = when (appCategory?.specifiesActivity) {
-                                null -> BlockingLevel.Activity // occurs when using a default category
+                            level = when (appCategory == null || appCategory.appSpecifier.activityName != null) {
                                 true -> BlockingLevel.Activity
                                 false -> BlockingLevel.App
                             },

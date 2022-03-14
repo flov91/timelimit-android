@@ -377,7 +377,7 @@
             "notNull": true
           },
           {
-            "fieldPath": "packageName",
+            "fieldPath": "appSpecifierString",
             "columnName": "package_name",
             "affinity": "TEXT",
             "notNull": true

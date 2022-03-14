@@ -241,6 +241,7 @@
     <string name="category_apps_add_dialog_select_all">Alle auswählen</string>
     <string name="category_apps_add_dialog_show_assigned_to_other_category">Zu anderen Kategorien zugeordnete Apps anzeigen</string>
     <string name="category_apps_add_dialog_show_from_other_devices">Apps von Geräten, die nicht diesem Kind zugeordnet wurden, anzeigen</string>
+    <string name="category_apps_add_dialog_assign_current_device_only">Nur für dieses Gerät zuweisen</string>
     <plurals name="category_apps_add_dialog_hidden_entries">
         <item quantity="one">%d ausgeblendeten Eintrag ausgewählt</item>
         <item quantity="other">%s ausgeblendete Einträge ausgewählt</item>

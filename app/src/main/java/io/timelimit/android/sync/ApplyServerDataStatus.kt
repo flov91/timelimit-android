@@ -458,7 +458,7 @@ object ApplyServerDataStatus {
                     database.categoryApp().addCategoryAppsSync(item.assignedApps.map {
                         CategoryApp(
                                 categoryId = item.categoryId,
-                                packageName = it
+                                appSpecifierString = it
                         )
                     })
 

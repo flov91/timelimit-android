@@ -1,5 +1,5 @@
 /*
- * TimeLimit Copyright <C> 2019 - 2021 Jonas Lochmann
+ * TimeLimit Copyright <C> 2019 - 2022 Jonas Lochmann
  *
  * This program is free software: you can redistribute it and/or modify
  * it under the terms of the GNU General Public License as published by
@@ -53,6 +53,10 @@ object LocalDatabaseParentActionDispatcher {
                     val allCategoriesOfChild = database.category().getCategoriesByChildIdSync(categoryEntry.childId)
 
                     if (fromChildSelfLimitAddChildUserId != null) {
+                        if (action.packageNames.find { it.contains('@') } != null) {
+                            throw RuntimeException("can not do device specific assignments as child")
+                        }
+
                         val parentCategoriesOfTargetCategory = allCategoriesOfChild.getCategoryWithParentCategories(action.categoryId)
                         val userEntry = database.user().getUserByIdSync(fromChildSelfLimitAddChildUserId) ?: throw RuntimeException("user not found")
                         val validatedDefaultCategoryId = (allCategoriesOfChild.find {
@@ -99,7 +103,7 @@ object LocalDatabaseParentActionDispatcher {
                             action.packageNames.map {
                                 CategoryApp(
                                         categoryId = action.categoryId,
-                                        packageName = it
+                                        appSpecifierString = it
                                 )
                             }
                     )

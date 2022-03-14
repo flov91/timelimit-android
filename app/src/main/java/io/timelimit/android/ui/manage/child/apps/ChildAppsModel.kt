@@ -1,5 +1,5 @@
 /*
- * TimeLimit Copyright <C> 2019 - 2021 Jonas Lochmann
+ * TimeLimit Copyright <C> 2019 - 2022 Jonas Lochmann
  *
  * This program is free software: you can redistribute it and/or modify
  * it under the terms of the GNU General Public License as published by
@@ -64,13 +64,17 @@ class ChildAppsModel(application: Application): AndroidViewModel(application) {
     val listContentLive = childAppsLive.switchMap { childApps ->
         childCategoriesLive.switchMap { categories ->
             childCategoryAppsLive.switchMap { categoryApps ->
+                // only show items that are not device specific
+                val categoryAppByPackageName = categoryApps
+                    .filter { it.appSpecifier.deviceId == null }
+                    .associateBy { it.appSpecifier.packageName }
+
                 appFilterLive.ignoreUnchanged().switchMap { appFilter ->
                     val filteredChildApps = childApps.filter { appFilter.matches(it) }
 
                     modeLive.ignoreUnchanged().map { mode ->
                         when (mode!!) {
                             ChildAppsMode.SortByCategory -> {
-                                val categoryAppByPackageName = categoryApps.associateBy { it.packageName }
                                 val appsByCategoryId = filteredChildApps.groupBy { app ->
                                     categoryAppByPackageName[app.packageName]?.categoryId
                                 }
@@ -117,7 +121,6 @@ class ChildAppsModel(application: Application): AndroidViewModel(application) {
                             }
                             ChildAppsMode.SortByTitle -> {
                                 val categoryById = categories.associateBy { it.id }
-                                val categoryAppByPackageName = categoryApps.associateBy { it.packageName }
 
                                 filteredChildApps
                                         .distinctBy { it.packageName }
