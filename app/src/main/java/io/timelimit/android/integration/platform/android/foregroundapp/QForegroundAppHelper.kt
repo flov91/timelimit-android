@@ -35,8 +35,11 @@ class QForegroundAppHelper(context: Context): UsageStatsForegroundAppHelper(cont
         experimentalFlags: Long
     ): Set<ForegroundApp> {
         val useInstanceIdForegroundAppDetection = experimentalFlags and ExperimentalFlags.INSTANCE_ID_FG_APP_DETECTION == ExperimentalFlags.INSTANCE_ID_FG_APP_DETECTION
+        val disableFallback = experimentalFlags and ExperimentalFlags.DISABLE_FG_APP_DETECTION_FALLBACK == ExperimentalFlags.DISABLE_FG_APP_DETECTION_FALLBACK
 
-        val result = if (useInstanceIdForegroundAppDetection && fallbackCounter == 0) {
+        val result = if (useInstanceIdForegroundAppDetection && disableFallback) {
+            modern.getForegroundApps(queryInterval, experimentalFlags)
+        } else if (useInstanceIdForegroundAppDetection && fallbackCounter == 0) {
             try {
                 modern.getForegroundApps(queryInterval, experimentalFlags)
             } catch (ex: Exception) {

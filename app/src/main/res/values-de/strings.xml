@@ -528,6 +528,7 @@
     <string name="diagnose_exf_esb">Overlay und Home-Button nicht zum Sperren verwenden</string>
     <string name="diagnose_exf_srn">Toasts zur Synchronisation anzeigen</string>
     <string name="diagnose_exf_ifd">neue App-Erkennungs-Methode verwenden</string>
+    <string name="diagnose_exf_fda">Fallback bei der App-Erkennung deaktivieren</string>
 
     <string name="diagnose_bg_task_loop_ex">Hintergrundaufgabenschleifenfehler</string>
 
