@@ -1,5 +1,5 @@
 /*
- * TimeLimit Copyright <C> 2019 - 2020 Jonas Lochmann
+ * TimeLimit Copyright <C> 2019 - 2022 Jonas Lochmann
  *
  * This program is free software: you can redistribute it and/or modify
  * it under the terms of the GNU General Public License as published by
@@ -23,8 +23,10 @@ import io.timelimit.android.R
 import io.timelimit.android.async.Threads
 import io.timelimit.android.coroutines.executeAndWait
 import io.timelimit.android.coroutines.runAsyncExpectForever
+import io.timelimit.android.data.model.App
 import io.timelimit.android.data.model.AppActivity
 import io.timelimit.android.data.model.UserType
+import io.timelimit.android.integration.platform.ProtectionLevel
 import io.timelimit.android.livedata.*
 import io.timelimit.android.sync.actions.*
 import io.timelimit.android.sync.actions.apply.ApplyActionUtil
@@ -45,8 +47,14 @@ class SyncInstalledAppsLogic(val appLogic: AppLogic) {
 
     init {
         appLogic.platformIntegration.installedAppsChangeListener = Runnable { requestSync() }
-        appLogic.deviceEntryIfEnabled.map {
-            it?.id + it?.currentUserId + it?.defaultUser + it?.enableActivityLevelBlocking
+        appLogic.deviceEntryIfEnabled.map { device ->
+            device?.let { DeviceState(
+                id = device.id,
+                currentUserId = device.currentUserId,
+                defaultUser = device.defaultUser,
+                enableActivityLevelBlocking = device.enableActivityLevelBlocking,
+                isDeviceOwner = device.currentProtectionLevel == ProtectionLevel.DeviceOwner
+            ) }
         }.ignoreUnchanged().observeForever { requestSync() }
 
         runAsyncExpectForever { syncLoop() }
@@ -102,9 +110,7 @@ class SyncInstalledAppsLogic(val appLogic: AppLogic) {
             val deviceId = deviceEntry.id
 
             run {
-                val currentlyInstalled = Threads.backgroundOSInteraction.executeAndWait {
-                    appLogic.platformIntegration.getLocalApps(deviceId = deviceId).associateBy { app -> app.packageName }
-                }
+                val currentlyInstalled = getCurrentApps(deviceId)
                 val currentlySaved = appLogic.database.app().getAppsByDeviceIdAsync(deviceId = deviceId).waitForNonNullValue().associateBy { app -> app.packageName }
 
                 // skip all items for removal which are still saved locally
@@ -182,4 +188,28 @@ class SyncInstalledAppsLogic(val appLogic: AppLogic) {
             }
         }
     }
+
+    private suspend fun getCurrentApps(deviceId: String): Map<String, App> {
+        val currentlyInstalled = Threads.backgroundOSInteraction.executeAndWait {
+            appLogic.platformIntegration.getLocalApps(deviceId = deviceId).associateBy { app -> app.packageName }
+        }
+
+        val featureDummyApps = appLogic.platformIntegration.getFeatures().map {
+            DummyApps.forFeature(
+                id = it.id,
+                title = it.title,
+                deviceId = deviceId
+            )
+        }.associateBy { it.packageName }
+
+        return currentlyInstalled + featureDummyApps
+    }
+
+    internal data class DeviceState(
+        val id: String,
+        val currentUserId: String,
+        val defaultUser: String,
+        val enableActivityLevelBlocking: Boolean,
+        val isDeviceOwner: Boolean
+    )
 }

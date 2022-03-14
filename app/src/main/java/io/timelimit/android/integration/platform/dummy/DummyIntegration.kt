@@ -165,6 +165,10 @@ class DummyIntegration(
 
     override fun setEnableSystemLockdown(enableLockdown: Boolean) = false
 
+    override fun setBlockedFeatures(features: Set<String>): Boolean = false
+
+    override fun getFeatures(): List<PlatformFeature> = emptyList()
+
     override fun setLockTaskPackages(packageNames: List<String>) = false
 
     override fun getBatteryStatus(): BatteryStatus = batteryStatus.value!!
