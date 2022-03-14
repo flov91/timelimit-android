@@ -1,5 +1,5 @@
 /*
- * TimeLimit Copyright <C> 2019 Jonas Lochmann
+ * TimeLimit Copyright <C> 2019 - 2022 Jonas Lochmann
  *
  * This program is free software: you can redistribute it and/or modify
  * it under the terms of the GNU General Public License as published by
@@ -57,6 +57,8 @@ object AndroidIntegrationApps {
             "com.android.emergency",
             "com.android.phone"
     )
+
+    val appsToIncludeInLockTasks = appsToNotSuspend + setOf("com.android.dialer")
 
     private val ignoredActivities = setOf<String>(
             "com.android.settings:com.android.settings.enterprise.ActionDisabledByAdminDialog",
