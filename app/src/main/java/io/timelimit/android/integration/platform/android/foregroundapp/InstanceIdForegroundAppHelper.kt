@@ -16,6 +16,7 @@
 package io.timelimit.android.integration.platform.android.foregroundapp
 
 import android.annotation.TargetApi
+import android.app.usage.UsageEvents
 import android.content.Context
 import android.os.Build
 import android.util.SparseArray
@@ -34,13 +35,14 @@ class InstanceIdForegroundAppHelper(context: Context): UsageStatsForegroundAppHe
     private var lastQueryTime = 0L
     private var lastEventTimestamp = 0L
     private val apps = SparseArray<ForegroundApp>()
+    private val nativeEvent = UsageEvents.Event()
 
     override suspend fun getForegroundApps(
         queryInterval: Long,
         experimentalFlags: Long
     ): Set<ForegroundApp> {
         if (Build.VERSION.SDK_INT > 32) {
-            throw UntestedSystemVersionException()
+            throw InstanceIdException.UntestedSystemVersionException()
         }
 
         if (getPermissionStatus() != RuntimePermissionStatus.Granted) {
@@ -73,10 +75,42 @@ class InstanceIdForegroundAppHelper(context: Context): UsageStatsForegroundAppHe
 
             usageStatsManager.queryEvents(queryStartTime, queryEndTime)?.let { nativeEvents ->
                 val events = TlUsageEvents.fromUsageEvents(nativeEvents)
+                var isFirstEvent = true
 
-                while (events.readNextItem()) {
-                    lastEventTimestamp = events.timestamp
+                while (true) {
+                    // loop condition with additional checks
+                    val didReadEvent = kotlin.run {
+                        val didReadNativeEvent = nativeEvents.getNextEvent(nativeEvent)
+                        val didReadTlEvent = events.readNextItem()
 
+                        if (didReadNativeEvent != didReadTlEvent) {
+                            throw InstanceIdException.NotMatchingData(
+                                if (didReadTlEvent) "events got next event but nativeEvents not"
+                                else "nativeEvents got next event but events not"
+                            )
+                        }
+
+                        didReadTlEvent // == didReadNativeEvent
+                    }
+
+                    if (!didReadEvent) break
+
+                    // check the consistency
+                    kotlin.run {
+                        if (events.eventType != nativeEvent.eventType) {
+                            throw InstanceIdException.NotMatchingData("got different eventTypes: ${events.eventType} vs ${nativeEvent.eventType}")
+                        }
+
+                        if (events.timestamp != nativeEvent.timeStamp) {
+                            throw InstanceIdException.NotMatchingData("got different timestamps: ${events.timestamp} vs ${nativeEvent.timeStamp}")
+                        }
+
+                        if (events.timestamp < lastEventTimestamp && !isFirstEvent) {
+                            throw InstanceIdException.EventsNotSortedByTimestamp()
+                        }
+                    }
+
+                    // process the event
                     if (events.eventType == TlUsageEvents.DEVICE_STARTUP) {
                         apps.clear()
                     } else if (events.eventType == TlUsageEvents.MOVE_TO_FOREGROUND) {
@@ -89,6 +123,10 @@ class InstanceIdForegroundAppHelper(context: Context): UsageStatsForegroundAppHe
                     ) {
                         apps.remove(events.instanceId)
                     }
+
+                    // save values for the next iteration and the next query
+                    isFirstEvent = false
+                    lastEventTimestamp = events.timestamp
                 }
             }
 
@@ -106,5 +144,9 @@ class InstanceIdForegroundAppHelper(context: Context): UsageStatsForegroundAppHe
         return result
     }
 
-    class UntestedSystemVersionException: RuntimeException()
+    sealed class InstanceIdException(message: String): RuntimeException(message) {
+        class UntestedSystemVersionException: InstanceIdException("untested system version")
+        class NotMatchingData(detail: String): InstanceIdException("not matching data: $detail")
+        class EventsNotSortedByTimestamp: InstanceIdException("events not sorted by timestamp")
+    }
 }
