@@ -1,1 +1,1 @@
-- option to assign one App for the same user to different categories at different devices
+- improved detection of the running Apps at Android 10 and newer; the new detection is used for now in 50% of the sessions and if enabled manually
