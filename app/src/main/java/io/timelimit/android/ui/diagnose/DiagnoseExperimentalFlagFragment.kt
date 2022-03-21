@@ -201,12 +201,6 @@ data class DiagnoseExperimentalFlagItem(
                 enableFlags = ExperimentalFlags.INSTANCE_ID_FG_APP_DETECTION,
                 disableFlags = ExperimentalFlags.INSTANCE_ID_FG_APP_DETECTION,
                 enable = { true }
-            ),
-            DiagnoseExperimentalFlagItem(
-                label = R.string.diagnose_exf_fda,
-                enableFlags = ExperimentalFlags.DISABLE_FG_APP_DETECTION_FALLBACK,
-                disableFlags = ExperimentalFlags.DISABLE_FG_APP_DETECTION_FALLBACK,
-                enable = { true }
             )
         )
     }
