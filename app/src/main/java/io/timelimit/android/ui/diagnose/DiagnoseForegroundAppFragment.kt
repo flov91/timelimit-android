@@ -38,7 +38,7 @@ import io.timelimit.android.R
 import io.timelimit.android.async.Threads
 import io.timelimit.android.databinding.DiagnoseForegroundAppFragmentBinding
 import io.timelimit.android.integration.platform.android.foregroundapp.InstanceIdForegroundAppHelper
-import io.timelimit.android.integration.platform.android.foregroundapp.TlUsageEvents
+import io.timelimit.android.integration.platform.android.foregroundapp.usagestats.ParcelUsageStatsReader
 import io.timelimit.android.livedata.liveDataFromNonNullValue
 import io.timelimit.android.livedata.liveDataFromNullableValue
 import io.timelimit.android.livedata.map
@@ -182,7 +182,7 @@ class DiagnoseForegroundAppFragment : Fragment(), FragmentWithCustomTitle {
                         val currentData = service.queryEvents(now - InstanceIdForegroundAppHelper.START_QUERY_INTERVAL, now)
 
                         val bytes = try {
-                            val parcel = TlUsageEvents.getParcel(currentData)
+                            val parcel = ParcelUsageStatsReader.getParcel(currentData)
                             try { parcel.marshall() } finally { parcel.recycle() }
                         } finally {
                             val event = UsageEvents.Event()
@@ -225,9 +225,9 @@ class DiagnoseForegroundAppFragment : Fragment(), FragmentWithCustomTitle {
 
                         try {
                             var nativeData = if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.Q) {
-                                val parcel = TlUsageEvents.getParcel(currentData)
+                                val parcel = ParcelUsageStatsReader.getParcel(currentData)
                                 val bytes = parcel.marshall()
-                                val reader = TlUsageEvents(parcel)
+                                val reader = ParcelUsageStatsReader(parcel)
 
                                 NativeEventReader(reader, bytes, parcel)
                             } else null
@@ -266,7 +266,7 @@ class DiagnoseForegroundAppFragment : Fragment(), FragmentWithCustomTitle {
                                                 val positionBefore = native.parcel.dataPosition()
 
                                                 val result: ReadNextItemResult = try {
-                                                    if (native.events.readNextItem()) ReadNextItemResult.NextItem
+                                                    if (native.events.loadNextEvent()) ReadNextItemResult.NextItem
                                                     else ReadNextItemResult.EndOfData
                                                 } catch (ex: Exception) {
                                                     ReadNextItemResult.Error(ex)
@@ -349,7 +349,7 @@ class DiagnoseForegroundAppFragment : Fragment(), FragmentWithCustomTitle {
         } else super.onActivityResult(requestCode, resultCode, data)
     }
 
-    internal class NativeEventReader(val events: TlUsageEvents, val bytes: ByteArray, val parcel: Parcel /* owned by TlUsageEvents */) {
+    internal class NativeEventReader(val events: ParcelUsageStatsReader, val bytes: ByteArray, val parcel: Parcel /* owned by TlUsageEvents */) {
         fun free() { events.free() }
     }
 

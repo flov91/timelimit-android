@@ -13,52 +13,33 @@
  * You should have received a copy of the GNU General Public License
  * along with this program. If not, see <https://www.gnu.org/licenses/>.
  */
-package io.timelimit.android.integration.platform.android.foregroundapp
+package io.timelimit.android.integration.platform.android.foregroundapp.usagestats
 
 import android.app.usage.UsageEvents
 import android.content.res.Configuration
+import android.os.Build
 import android.os.Parcel
+import java.lang.RuntimeException
 
 /**
  * This class is/should be a Parcel compatible clone of the UsageEvents
  * system class. This allows reading fields which the public API does not provide.
  */
-class TlUsageEvents (private val content: Parcel) {
+class ParcelUsageStatsReader (private val content: Parcel): UsageStatsReader {
     companion object {
-        const val MOVE_TO_FOREGROUND = 1
-        const val MOVE_TO_BACKGROUND = 2
-        // const val END_OF_DAY = 3
-        // const val CONTINUE_PREVIOUS_DAY = 4
-        const val CONFIGURATION_CHANGE = 5
-        // const val SYSTEM_INTERACTION = 6
-        // const val USER_INTERACTION = 7
-        const val SHORTCUT_INVOCATION = 8
-        const val CHOOSER_ACTION = 9
-        // const val NOTIFICATION_SEEN = 10
-        const val STANDBY_BUCKET_CHANGED = 11
-        const val NOTIFICATION_INTERRUPTION = 12
-        // const val SLICE_PINNED_PRIV = 13
-        // const val SLICE_PINNED = 14
-        // const val SCREEN_INTERACTIVE = 15
-        // const val SCREEN_NON_INTERACTIVE = 16
-        // const val KEYGUARD_SHOWN = 17
-        // const val KEYGUARD_HIDDEN = 18
-        // const val FOREGROUND_SERVICE_START = 19
-        // const val FOREGROUND_SERVICE_STOP = 20
-        // const val CONTINUING_FOREGROUND_SERVICE = 21
-        // const val ROLLOVER_FOREGROUND_SERVICE = 22
-        const val ACTIVITY_STOPPED = 23
-        // const val ACTIVITY_DESTROYED = 24
-        // const val FLUSH_TO_DISK = 25
-        // const val DEVICE_SHUTDOWN = 26
-        const val DEVICE_STARTUP = 27
-        // const val USER_UNLOCKED = 28
-        // const val USER_STOPPED = 29
-        const val LOCUS_ID_SET = 30
-        // const val APP_COMPONENT_USED = 31
-        const val DUMMY_STRING = "null"
+        private const val CONFIGURATION_CHANGE = 5
+        private const val SHORTCUT_INVOCATION = 8
+        private const val CHOOSER_ACTION = 9
+        private const val STANDBY_BUCKET_CHANGED = 11
+        private const val NOTIFICATION_INTERRUPTION = 12
+        private const val LOCUS_ID_SET = 30
+        private const val DUMMY_STRING = "null"
 
         fun getParcel(input: UsageEvents): Parcel {
+            if (Build.VERSION.SDK_INT > 32) {
+                throw UntestedSystemVersionException()
+            }
+
             val outerParcel = Parcel.obtain()
 
             val blob = try {
@@ -84,7 +65,9 @@ class TlUsageEvents (private val content: Parcel) {
             }
         }
 
-        fun fromUsageEvents(input: UsageEvents): TlUsageEvents = TlUsageEvents(getParcel(input))
+        fun fromUsageEvents(input: UsageEvents): ParcelUsageStatsReader = ParcelUsageStatsReader(
+            getParcel(input)
+        )
     }
 
     private var free = false
@@ -110,13 +93,13 @@ class TlUsageEvents (private val content: Parcel) {
     private var outputPackageName = DUMMY_STRING
     private var outputClassName = DUMMY_STRING
 
-    val timestamp get() = outputTimestamp
-    val eventType get() = outputEventType
-    val instanceId get() = outputInstanceId
-    val packageName get() = outputPackageName
-    val className get() = outputClassName
+    override val timestamp get() = outputTimestamp
+    override val eventType get() = outputEventType
+    override val instanceId get() = outputInstanceId
+    override val packageName get() = outputPackageName
+    override val className get() = outputClassName
 
-    fun readNextItem(): Boolean {
+    override fun loadNextEvent(): Boolean {
         if (free) return false
         if (strings == null) throw IllegalStateException()
 
@@ -163,11 +146,13 @@ class TlUsageEvents (private val content: Parcel) {
         return true
     }
 
-    fun free() {
+    override fun free() {
         if (!free) {
             content.recycle()
 
             free = true
         }
     }
+
+    class UntestedSystemVersionException: RuntimeException("untested system version for the Parcel implementation")
 }

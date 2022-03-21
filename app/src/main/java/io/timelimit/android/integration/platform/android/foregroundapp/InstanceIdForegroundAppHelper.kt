@@ -16,7 +16,6 @@
 package io.timelimit.android.integration.platform.android.foregroundapp
 
 import android.annotation.TargetApi
-import android.app.usage.UsageEvents
 import android.content.Context
 import android.os.Build
 import android.util.SparseArray
@@ -24,6 +23,8 @@ import androidx.core.util.size
 import io.timelimit.android.coroutines.executeAndWait
 import io.timelimit.android.integration.platform.ForegroundApp
 import io.timelimit.android.integration.platform.RuntimePermissionStatus
+import io.timelimit.android.integration.platform.android.foregroundapp.usagestats.DirectUsageStatsReader
+import io.timelimit.android.integration.platform.android.foregroundapp.usagestats.UsageStatsConstants
 
 @TargetApi(Build.VERSION_CODES.Q)
 class InstanceIdForegroundAppHelper(context: Context): UsageStatsForegroundAppHelper(context) {
@@ -35,16 +36,11 @@ class InstanceIdForegroundAppHelper(context: Context): UsageStatsForegroundAppHe
     private var lastQueryTime = 0L
     private var lastEventTimestamp = 0L
     private val apps = SparseArray<ForegroundApp>()
-    private val nativeEvent = UsageEvents.Event()
 
     override suspend fun getForegroundApps(
         queryInterval: Long,
         experimentalFlags: Long
     ): Set<ForegroundApp> {
-        if (Build.VERSION.SDK_INT > 32) {
-            throw InstanceIdException.UntestedSystemVersionException()
-        }
-
         if (getPermissionStatus() != RuntimePermissionStatus.Granted) {
             throw SecurityException()
         }
@@ -74,54 +70,27 @@ class InstanceIdForegroundAppHelper(context: Context): UsageStatsForegroundAppHe
             val queryEndTime = now + TOLERANCE
 
             usageStatsManager.queryEvents(queryStartTime, queryEndTime)?.let { nativeEvents ->
-                val events = TlUsageEvents.fromUsageEvents(nativeEvents)
+                val events = DirectUsageStatsReader(nativeEvents)
 
                 try {
                     var isFirstEvent = true
 
-                    while (true) {
-                        // loop condition with additional checks
-                        val didReadEvent = kotlin.run {
-                            val didReadNativeEvent = nativeEvents.getNextEvent(nativeEvent)
-                            val didReadTlEvent = events.readNextItem()
-
-                            if (didReadNativeEvent != didReadTlEvent) {
-                                throw InstanceIdException.NotMatchingData(
-                                    if (didReadTlEvent) "events got next event but nativeEvents not"
-                                    else "nativeEvents got next event but events not"
-                                )
-                            }
-
-                            didReadTlEvent // == didReadNativeEvent
-                        }
-
-                        if (!didReadEvent) break
-
+                    while (events.loadNextEvent()) {
                         // check the consistency
-                        kotlin.run {
-                            if (events.eventType != nativeEvent.eventType) {
-                                throw InstanceIdException.NotMatchingData("got different eventTypes: ${events.eventType} vs ${nativeEvent.eventType}")
-                            }
-
-                            if (events.timestamp != nativeEvent.timeStamp) {
-                                throw InstanceIdException.NotMatchingData("got different timestamps: ${events.timestamp} vs ${nativeEvent.timeStamp}")
-                            }
-
-                            if (events.timestamp < lastEventTimestamp && !isFirstEvent) {
-                                throw InstanceIdException.EventsNotSortedByTimestamp()
-                            }
+                        if (events.timestamp < lastEventTimestamp && !isFirstEvent) {
+                            throw InstanceIdException.EventsNotSortedByTimestamp()
                         }
 
                         // process the event
-                        if (events.eventType == TlUsageEvents.DEVICE_STARTUP) {
+                        if (events.eventType == UsageStatsConstants.DEVICE_STARTUP) {
                             apps.clear()
-                        } else if (events.eventType == TlUsageEvents.MOVE_TO_FOREGROUND) {
+                        } else if (events.eventType == UsageStatsConstants.MOVE_TO_FOREGROUND) {
                             val app = ForegroundApp(events.packageName, events.className)
 
                             apps.put(events.instanceId, app)
                         } else if (
-                            events.eventType == TlUsageEvents.MOVE_TO_BACKGROUND ||
-                            events.eventType == TlUsageEvents.ACTIVITY_STOPPED
+                            events.eventType == UsageStatsConstants.MOVE_TO_BACKGROUND ||
+                            events.eventType == UsageStatsConstants.ACTIVITY_STOPPED
                         ) {
                             apps.remove(events.instanceId)
                         }
@@ -132,9 +101,6 @@ class InstanceIdForegroundAppHelper(context: Context): UsageStatsForegroundAppHe
                     }
                 } finally {
                     events.free()
-
-                    // the nativeEvents have no free function; but they release their data when everything was read
-                    while (nativeEvents.getNextEvent(nativeEvent)) {/* consume all values */}
                 }
             }
 
@@ -153,8 +119,6 @@ class InstanceIdForegroundAppHelper(context: Context): UsageStatsForegroundAppHe
     }
 
     sealed class InstanceIdException(message: String): RuntimeException(message) {
-        class UntestedSystemVersionException: InstanceIdException("untested system version")
-        class NotMatchingData(detail: String): InstanceIdException("not matching data: $detail")
         class EventsNotSortedByTimestamp: InstanceIdException("events not sorted by timestamp")
     }
 }
