@@ -276,7 +276,7 @@ class DiagnoseForegroundAppFragment : Fragment(), FragmentWithCustomTitle {
                                                     if (it < positionBefore) native.bytes.size else it
                                                 }
 
-                                                writer.name("native")
+                                                writer.name("custom")
 
                                                 when (result) {
                                                     ReadNextItemResult.NextItem -> {
@@ -284,7 +284,7 @@ class DiagnoseForegroundAppFragment : Fragment(), FragmentWithCustomTitle {
 
                                                         writer.name("timestamp").value(native.events.timestamp)
                                                         writer.name("type").value(native.events.eventType)
-                                                        writer.name("instanceId").value(native.events.eventType)
+                                                        writer.name("instanceId").value(native.events.instanceId)
                                                         writer.name("packageName").value(native.events.packageName)
                                                         writer.name("className").value(native.events.className)
                                                         writer.name("binary").value(Base64.encodeToString(
