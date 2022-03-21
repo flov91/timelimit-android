@@ -25,7 +25,6 @@ import android.os.Parcel
  */
 class TlUsageEvents (private val content: Parcel) {
     companion object {
-        const val NONE = 0
         const val MOVE_TO_FOREGROUND = 1
         const val MOVE_TO_BACKGROUND = 2
         // const val END_OF_DAY = 3
@@ -57,7 +56,6 @@ class TlUsageEvents (private val content: Parcel) {
         // const val USER_STOPPED = 29
         const val LOCUS_ID_SET = 30
         // const val APP_COMPONENT_USED = 31
-        const val MAX_EVENT_TYPE = 31
         const val DUMMY_STRING = "null"
 
         fun getParcel(input: UsageEvents): Parcel {
@@ -130,10 +128,6 @@ class TlUsageEvents (private val content: Parcel) {
         val eventType = content.readInt()
         val timestamp = content.readLong()
 
-        if (eventType < NONE || eventType > MAX_EVENT_TYPE) {
-            throw UnknownEventTypeException()
-        }
-
         when (eventType) {
             CONFIGURATION_CHANGE -> {
                 val newConfiguration = Configuration.CREATOR.createFromParcel(content)
@@ -176,7 +170,4 @@ class TlUsageEvents (private val content: Parcel) {
             free = true
         }
     }
-
-    open class UsageException: RuntimeException()
-    class UnknownEventTypeException: UsageException()
 }
