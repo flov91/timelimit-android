@@ -22,6 +22,8 @@ import android.content.Context
 import android.content.Intent
 import android.os.Build
 import android.os.Bundle
+import android.os.Parcel
+import android.util.Base64
 import android.util.JsonWriter
 import android.util.Log
 import android.view.LayoutInflater
@@ -178,8 +180,15 @@ class DiagnoseForegroundAppFragment : Fragment(), FragmentWithCustomTitle {
                         val now = System.currentTimeMillis()
                         val service = context.getSystemService(Context.USAGE_STATS_SERVICE) as UsageStatsManager
                         val currentData = service.queryEvents(now - InstanceIdForegroundAppHelper.START_QUERY_INTERVAL, now)
-                        val parcel = TlUsageEvents.getParcel(currentData)
-                        val bytes = try { parcel.marshall() } finally { parcel.recycle() }
+
+                        val bytes = try {
+                            val parcel = TlUsageEvents.getParcel(currentData)
+                            try { parcel.marshall() } finally { parcel.recycle() }
+                        } finally {
+                            val event = UsageEvents.Event()
+
+                            while (currentData.getNextEvent(event)) {/* consume all items */}
+                        }
 
                         context.contentResolver.openOutputStream(data!!.data!!)!!.use { stream ->
                             stream.write(bytes)
@@ -212,26 +221,115 @@ class DiagnoseForegroundAppFragment : Fragment(), FragmentWithCustomTitle {
                         val now = System.currentTimeMillis()
                         val service = context.getSystemService(Context.USAGE_STATS_SERVICE) as UsageStatsManager
                         val currentData = service.queryEvents(now - InstanceIdForegroundAppHelper.START_QUERY_INTERVAL, now)
+                        val event = UsageEvents.Event()
 
-                        JsonWriter(BufferedWriter(OutputStreamWriter(context.contentResolver.openOutputStream(data!!.data!!)!!))).use { writer ->
-                            writer.setIndent("  ")
+                        try {
+                            var nativeData = if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.Q) {
+                                val parcel = TlUsageEvents.getParcel(currentData)
+                                val bytes = parcel.marshall()
+                                val reader = TlUsageEvents(parcel)
 
-                            writer.beginArray()
+                                NativeEventReader(reader, bytes, parcel)
+                            } else null
 
-                            val event = UsageEvents.Event()
+                            try {
+                                JsonWriter(
+                                    BufferedWriter(
+                                        OutputStreamWriter(
+                                            context.contentResolver.openOutputStream(
+                                                data!!.data!!
+                                            )!!
+                                        )
+                                    )
+                                ).use { writer ->
+                                    writer.setIndent("  ")
+                                    writer.beginObject()
 
-                            while (currentData.getNextEvent(event)) {
-                                writer.beginObject()
+                                    nativeData?.let { native ->
+                                        writer.name("header").value(Base64.encodeToString(
+                                            native.bytes, 0, native.parcel.dataPosition(), Base64.NO_WRAP or Base64.NO_PADDING
+                                        ))
+                                    }
 
-                                writer.name("timestamp").value(event.timeStamp)
-                                writer.name("type").value(event.eventType)
-                                writer.name("packageName").value(event.packageName)
-                                writer.name("className").value(event.className)
+                                    writer.name("events").also {
+                                        writer.beginArray()
 
-                                writer.endObject()
+                                        while (currentData.getNextEvent(event)) {
+                                            writer.beginObject()
+
+                                            writer.name("timestamp").value(event.timeStamp)
+                                            writer.name("type").value(event.eventType)
+                                            writer.name("packageName").value(event.packageName)
+                                            writer.name("className").value(event.className)
+
+                                            nativeData?.let { native ->
+                                                val positionBefore = native.parcel.dataPosition()
+
+                                                val result: ReadNextItemResult = try {
+                                                    if (native.events.readNextItem()) ReadNextItemResult.NextItem
+                                                    else ReadNextItemResult.EndOfData
+                                                } catch (ex: Exception) {
+                                                    ReadNextItemResult.Error(ex)
+                                                }
+
+                                                val positionAfter = native.parcel.dataPosition().let {
+                                                    if (it < positionBefore) native.bytes.size else it
+                                                }
+
+                                                writer.name("native")
+
+                                                when (result) {
+                                                    ReadNextItemResult.NextItem -> {
+                                                        writer.beginObject()
+
+                                                        writer.name("timestamp").value(native.events.timestamp)
+                                                        writer.name("type").value(native.events.eventType)
+                                                        writer.name("instanceId").value(native.events.eventType)
+                                                        writer.name("packageName").value(native.events.packageName)
+                                                        writer.name("className").value(native.events.className)
+                                                        writer.name("binary").value(Base64.encodeToString(
+                                                            native.bytes, positionBefore, positionAfter - positionBefore,
+                                                            Base64.NO_WRAP or Base64.NO_PADDING
+                                                        ))
+
+                                                        writer.endObject()
+                                                    }
+                                                    ReadNextItemResult.EndOfData -> {
+                                                        writer.value("end of data reached")
+
+                                                        native.free()
+                                                        nativeData = null
+                                                    }
+                                                    is ReadNextItemResult.Error -> {
+                                                        writer.beginObject()
+
+                                                        writer.name("error message").value("${result.err}")
+                                                        writer.name("remaining binary data").value(Base64.encodeToString(
+                                                            native.bytes, positionBefore, native.bytes.size - positionBefore,
+                                                            Base64.NO_WRAP or Base64.NO_PADDING
+                                                        ))
+
+                                                        writer.endObject()
+
+                                                        native.free()
+                                                        nativeData = null
+                                                    }
+                                                }
+                                            }
+
+                                            writer.endObject()
+                                        }
+
+                                        writer.endArray()
+                                    }
+
+                                    writer.endObject()
+                                }
+                            } finally {
+                                nativeData?.free()
                             }
-
-                            writer.endArray()
+                        } finally {
+                            while (currentData.getNextEvent(event)) {/* consume all items */}
                         }
 
                         Threads.mainThreadHandler.post {
@@ -249,5 +347,15 @@ class DiagnoseForegroundAppFragment : Fragment(), FragmentWithCustomTitle {
                 }.start()
             }
         } else super.onActivityResult(requestCode, resultCode, data)
+    }
+
+    internal class NativeEventReader(val events: TlUsageEvents, val bytes: ByteArray, val parcel: Parcel /* owned by TlUsageEvents */) {
+        fun free() { events.free() }
+    }
+
+    sealed class ReadNextItemResult {
+        object EndOfData: ReadNextItemResult()
+        object NextItem: ReadNextItemResult()
+        class Error(val err: Exception): ReadNextItemResult()
     }
 }
