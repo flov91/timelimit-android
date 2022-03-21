@@ -43,7 +43,7 @@ class OverlayUtil(private var application: Application) {
             return
         }
 
-        if (getOverlayPermissionStatus() == RuntimePermissionStatus.NotGranted) {
+        if (getOverlayPermissionStatus(false) == RuntimePermissionStatus.NotGranted) {
             return
         }
 
@@ -89,15 +89,15 @@ class OverlayUtil(private var application: Application) {
 
     fun isOverlayShown() = currentView?.root?.isShown ?: false
 
-    fun getOverlayPermissionStatus() = if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.M)
-        if (checkAppOp() || Settings.canDrawOverlays(application))
+    fun getOverlayPermissionStatus(strictChecking: Boolean) = if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.M)
+        if (checkAppOp(strictChecking) || Settings.canDrawOverlays(application))
             RuntimePermissionStatus.Granted
         else
             RuntimePermissionStatus.NotGranted
     else
         RuntimePermissionStatus.NotRequired
 
-    private fun checkAppOp(): Boolean {
+    private fun checkAppOp(strictChecking: Boolean): Boolean {
         if (systemOverlayOp == null) return false
 
         val mode1 = AppOps.getOpMode(systemOverlayOp, appsOpsManager, application)
@@ -108,6 +108,7 @@ class OverlayUtil(private var application: Application) {
 
         val mode2 = appsOpsManager.checkOpNoThrow(systemOverlayOp, Process.myUid(), application.packageName)
 
-        return mode2 == AppOpsManager.MODE_ALLOWED || mode2 == AppOpsManager.MODE_IGNORED
+        return if (strictChecking) mode2 == AppOpsManager.MODE_ALLOWED
+        else mode2 == AppOpsManager.MODE_ALLOWED || mode2 == AppOpsManager.MODE_IGNORED
     }
 }
