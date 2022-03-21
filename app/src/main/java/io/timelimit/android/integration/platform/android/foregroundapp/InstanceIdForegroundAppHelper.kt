@@ -75,58 +75,66 @@ class InstanceIdForegroundAppHelper(context: Context): UsageStatsForegroundAppHe
 
             usageStatsManager.queryEvents(queryStartTime, queryEndTime)?.let { nativeEvents ->
                 val events = TlUsageEvents.fromUsageEvents(nativeEvents)
-                var isFirstEvent = true
 
-                while (true) {
-                    // loop condition with additional checks
-                    val didReadEvent = kotlin.run {
-                        val didReadNativeEvent = nativeEvents.getNextEvent(nativeEvent)
-                        val didReadTlEvent = events.readNextItem()
+                try {
+                    var isFirstEvent = true
 
-                        if (didReadNativeEvent != didReadTlEvent) {
-                            throw InstanceIdException.NotMatchingData(
-                                if (didReadTlEvent) "events got next event but nativeEvents not"
-                                else "nativeEvents got next event but events not"
-                            )
+                    while (true) {
+                        // loop condition with additional checks
+                        val didReadEvent = kotlin.run {
+                            val didReadNativeEvent = nativeEvents.getNextEvent(nativeEvent)
+                            val didReadTlEvent = events.readNextItem()
+
+                            if (didReadNativeEvent != didReadTlEvent) {
+                                throw InstanceIdException.NotMatchingData(
+                                    if (didReadTlEvent) "events got next event but nativeEvents not"
+                                    else "nativeEvents got next event but events not"
+                                )
+                            }
+
+                            didReadTlEvent // == didReadNativeEvent
                         }
 
-                        didReadTlEvent // == didReadNativeEvent
+                        if (!didReadEvent) break
+
+                        // check the consistency
+                        kotlin.run {
+                            if (events.eventType != nativeEvent.eventType) {
+                                throw InstanceIdException.NotMatchingData("got different eventTypes: ${events.eventType} vs ${nativeEvent.eventType}")
+                            }
+
+                            if (events.timestamp != nativeEvent.timeStamp) {
+                                throw InstanceIdException.NotMatchingData("got different timestamps: ${events.timestamp} vs ${nativeEvent.timeStamp}")
+                            }
+
+                            if (events.timestamp < lastEventTimestamp && !isFirstEvent) {
+                                throw InstanceIdException.EventsNotSortedByTimestamp()
+                            }
+                        }
+
+                        // process the event
+                        if (events.eventType == TlUsageEvents.DEVICE_STARTUP) {
+                            apps.clear()
+                        } else if (events.eventType == TlUsageEvents.MOVE_TO_FOREGROUND) {
+                            val app = ForegroundApp(events.packageName, events.className)
+
+                            apps.put(events.instanceId, app)
+                        } else if (
+                            events.eventType == TlUsageEvents.MOVE_TO_BACKGROUND ||
+                            events.eventType == TlUsageEvents.ACTIVITY_STOPPED
+                        ) {
+                            apps.remove(events.instanceId)
+                        }
+
+                        // save values for the next iteration and the next query
+                        isFirstEvent = false
+                        lastEventTimestamp = events.timestamp
                     }
+                } finally {
+                    events.free()
 
-                    if (!didReadEvent) break
-
-                    // check the consistency
-                    kotlin.run {
-                        if (events.eventType != nativeEvent.eventType) {
-                            throw InstanceIdException.NotMatchingData("got different eventTypes: ${events.eventType} vs ${nativeEvent.eventType}")
-                        }
-
-                        if (events.timestamp != nativeEvent.timeStamp) {
-                            throw InstanceIdException.NotMatchingData("got different timestamps: ${events.timestamp} vs ${nativeEvent.timeStamp}")
-                        }
-
-                        if (events.timestamp < lastEventTimestamp && !isFirstEvent) {
-                            throw InstanceIdException.EventsNotSortedByTimestamp()
-                        }
-                    }
-
-                    // process the event
-                    if (events.eventType == TlUsageEvents.DEVICE_STARTUP) {
-                        apps.clear()
-                    } else if (events.eventType == TlUsageEvents.MOVE_TO_FOREGROUND) {
-                        val app = ForegroundApp(events.packageName, events.className)
-
-                        apps.put(events.instanceId, app)
-                    } else if (
-                        events.eventType == TlUsageEvents.MOVE_TO_BACKGROUND ||
-                        events.eventType == TlUsageEvents.ACTIVITY_STOPPED
-                    ) {
-                        apps.remove(events.instanceId)
-                    }
-
-                    // save values for the next iteration and the next query
-                    isFirstEvent = false
-                    lastEventTimestamp = events.timestamp
+                    // the nativeEvents have no free function; but they release their data when everything was read
+                    while (nativeEvents.getNextEvent(nativeEvent)) {/* consume all values */}
                 }
             }
 
