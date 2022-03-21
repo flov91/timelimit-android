@@ -66,7 +66,7 @@ class ChildAppsModel(application: Application): AndroidViewModel(application) {
             childCategoryAppsLive.switchMap { categoryApps ->
                 // only show items that are not device specific
                 val categoryAppByPackageName = categoryApps
-                    .filter { it.appSpecifier.deviceId == null }
+                    .filter { it.appSpecifier.activityName == null && it.appSpecifier.deviceId == null }
                     .associateBy { it.appSpecifier.packageName }
 
                 appFilterLive.ignoreUnchanged().switchMap { appFilter ->

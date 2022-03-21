@@ -166,7 +166,7 @@ class AddCategoryAppsFragment : DialogFragment() {
         binding.cancelButton.setOnClickListener { dismiss() }
 
         binding.selectAllButton.setOnClickListener {
-            adapter.selectedApps = adapter.selectedApps + (adapter.data?.map { it.packageName }?.toSet() ?: emptySet())
+            adapter.selectedApps = adapter.selectedApps + (adapter.data.map { it.packageName }.toSet())
         }
 
         adapter.listener = object: AddAppAdapterListener {

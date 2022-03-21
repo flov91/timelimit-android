@@ -39,11 +39,11 @@ data class AppSpecifier(val packageName: String, val activityName: String?, val 
     }
 
     init {
-        if (packageName.indexOf(':') != -1 || packageName.indexOf(':') != -1) {
+        if (packageName.indexOf(':') != -1 || packageName.indexOf('@') != -1) {
             throw InvalidValueException()
         }
 
-        if (activityName != null && activityName?.indexOf('@') != -1) {
+        if (activityName != null && activityName.indexOf('@') != -1) {
             throw InvalidValueException()
         }
     }
