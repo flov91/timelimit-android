@@ -521,7 +521,7 @@ class AndroidIntegration(context: Context): PlatformIntegration(maximumProtectio
             Build.VERSION.SDK_INT >= Build.VERSION_CODES.LOLLIPOP &&
             policyManager.isDeviceOwnerApp(context.packageName) &&
             (!BuildConfig.storeCompilant)
-        ) AndroidFeatures.getFeaturesAssumingDeviceOwnerGranted()
+        ) AndroidFeatures.getFeaturesAssumingDeviceOwnerGranted(context)
         else emptyList()
     }
 
