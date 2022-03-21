@@ -565,6 +565,9 @@
     <string name="diagnose_fga_title">Foreground-App-Detection</string>
     <string name="diagnose_fga_query_range">Requested time range</string>
     <string name="diagnose_fga_query_range_min">Minimum (Default)</string>
+    <string name="diagnose_fga_bin_export_btn">Export binary OS usage stats</string>
+    <string name="diagnose_fga_txt_export_btn">Export text OS usage stats</string>
+    <string name="diagnose_fga_export_toast_done">Export finished</string>
 
     <string name="diagnose_exf_title">Experimental flags</string>
     <string name="diagnose_exf_slb">Block Apps at system level</string>
