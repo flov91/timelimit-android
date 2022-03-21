@@ -1,5 +1,5 @@
 /*
- * TimeLimit Copyright <C> 2019 - 2021 Jonas Lochmann
+ * TimeLimit Copyright <C> 2019 - 2022 Jonas Lochmann
  *
  * This program is free software: you can redistribute it and/or modify
  * it under the terms of the GNU General Public License as published by
@@ -100,8 +100,14 @@ class OverlayUtil(private var application: Application) {
     private fun checkAppOp(): Boolean {
         if (systemOverlayOp == null) return false
 
-        val status = appsOpsManager.checkOpNoThrow(systemOverlayOp, Process.myUid(), application.packageName)
+        val mode1 = AppOps.getOpMode(systemOverlayOp, appsOpsManager, application)
 
-        return status == AppOpsManager.MODE_ALLOWED || status == AppOpsManager.MODE_IGNORED
+        if (mode1 != AppOps.Mode.Unknown) {
+            return mode1 == AppOps.Mode.Allowed
+        }
+
+        val mode2 = appsOpsManager.checkOpNoThrow(systemOverlayOp, Process.myUid(), application.packageName)
+
+        return mode2 == AppOpsManager.MODE_ALLOWED || mode2 == AppOpsManager.MODE_IGNORED
     }
 }
