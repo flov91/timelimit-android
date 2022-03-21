@@ -1,5 +1,1 @@
-- show more details when blocking background audio playbacks
-- add option to show the exit reasons provided by the system
-- text changes
-- new optional method for detecting the running App
-- new behaviour after manipulations when the device owner permissions was granted
+- option to assign one App for the same user to different categories at different devices

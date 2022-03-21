@@ -1,5 +1,1 @@
-- Anzeigen von mehr Details beim Blockieren von Hintergrundwiedergaben
-- Option zum Anzeigen der vom System gemeldeten Exit-Reasons hinzugefügt
-- Textänderungen
-- manuell aktivierbare neue Methode zum Erkennen der laufenden App hinzugefügt
-- neues Verhalten bei Manipulationen, wenn die Geräte-Besitzer-Berechtigung vorliegt
+- Möglichkeit, Apps für einen Benutzer auf verschiedenen Geräten zu verschiedenen Kategorien zuzuordnen
