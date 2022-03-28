@@ -1,5 +1,5 @@
 /*
- * TimeLimit Copyright <C> 2019 - 2020 Jonas Lochmann
+ * TimeLimit Copyright <C> 2019 - 2022 Jonas Lochmann
  *
  * This program is free software: you can redistribute it and/or modify
  * it under the terms of the GNU General Public License as published by
@@ -59,11 +59,7 @@ object AppAffectedByPrimaryDeviceUtil {
                     isSystemImageApp = logic.platformIntegration.isSystemImageApp(currentApp.packageName)
             )
 
-            if (!(handling is AppBaseHandling.UseCategories)) {
-                return false
-            }
-
-            return handling.categoryIds.find { categoryId ->
+            return handling.getCategories(AppBaseHandling.GetCategoriesPurpose.Blocking).find { categoryId ->
                 val category = deviceAndUserRelatedData.userRelatedData.categoryById[categoryId]!!
 
                 val hasBlockedTimeAreas = !category.category.blockedMinutesInWeek.dataNotToModify.isEmpty

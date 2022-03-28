@@ -25,21 +25,76 @@ import io.timelimit.android.logic.BlockingLevel
 import io.timelimit.android.logic.DummyApps
 
 sealed class AppBaseHandling {
-    object Idle: AppBaseHandling()
-    object PauseLogic: AppBaseHandling()
-    object Whitelist: AppBaseHandling()
-    object TemporarilyAllowed: AppBaseHandling()
-    object BlockDueToNoCategory: AppBaseHandling()
+    abstract val level: BlockingLevel
+    abstract val needsNetworkId: Boolean
+    abstract fun getCategories(purpose: GetCategoriesPurpose): Iterable<String>
+
+    object Idle: AppBaseHandling() {
+        override val level = BlockingLevel.App
+        override val needsNetworkId = false
+        override fun getCategories(purpose: GetCategoriesPurpose): Iterable<String> = emptyList()
+    }
+
+    object PauseLogic: AppBaseHandling() {
+        override val level = BlockingLevel.App
+        override val needsNetworkId = false
+        override fun getCategories(purpose: GetCategoriesPurpose): Iterable<String> = emptyList()
+    }
+
+    sealed class Whitelist: AppBaseHandling() {
+        override val needsNetworkId = false
+        override fun getCategories(purpose: GetCategoriesPurpose): Iterable<String> = emptyList()
+
+        object App: Whitelist() {
+            override val level = BlockingLevel.App
+        }
+
+        object Activity: Whitelist() {
+            override val level = BlockingLevel.Activity
+        }
+    }
+
+    object TemporarilyAllowed: AppBaseHandling() {
+        override val level = BlockingLevel.App
+        override val needsNetworkId = false
+        override fun getCategories(purpose: GetCategoriesPurpose): Iterable<String> = emptyList()
+    }
+
+    object BlockDueToNoCategory: AppBaseHandling() {
+        override val level = BlockingLevel.App
+        override val needsNetworkId = false
+        override fun getCategories(purpose: GetCategoriesPurpose): Iterable<String> = emptyList()
+    }
+
+    data class SanctionCountEverything(val categoryIds: Set<String>): AppBaseHandling() {
+        override val level = BlockingLevel.App
+        override val needsNetworkId = false
+
+        override fun getCategories(purpose: GetCategoriesPurpose): Iterable<String> = when (purpose) {
+            GetCategoriesPurpose.ShowingInStatusNotification -> emptyList()
+            GetCategoriesPurpose.DelayedSessionDurationCounting -> categoryIds
+            GetCategoriesPurpose.UsageCounting -> categoryIds
+            GetCategoriesPurpose.Blocking -> emptyList()
+        }
+    }
+
     data class UseCategories(
-            val categoryIds: Set<String>,
-            val shouldCount: Boolean,
-            val level: BlockingLevel,
-            val needsNetworkId: Boolean
+        val categoryIds: Set<String>,
+        val shouldCount: Boolean,
+        override val level: BlockingLevel,
+        override val needsNetworkId: Boolean
     ): AppBaseHandling() {
         init {
             if (categoryIds.isEmpty()) {
                 throw IllegalStateException()
             }
+        }
+
+        override fun getCategories(purpose: GetCategoriesPurpose): Iterable<String> = when (purpose) {
+            GetCategoriesPurpose.ShowingInStatusNotification -> categoryIds
+            GetCategoriesPurpose.DelayedSessionDurationCounting -> categoryIds
+            GetCategoriesPurpose.UsageCounting -> if (shouldCount) categoryIds else emptyList()
+            GetCategoriesPurpose.Blocking -> categoryIds
         }
     }
 
@@ -63,11 +118,14 @@ sealed class AppBaseHandling {
                             AndroidIntegrationApps.IgnoredAppHandling.Ignore -> true
                             AndroidIntegrationApps.IgnoredAppHandling.IgnoreOnStoreOtherwiseWhitelistAndDontDisable -> BuildConfig.storeCompilant
                         }
-                    }) ||
-                    (foregroundAppPackageName != null && foregroundAppActivityName != null &&
-                            AndroidIntegrationApps.shouldIgnoreActivity(foregroundAppPackageName, foregroundAppActivityName))
+                    })
             ) {
-                return Whitelist
+                return Whitelist.App
+            } else if (
+                foregroundAppPackageName != null && foregroundAppActivityName != null &&
+                AndroidIntegrationApps.shouldIgnoreActivity(foregroundAppPackageName, foregroundAppActivityName)
+            ) {
+                return Whitelist.Activity
             } else if (foregroundAppPackageName != null && deviceRelatedData.temporarilyAllowedApps.contains(foregroundAppPackageName)) {
                 return TemporarilyAllowed
             } else if (foregroundAppPackageName != null) {
@@ -125,18 +183,21 @@ sealed class AppBaseHandling {
             }
         }
 
-        fun getCategoriesForCounting(items: List<AppBaseHandling>): Set<String> {
+        fun getCategories(items: List<AppBaseHandling>, purpose: GetCategoriesPurpose): Set<String> {
             val result = mutableSetOf<String>()
 
             items.forEach { item ->
-                if (item is UseCategories && item.shouldCount) {
-                    result.addAll(item.categoryIds)
-                }
+                result.addAll(item.getCategories(purpose))
             }
 
             return result
         }
     }
-}
 
-fun AppBaseHandling.needsNetworkId(): Boolean = if (this is AppBaseHandling.UseCategories) this.needsNetworkId else false
+    enum class GetCategoriesPurpose {
+        ShowingInStatusNotification,
+        DelayedSessionDurationCounting,
+        UsageCounting,
+        Blocking
+    }
+}

@@ -1,5 +1,5 @@
 /*
- * TimeLimit Copyright <C> 2019 - 2021 Jonas Lochmann
+ * TimeLimit Copyright <C> 2019 - 2022 Jonas Lochmann
  *
  * This program is free software: you can redistribute it and/or modify
  * it under the terms of the GNU General Public License as published by
@@ -168,12 +168,14 @@ class NotificationListener: NotificationListenerService() {
                     isSystemImageApp = isSystemImageApp
             )
 
+            val blockCategories = appHandling.getCategories(AppBaseHandling.GetCategoriesPurpose.Blocking)
+
             if (appHandling is AppBaseHandling.BlockDueToNoCategory && !isSystemImageApp) {
                 ShouldBlockNotificationResult.Yes(
                     reason = BlockingReason.NotPartOfAnCategory,
                     delay = 0
                 )
-            } else if (appHandling is AppBaseHandling.UseCategories) {
+            } else if (blockCategories.iterator().hasNext()) {
                 val time = RealTime.newInstance()
                 val battery = appLogic.platformIntegration.getBatteryStatus()
                 val networkId = if (appHandling.needsNetworkId) appLogic.platformIntegration.getCurrentNetworkId() else null
@@ -181,7 +183,7 @@ class NotificationListener: NotificationListenerService() {
 
                 appLogic.realTimeLogic.getRealTime(time)
 
-                val categoryHandlings = appHandling.categoryIds.map { categoryId ->
+                val categoryHandlings = blockCategories.map { categoryId ->
                     val categoryRelatedData = deviceAndUserRelatedData.userRelatedData.categoryById[categoryId]!!
 
                     CategoryItselfHandling.calculate(
