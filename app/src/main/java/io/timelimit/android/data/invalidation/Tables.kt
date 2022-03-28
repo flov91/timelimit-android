@@ -1,5 +1,5 @@
 /*
- * TimeLimit Copyright <C> 2019 - 2020 Jonas Lochmann
+ * TimeLimit Copyright <C> 2019 - 2022 Jonas Lochmann
  *
  * This program is free software: you can redistribute it and/or modify
  * it under the terms of the GNU General Public License as published by
@@ -33,7 +33,8 @@ enum class Table {
     User,
     UserKey,
     UserLimitLoginCategory,
-    CategoryNetworkId
+    CategoryNetworkId,
+    CategoryTimeWarning
 }
 
 object TableNames {
@@ -54,6 +55,7 @@ object TableNames {
     const val USER_KEY = "user_key"
     const val USER_LIMIT_LOGIN_CATEGORY = "user_limit_login_category"
     const val CATEGORY_NETWORK_ID = "category_network_id"
+    const val CATEGORY_TIME_WARNING = "category_time_warning"
 }
 
 object TableUtil {
@@ -75,6 +77,7 @@ object TableUtil {
         Table.UserKey -> TableNames.USER_KEY
         Table.UserLimitLoginCategory -> TableNames.USER_LIMIT_LOGIN_CATEGORY
         Table.CategoryNetworkId -> TableNames.CATEGORY_NETWORK_ID
+        Table.CategoryTimeWarning -> TableNames.CATEGORY_TIME_WARNING
     }
 
     fun toEnum(value: String): Table = when (value) {
@@ -95,6 +98,7 @@ object TableUtil {
         TableNames.USER_KEY -> Table.UserKey
         TableNames.USER_LIMIT_LOGIN_CATEGORY -> Table.UserLimitLoginCategory
         TableNames.CATEGORY_NETWORK_ID -> Table.CategoryNetworkId
+        TableNames.CATEGORY_TIME_WARNING -> Table.CategoryTimeWarning
         else -> throw IllegalArgumentException()
     }
 }

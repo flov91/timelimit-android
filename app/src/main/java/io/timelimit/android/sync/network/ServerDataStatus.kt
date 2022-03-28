@@ -459,7 +459,8 @@ data class ServerUpdatedCategoryBaseData(
         val networks: List<ServerCategoryNetworkId>,
         val disableLimitsUntil: Long,
         val flags: Long,
-        val blockNotificationDelay: Long
+        val blockNotificationDelay: Long,
+        val additionalTimeWarnings: Set<Int>
 ) {
     companion object {
         private const val CATEGORY_ID = "categoryId"
@@ -481,6 +482,7 @@ data class ServerUpdatedCategoryBaseData(
         private const val DISABLE_LIMITS_UNTIL = "dlu"
         private const val FLAGS = "flags"
         private const val BLOCK_NOTIFICATION_DELAY = "blockNotificationDelay"
+        private const val ADDITIONAL_TIME_WARNINGS = "atw"
 
         fun parse(reader: JsonReader): ServerUpdatedCategoryBaseData {
             var categoryId: String? = null
@@ -503,6 +505,7 @@ data class ServerUpdatedCategoryBaseData(
             var disableLimitsUntil = 0L
             var flags = 0L
             var blockNotificationDelay = 0L
+            var additionalTimeWarnings = emptySet<Int>()
 
             reader.beginObject()
             while (reader.hasNext()) {
@@ -526,31 +529,41 @@ data class ServerUpdatedCategoryBaseData(
                     DISABLE_LIMITS_UNTIL -> disableLimitsUntil = reader.nextLong()
                     FLAGS -> flags = reader.nextLong()
                     BLOCK_NOTIFICATION_DELAY -> blockNotificationDelay = reader.nextLong()
+                    ADDITIONAL_TIME_WARNINGS -> additionalTimeWarnings = mutableSetOf<Int>().also { result ->
+                        reader.beginArray()
+
+                        while (reader.hasNext()) {
+                            result.add(reader.nextInt())
+                        }
+
+                        reader.endArray()
+                    }
                     else -> reader.skipValue()
                 }
             }
             reader.endObject()
 
             return ServerUpdatedCategoryBaseData(
-                    categoryId = categoryId!!,
-                    childId = childId!!,
-                    title = title!!,
-                    blockedMinutesInWeek = blockedMinutesInWeek!!,
-                    extraTimeInMillis = extraTimeInMillis!!,
-                    extraTimeDay = extraTimeDay,
-                    temporarilyBlocked = temporarilyBlocked!!,
-                    temporarilyBlockedEndTime = temporarilyBlockedEndTime,
-                    baseDataVersion = baseDataVersion!!,
-                    parentCategoryId = parentCategoryId!!,
-                    blockAllNotifications = blockAllNotifications,
-                    timeWarnings = timeWarnings,
-                    minBatteryLevelCharging = minBatteryLevelCharging,
-                    minBatteryLevelMobile = minBatteryLevelMobile,
-                    sort = sort,
-                    networks = networks,
-                    disableLimitsUntil = disableLimitsUntil,
-                    flags = flags,
-                    blockNotificationDelay = blockNotificationDelay
+                categoryId = categoryId!!,
+                childId = childId!!,
+                title = title!!,
+                blockedMinutesInWeek = blockedMinutesInWeek!!,
+                extraTimeInMillis = extraTimeInMillis!!,
+                extraTimeDay = extraTimeDay,
+                temporarilyBlocked = temporarilyBlocked!!,
+                temporarilyBlockedEndTime = temporarilyBlockedEndTime,
+                baseDataVersion = baseDataVersion!!,
+                parentCategoryId = parentCategoryId!!,
+                blockAllNotifications = blockAllNotifications,
+                timeWarnings = timeWarnings,
+                minBatteryLevelCharging = minBatteryLevelCharging,
+                minBatteryLevelMobile = minBatteryLevelMobile,
+                sort = sort,
+                networks = networks,
+                disableLimitsUntil = disableLimitsUntil,
+                flags = flags,
+                blockNotificationDelay = blockNotificationDelay,
+                additionalTimeWarnings = additionalTimeWarnings
             )
         }
 

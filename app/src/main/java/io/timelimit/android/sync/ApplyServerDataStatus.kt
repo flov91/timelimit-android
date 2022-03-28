@@ -387,6 +387,20 @@ object ApplyServerDataStatus {
                                     }
                             )
                         }
+
+                        // apply time warnings
+                        database.timeWarning().deleteByCategoryIdSync(newCategory.categoryId)
+
+                        if (newCategory.additionalTimeWarnings.isNotEmpty()) {
+                            database.timeWarning().insertItemsSync(
+                                newCategory.additionalTimeWarnings.map { minutes ->
+                                    CategoryTimeWarning(
+                                        categoryId = newCategory.categoryId,
+                                        minutes = minutes
+                                    )
+                                }
+                            )
+                        }
                     }
                 }
             }

@@ -1123,6 +1123,7 @@
 
     <string name="notification_channel_time_warning_title">Zeitwarnungen</string>
     <string name="notification_channel_time_warning_text">Benachrichtigungen für Kinder, wenn nur noch wenig Zeit übrig ist</string>
+    <string name="time_warning_custom_add">Zeitwarnung hinzufügen</string>
 
     <string name="notification_channel_premium_expires_title">Vollversionablauf</string>
     <string name="notification_channel_premium_expires_text">Benachrichtigungen, wenn die Vollversion bald abläuft</string>

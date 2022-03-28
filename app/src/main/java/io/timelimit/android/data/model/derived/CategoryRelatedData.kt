@@ -1,5 +1,5 @@
 /*
- * TimeLimit Copyright <C> 2019 - 2020 Jonas Lochmann
+ * TimeLimit Copyright <C> 2019 - 2022 Jonas Lochmann
  *
  * This program is free software: you can redistribute it and/or modify
  * it under the terms of the GNU General Public License as published by
@@ -25,7 +25,8 @@ data class CategoryRelatedData(
         val usedTimes: List<UsedTimeItem>,
         val durations: List<SessionDuration>,
         val networks: List<CategoryNetworkId>,
-        val limitLoginCategories: List<UserLimitLoginCategory>
+        val limitLoginCategories: List<UserLimitLoginCategory>,
+        val additionalTimeWarnings: List<CategoryTimeWarning>
 ) {
     companion object {
         fun load(category: Category, database: Database): CategoryRelatedData = database.runInUnobservedTransaction {
@@ -34,6 +35,7 @@ data class CategoryRelatedData(
             val durations = database.sessionDuration().getSessionDurationItemsByCategoryIdSync(category.id)
             val networks = database.categoryNetworkId().getByCategoryIdSync(category.id)
             val limitLoginCategories = database.userLimitLoginCategoryDao().getByCategoryIdSync(category.id)
+            val additionalTimeWarnings = database.timeWarning().getItemsByCategoryIdSync(category.id)
 
             CategoryRelatedData(
                     category = category,
@@ -41,8 +43,21 @@ data class CategoryRelatedData(
                     usedTimes = usedTimes,
                     durations = durations,
                     networks = networks,
-                    limitLoginCategories = limitLoginCategories
+                    limitLoginCategories = limitLoginCategories,
+                    additionalTimeWarnings = additionalTimeWarnings
             )
+        }
+    }
+
+    val allTimeWarningMinutes: Set<Int> by lazy {
+        mutableSetOf<Int>().also { result ->
+            CategoryTimeWarnings.durationInMinutesToBitIndex.entries.forEach { (durationInMinutes, bitIndex) ->
+                if (category.timeWarnings and (1 shl bitIndex) != 0) {
+                    result.add(durationInMinutes)
+                }
+            }
+
+            additionalTimeWarnings.forEach { result.add(it.minutes) }
         }
     }
 
@@ -53,6 +68,7 @@ data class CategoryRelatedData(
             updateDurations: Boolean,
             updateNetworks: Boolean,
             updateLimitLoginCategories: Boolean,
+            updateTimeWarnings: Boolean,
             database: Database
     ): CategoryRelatedData = database.runInUnobservedTransaction {
         if (category.id != this.category.id) {
@@ -64,10 +80,12 @@ data class CategoryRelatedData(
         val durations = if (updateDurations) database.sessionDuration().getSessionDurationItemsByCategoryIdSync(category.id) else durations
         val networks = if (updateNetworks) database.categoryNetworkId().getByCategoryIdSync(category.id) else networks
         val limitLoginCategories = if (updateLimitLoginCategories) database.userLimitLoginCategoryDao().getByCategoryIdSync(category.id) else limitLoginCategories
+        val additionalTimeWarnings = if (updateTimeWarnings) database.timeWarning().getItemsByCategoryIdSync(category.id) else additionalTimeWarnings
 
         if (
                 category == this.category && rules == this.rules && usedTimes == this.usedTimes &&
-                durations == this.durations && networks == this.networks && limitLoginCategories == this.limitLoginCategories
+                durations == this.durations && networks == this.networks &&
+                limitLoginCategories == this.limitLoginCategories && additionalTimeWarnings == this.additionalTimeWarnings
         ) {
             this
         } else {
@@ -77,7 +95,8 @@ data class CategoryRelatedData(
                     usedTimes = usedTimes,
                     durations = durations,
                     networks = networks,
-                    limitLoginCategories = limitLoginCategories
+                    limitLoginCategories = limitLoginCategories,
+                    additionalTimeWarnings = additionalTimeWarnings
             )
         }
     }

@@ -726,16 +726,28 @@ data class UpdateCategoryTemporarilyBlockedAction(val categoryId: String, val bl
         writer.endObject()
     }
 }
-data class UpdateCategoryTimeWarningsAction(val categoryId: String, val enable: Boolean, val flags: Int): ParentAction() {
+data class UpdateCategoryTimeWarningsAction(
+    val categoryId: String,
+    val enable: Boolean,
+    val flags: Int,
+    val minutes: Int?
+): ParentAction() {
     companion object {
         const val TYPE_VALUE = "UPDATE_CATEGORY_TIME_WARNINGS"
         private const val CATEGORY_ID = "categoryId"
         private const val ENABLE = "enable"
         private const val FLAGS = "flags"
+        private const val MINUTES = "minutes"
     }
 
     init {
         IdGenerator.assertIdValid(categoryId)
+
+        if (minutes != null) {
+            if (minutes < CategoryTimeWarning.MIN || minutes > CategoryTimeWarning.MAX) {
+                throw IllegalArgumentException()
+            }
+        }
     }
 
     override fun serialize(writer: JsonWriter) {
@@ -745,6 +757,10 @@ data class UpdateCategoryTimeWarningsAction(val categoryId: String, val enable: 
         writer.name(CATEGORY_ID).value(categoryId)
         writer.name(ENABLE).value(enable)
         writer.name(FLAGS).value(flags)
+
+        if (minutes != null) {
+            writer.name(MINUTES).value(minutes)
+        }
 
         writer.endObject()
     }

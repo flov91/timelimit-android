@@ -1168,6 +1168,7 @@
 
     <string name="notification_channel_time_warning_title">Time warning</string>
     <string name="notification_channel_time_warning_text">Notification for childs if there is not much time remaining</string>
+    <string name="time_warning_custom_add">Add time warning</string>
 
     <string name="notification_channel_premium_expires_title">Premium version expires</string>
     <string name="notification_channel_premium_expires_text">Notification if the premium version expires shortly</string>

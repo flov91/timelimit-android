@@ -280,4 +280,10 @@ object DatabaseMigrations {
             // nothing to do, there was just a new config item type added
         }
     }
+
+    val MIGRATE_TO_V40 = object: Migration(39, 40) {
+        override fun migrate(database: SupportSQLiteDatabase) {
+            database.execSQL("CREATE TABLE IF NOT EXISTS `category_time_warning` (`category_id` TEXT NOT NULL, `minutes` INTEGER NOT NULL, PRIMARY KEY(`category_id`, `minutes`), FOREIGN KEY(`category_id`) REFERENCES `category`(`id`) ON UPDATE CASCADE ON DELETE CASCADE )")
+        }
+    }
 }
