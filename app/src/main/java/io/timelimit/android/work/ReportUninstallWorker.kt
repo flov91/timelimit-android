@@ -1,5 +1,5 @@
 /*
- * TimeLimit Copyright <C> 2019 - 2021 Jonas Lochmann
+ * TimeLimit Copyright <C> 2019 - 2022 Jonas Lochmann
  *
  * This program is free software: you can redistribute it and/or modify
  * it under the terms of the GNU General Public License as published by
@@ -31,7 +31,7 @@ class ReportUninstallWorker(val context: Context, workerParameters: WorkerParame
         private const val DATA_CUSTOM_SERVER_URL = "customServerUrl"
         private const val LOG_TAG = "ReportUninstallWorker"
 
-        fun enqueue(deviceAuthToken: String, customServerUrl: String) {
+        fun enqueue(deviceAuthToken: String, customServerUrl: String, context: Context) {
             if (deviceAuthToken.isEmpty()) {
                 return
             }
@@ -40,7 +40,7 @@ class ReportUninstallWorker(val context: Context, workerParameters: WorkerParame
                 Log.d(LOG_TAG, "enqueue()")
             }
 
-            WorkManager.getInstance().enqueue(
+            WorkManager.getInstance(context).enqueue(
                 OneTimeWorkRequest.Builder(ReportUninstallWorker::class.java)
                     .setConstraints(
                         Constraints.Builder()

@@ -99,9 +99,9 @@ class BackgroundTaskLogic(val appLogic: AppLogic) {
 
         appLogic.database.config().getEnableBackgroundSyncAsync().ignoreUnchanged().observeForever {
             if (it) {
-                PeriodicSyncInBackgroundWorker.enable()
+                PeriodicSyncInBackgroundWorker.enable(appLogic.context)
             } else {
-                PeriodicSyncInBackgroundWorker.disable()
+                PeriodicSyncInBackgroundWorker.disable(appLogic.context)
             }
         }
 

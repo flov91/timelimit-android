@@ -1,5 +1,5 @@
 /*
- * TimeLimit Copyright <C> 2019 - 2021 Jonas Lochmann
+ * TimeLimit Copyright <C> 2019 - 2022 Jonas Lochmann
  *
  * This program is free software: you can redistribute it and/or modify
  * it under the terms of the GNU General Public License as published by
@@ -34,12 +34,12 @@ class SyncInBackgroundWorker(val context: Context, workerParameters: WorkerParam
         private const val LOG_TAG = "SyncInBackground"
         private const val UNIQUE_WORK_NAME = "SyncInBackgroundWork"
 
-        fun enqueueDelayed() {
+        fun enqueueDelayed(context: Context) {
             if (BuildConfig.DEBUG) {
                 Log.d(LOG_TAG, "enqueueDelayed")
             }
 
-            WorkManager.getInstance().beginUniqueWork(
+            WorkManager.getInstance(context).beginUniqueWork(
                 UNIQUE_WORK_NAME,
                 ExistingWorkPolicy.KEEP,
                 OneTimeWorkRequest.Builder(SyncInBackgroundWorker::class.java)
@@ -54,8 +54,8 @@ class SyncInBackgroundWorker(val context: Context, workerParameters: WorkerParam
             ).enqueue()
         }
 
-        fun deschedule() {
-            WorkManager.getInstance().cancelUniqueWork(UNIQUE_WORK_NAME)
+        fun deschedule(context: Context) {
+            WorkManager.getInstance(context).cancelUniqueWork(UNIQUE_WORK_NAME)
         }
     }
 

@@ -251,7 +251,8 @@ class AppSetupLogic(private val appLogic: AppLogic) {
             if (server.hasAuthToken) {
                 ReportUninstallWorker.enqueue(
                         deviceAuthToken = server.deviceAuthToken,
-                        customServerUrl = server.customServerUrl
+                        customServerUrl = server.customServerUrl,
+                        context = appLogic.context
                 )
             }
 
@@ -267,8 +268,8 @@ class AppSetupLogic(private val appLogic: AppLogic) {
 
         // delete the old config
         DatabaseBackup.with(appLogic.context).tryCreateDatabaseBackupAsync()
-        PeriodicSyncInBackgroundWorker.disable()
-        CheckUpdateWorker.deschedule()
+        PeriodicSyncInBackgroundWorker.disable(appLogic.context)
+        CheckUpdateWorker.deschedule(appLogic.context)
     }
 
     suspend fun dangerousRemoteReset() {

@@ -1,5 +1,5 @@
 /*
- * TimeLimit Copyright <C> 2019 - 2020 Jonas Lochmann
+ * TimeLimit Copyright <C> 2019 - 2022 Jonas Lochmann
  *
  * This program is free software: you can redistribute it and/or modify
  * it under the terms of the GNU General Public License as published by
@@ -27,8 +27,8 @@ class CheckUpdateWorker(private val context: Context, workerParameters: WorkerPa
     companion object {
         private const val UNIQUE_WORK_NAME = "CheckUpdateWorker"
 
-        fun schedule() {
-            WorkManager.getInstance().enqueueUniquePeriodicWork(
+        fun schedule(context: Context) {
+            WorkManager.getInstance(context).enqueueUniquePeriodicWork(
                     UNIQUE_WORK_NAME,
                     ExistingPeriodicWorkPolicy.KEEP,
                     PeriodicWorkRequestBuilder<CheckUpdateWorker>(1, TimeUnit.DAYS)
@@ -42,8 +42,8 @@ class CheckUpdateWorker(private val context: Context, workerParameters: WorkerPa
             )
         }
 
-        fun deschedule() {
-            WorkManager.getInstance().cancelUniqueWork(UNIQUE_WORK_NAME)
+        fun deschedule(context: Context) {
+            WorkManager.getInstance(context).cancelUniqueWork(UNIQUE_WORK_NAME)
         }
     }
 

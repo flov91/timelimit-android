@@ -1,5 +1,5 @@
 /*
- * TimeLimit Copyright <C> 2019 - 2020 Jonas Lochmann
+ * TimeLimit Copyright <C> 2019 - 2022 Jonas Lochmann
  *
  * This program is free software: you can redistribute it and/or modify
  * it under the terms of the GNU General Public License as published by
@@ -48,7 +48,7 @@ object UpdateUtil {
             database.config().setUpdatesEnabledSync(true)
         }
 
-        CheckUpdateWorker.schedule()
+        CheckUpdateWorker.schedule(context)
     }
 
     fun disableChecks(context: Context) {
@@ -58,7 +58,7 @@ object UpdateUtil {
             database.config().setUpdatesEnabledSync(false)
         }
 
-        CheckUpdateWorker.deschedule()
+        CheckUpdateWorker.deschedule(context)
     }
 
     suspend fun doUpdateCheck(context: Context, database: Database, enableNotifications: Boolean): Boolean {

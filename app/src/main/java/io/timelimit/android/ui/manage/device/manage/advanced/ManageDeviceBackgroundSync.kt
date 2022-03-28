@@ -1,5 +1,5 @@
 /*
- * TimeLimit Copyright <C> 2019 - 2020 Jonas Lochmann
+ * TimeLimit Copyright <C> 2019 - 2022 Jonas Lochmann
  *
  * This program is free software: you can redistribute it and/or modify
  * it under the terms of the GNU General Public License as published by
@@ -34,6 +34,8 @@ object ManageDeviceBackgroundSync {
             activityViewModel: ActivityViewModel,
             fragmentManager: FragmentManager
     ) {
+        val context = view.root.context
+
         view.titleView.setOnClickListener {
             HelpDialogFragment.newInstance(
                     title = R.string.device_background_sync_title,
@@ -56,9 +58,9 @@ object ManageDeviceBackgroundSync {
 
                         // for some reason, the observing of the config value does not work correctly -> do it manually here
                         if (isChecked) {
-                            PeriodicSyncInBackgroundWorker.enable()
+                            PeriodicSyncInBackgroundWorker.enable(context)
                         } else {
-                            PeriodicSyncInBackgroundWorker.disable()
+                            PeriodicSyncInBackgroundWorker.disable(context)
                         }
                     } else {
                         view.checkbox.isChecked = enable

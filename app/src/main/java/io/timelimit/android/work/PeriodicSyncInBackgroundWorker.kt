@@ -1,3 +1,18 @@
+/*
+ * TimeLimit Copyright <C> 2019 - 2022 Jonas Lochmann
+ *
+ * This program is free software: you can redistribute it and/or modify
+ * it under the terms of the GNU General Public License as published by
+ * the Free Software Foundation version 3 of the License.
+ *
+ * This program is distributed in the hope that it will be useful,
+ * but WITHOUT ANY WARRANTY; without even the implied warranty of
+ * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+ * GNU General Public License for more details.
+ *
+ * You should have received a copy of the GNU General Public License
+ * along with this program. If not, see <https://www.gnu.org/licenses/>.
+ */
 package io.timelimit.android.work
 
 import android.content.Context
@@ -15,12 +30,12 @@ class PeriodicSyncInBackgroundWorker(private val context: Context, workerParamet
         private const val LOG_TAG = "PeriodicBackgroundSync"
         private const val UNIQUE_WORK_NAME = "PeriodicSyncInBackgroundWorker"
 
-        fun enable() {
+        fun enable(context: Context) {
             if (BuildConfig.DEBUG) {
                 Log.d(LOG_TAG, "enable()")
             }
 
-            WorkManager.getInstance().enqueueUniquePeriodicWork(
+            WorkManager.getInstance(context).enqueueUniquePeriodicWork(
                     UNIQUE_WORK_NAME,
                     ExistingPeriodicWorkPolicy.KEEP,
                     PeriodicWorkRequestBuilder<PeriodicSyncInBackgroundWorker>(1, TimeUnit.HOURS)
@@ -34,12 +49,12 @@ class PeriodicSyncInBackgroundWorker(private val context: Context, workerParamet
             )
         }
 
-        fun disable() {
+        fun disable(context: Context) {
             if (BuildConfig.DEBUG) {
                 Log.d(LOG_TAG, "disable()")
             }
 
-            WorkManager.getInstance().cancelUniqueWork(UNIQUE_WORK_NAME)
+            WorkManager.getInstance(context).cancelUniqueWork(UNIQUE_WORK_NAME)
         }
     }
 

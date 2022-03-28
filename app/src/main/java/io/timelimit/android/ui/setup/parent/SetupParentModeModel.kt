@@ -123,7 +123,7 @@ class SetupParentModeModel(application: Application): AndroidViewModel(applicati
                 DatabaseBackup.with(getApplication()).tryCreateDatabaseBackupAsync()
 
                 if (enableBackgroundSync) {
-                    PeriodicSyncInBackgroundWorker.enable()
+                    PeriodicSyncInBackgroundWorker.enable(getApplication())
                 }
 
                 UpdateUtil.setEnableChecks(getApplication(), enableUpdateChecks)
@@ -194,7 +194,7 @@ class SetupParentModeModel(application: Application): AndroidViewModel(applicati
                 DatabaseBackup.with(getApplication()).tryCreateDatabaseBackupAsync()
 
                 if (enableBackgroundSync) {
-                    PeriodicSyncInBackgroundWorker.enable()
+                    PeriodicSyncInBackgroundWorker.enable(getApplication())
                 }
 
                 UpdateUtil.setEnableChecks(getApplication(), enableUpdateChecks)

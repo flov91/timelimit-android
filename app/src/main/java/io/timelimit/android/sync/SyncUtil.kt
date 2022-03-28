@@ -1,5 +1,5 @@
 /*
- * TimeLimit Copyright <C> 2019 - 2021 Jonas Lochmann
+ * TimeLimit Copyright <C> 2019 - 2022 Jonas Lochmann
  *
  * This program is free software: you can redistribute it and/or modify
  * it under the terms of the GNU General Public License as published by
@@ -121,7 +121,7 @@ class SyncUtil (private val logic: AppLogic) {
 
                     lastSync.value = logic.timeApi.getCurrentUptimeInMillis()
 
-                    SyncInBackgroundWorker.deschedule()
+                    SyncInBackgroundWorker.deschedule(logic.context)
                     lastSyncExceptionInternal.postValue(null)
 
                     // wait 2 to 3 seconds before any next sync (debounce)
@@ -150,7 +150,7 @@ class SyncUtil (private val logic: AppLogic) {
         importantSyncRequested.postValue(true)
 
         if (enqueueIfOffline) {
-            SyncInBackgroundWorker.enqueueDelayed()
+            SyncInBackgroundWorker.enqueueDelayed(logic.context)
         }
     }
 
