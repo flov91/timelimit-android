@@ -112,7 +112,7 @@ sealed class AppBaseHandling {
                 return PauseLogic
             } else if (
                     (foregroundAppPackageName == BuildConfig.APPLICATION_ID) ||
-                    (foregroundAppPackageName != null && AndroidIntegrationApps.ignoredApps[foregroundAppPackageName].let {
+                    (foregroundAppPackageName != null && isSystemImageApp && AndroidIntegrationApps.ignoredApps[foregroundAppPackageName].let {
                         when (it) {
                             null -> false
                             AndroidIntegrationApps.IgnoredAppHandling.Ignore -> true
@@ -123,7 +123,7 @@ sealed class AppBaseHandling {
                 return Whitelist.App
             } else if (
                 foregroundAppPackageName != null && foregroundAppActivityName != null &&
-                AndroidIntegrationApps.shouldIgnoreActivity(foregroundAppPackageName, foregroundAppActivityName)
+                isSystemImageApp && AndroidIntegrationApps.shouldIgnoreActivity(foregroundAppPackageName, foregroundAppActivityName)
             ) {
                 return Whitelist.Activity
             } else if (foregroundAppPackageName != null && deviceRelatedData.temporarilyAllowedApps.contains(foregroundAppPackageName)) {
