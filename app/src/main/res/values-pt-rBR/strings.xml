@@ -225,10 +225,6 @@ por exemplo, quando você quer adicionar o uso de tela
         não funcionará.
     </string>
     <string name="category_notifications_filter_checkbox">Bloquear todas as notificações</string>
-    <string name="category_notifications_filter_dialog">
-        A ativação disto bloqueia TODAS as notificações de Aplicativos desta categoria,
-        quando os próprios aplicativos são bloqueados E quando os próprios aplicativos não são bloqueados
-    </string>
 
     <string name="category_settings_rename">Renomear categoria</string>
     <string name="category_settings_rename_empty">O novo nome não deve estar vazio</string>
