@@ -109,16 +109,17 @@ class SyncInstalledAppsLogic(val appLogic: AppLogic) {
 
             val deviceId = deviceEntry.id
 
+            val currentlyInstalledApps = getCurrentApps(deviceId)
+
             run {
-                val currentlyInstalled = getCurrentApps(deviceId)
                 val currentlySaved = appLogic.database.app().getAppsByDeviceIdAsync(deviceId = deviceId).waitForNonNullValue().associateBy { app -> app.packageName }
 
                 // skip all items for removal which are still saved locally
                 val itemsToRemove = HashMap(currentlySaved)
-                currentlyInstalled.forEach { (packageName, _) -> itemsToRemove.remove(packageName) }
+                currentlyInstalledApps.forEach { (packageName, _) -> itemsToRemove.remove(packageName) }
 
                 // only add items which are not the same locally
-                val itemsToAdd = currentlyInstalled.filter { (packageName, app) -> currentlySaved[packageName] != app }
+                val itemsToAdd = currentlyInstalledApps.filter { (packageName, app) -> currentlySaved[packageName] != app }
 
                 // save the changes
                 if (itemsToRemove.isNotEmpty()) {
@@ -154,7 +155,19 @@ class SyncInstalledAppsLogic(val appLogic: AppLogic) {
 
                 val currentlyInstalled = if (deviceEntry.enableActivityLevelBlocking)
                     Threads.backgroundOSInteraction.executeAndWait {
-                        appLogic.platformIntegration.getLocalAppActivities(deviceId = deviceId).associateBy { buildKey(it) }
+                        val realActivities = appLogic.platformIntegration.getLocalAppActivities(deviceId = deviceId)
+                        val dummyActivities = currentlyInstalledApps.keys.map { packageName ->
+                            AppActivity(
+                                deviceId = deviceId,
+                                appPackageName = packageName,
+                                activityClassName = DummyApps.ACTIVITY_BACKGROUND_AUDIO,
+                                title = appLogic.context.getString(R.string.dummy_app_activity_audio)
+                            )
+                        }
+
+                        val allActivities = realActivities + dummyActivities
+
+                        allActivities.associateBy { buildKey(it) }
                     }
                 else
                     emptyMap()
