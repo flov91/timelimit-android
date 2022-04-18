@@ -433,7 +433,6 @@ por exemplo, quando você quer adicionar o uso de tela
     <string name="diagnose_exf_kcs">Mantenha-se conectado quando a tela estiver desligada</string>
     <string name="diagnose_exf_mad">Tente detectar múltiplos Aplicativos ativos (suporte a tela dividida)</string>
     <string name="diagnose_exf_rsl">Permitir login somente de usuários em categoria Pais com categoria de login limite após a sincronização</string>
-    <string name="diagnose_exf_bss">Desativar automaticamente a tela dividida usando o serviço de acessibilidade</string>
 
     <string name="diagnose_bg_task_loop_ex">Exceção do ciclo de tarefas de fundo</string>
 
@@ -795,8 +794,6 @@ Esta %s só é permitida em algumas redes, mas nenhuma conexão com tal rede foi
         Isto é usado para \"apertar\" o botão de início antes de mostrar a tela de bloqueio.
         Isto conserta o bloqueio em alguns casos.
         Além disso, esta é uma maneira de permitir o TimeLimit para abrir o bloqueio da tela (versões mais recentes do Android).
-        Além disso, torna possível detectar e deixar o modo da tela dividida quando é utilizado e
-        você pode ativar esse recurso de limitação.
     </string>
 
     <string name="manage_device_permission_device_admin_title">Administrador do dispositivo</string>
