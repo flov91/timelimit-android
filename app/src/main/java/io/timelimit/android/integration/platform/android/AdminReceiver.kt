@@ -20,6 +20,7 @@ import android.content.Context
 import android.content.Intent
 import io.timelimit.android.R
 import io.timelimit.android.coroutines.runAsync
+import io.timelimit.android.integration.platform.ProtectionLevel
 import io.timelimit.android.logic.DefaultAppLogic
 import io.timelimit.android.sync.actions.TriedDisablingDeviceAdminAction
 import io.timelimit.android.sync.actions.apply.ApplyActionUtil
@@ -38,12 +39,14 @@ class AdminReceiver: DeviceAdminReceiver() {
     }
 
     override fun onDisableRequested(context: Context, intent: Intent): CharSequence {
-        runAsync {
-            ApplyActionUtil.applyAppLogicAction(
+        if (DefaultAppLogic.with(context).platformIntegration.getCurrentProtectionLevel() != ProtectionLevel.DeviceOwner) {
+            runAsync {
+                ApplyActionUtil.applyAppLogicAction(
                     action = TriedDisablingDeviceAdminAction,
                     appLogic = DefaultAppLogic.with(context),
                     ignoreIfDeviceIsNotConfigured = true
-            )
+                )
+            }
         }
 
         return context.getString(R.string.admin_disable_warning)
