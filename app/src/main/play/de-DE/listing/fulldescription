@@ -28,7 +28,7 @@ Bei einigen Smartphone-Marken, insbesondere Huawei und Wiko, funktioniert TimeLi
 
 Falls die App "nicht funktioniert" kann das an Energiesparfunktionen liegen. Wie Sie diese abschalten können, wird unter https://dontkillmyapp.com/ beschrieben. Wenden Sie sich an den Support, wenn das nicht hilft.
 
-Je nach Android-Version verwendet TimeLimit die Berechtigung zum Nutzungsdatenzugriff oder die "GET_TASKS"-Berechtigung. Diese werden ausschließlich zur Erkennung der momentan genutzten App verwendet. Auf der Basis der momentan genutzten App erfolgt eine Sperrung, eine Freigabe oder eine Berechnung und Anpassung der verbleibenden Nutzungsdauer.
+TimeLimit verwendet die Berechtigung zum Nutzungsdatenzugriff. Diese wird ausschließlich zur Erkennung der momentan genutzten App verwendet. Auf der Basis der momentan genutzten App erfolgt eine Sperrung, eine Freigabe oder eine Berechnung und Anpassung der verbleibenden Nutzungsdauer.
 
 Die Geräte-Administrator-Berechtigung wird genutzt, um ein Deinstallieren von TimeLimit zu erkennen.
 
