@@ -51,11 +51,13 @@ object AndroidIntegrationApps {
         ignoredApps["com.android.packageinstaller"] = AndroidIntegrationApps.IgnoredAppHandling.IgnoreOnStoreOtherwiseWhitelistAndDontDisable
         ignoredApps["com.google.android.packageinstaller"] = AndroidIntegrationApps.IgnoredAppHandling.IgnoreOnStoreOtherwiseWhitelistAndDontDisable
         ignoredApps["com.android.emergency"] = IgnoredAppHandling.Ignore
+        ignoredApps["com.oplus.sos"] = IgnoredAppHandling.Ignore
     }
 
     val appsToNotSuspend = setOf<String>(
             "com.android.emergency",
-            "com.android.phone"
+            "com.android.phone",
+            "com.oplus.sos"
     )
 
     val appsToIncludeInLockTasks = appsToNotSuspend + setOf("com.android.dialer")
