@@ -447,7 +447,9 @@ class AndroidIntegration(context: Context): PlatformIntegration(maximumProtectio
             }
         }
 
-        policyManager.removeActiveAdmin(deviceAdmin)
+        if (policyManager.isAdminActive(deviceAdmin)) {
+            policyManager.removeActiveAdmin(deviceAdmin)
+        }
     }
 
     @TargetApi(Build.VERSION_CODES.N)
