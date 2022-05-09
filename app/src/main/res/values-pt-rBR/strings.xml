@@ -1038,7 +1038,6 @@ Esta %s só é permitida em algumas redes, mas nenhuma conexão com tal rede foi
     </string>
 
     <string name="password_validator_too_short">A senha deve ter pelo menos <xliff:g example="5" id="number of chars">%d</xliff:g> caracteres</string>
-    <string name="password_validator_min_letters">A senha deve ter pelo menos <xliff:g example="2" id="number of letters">%d</xliff:g> letras</string>
 
     <string name="primary_device_title">Dispositivo atual</string>
     <string name="primary_device_description">
