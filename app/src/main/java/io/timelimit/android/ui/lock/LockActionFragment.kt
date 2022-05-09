@@ -1,5 +1,5 @@
 /*
- * TimeLimit Copyright <C> 2019 - 2020 Jonas Lochmann
+ * TimeLimit Copyright <C> 2019 - 2022 Jonas Lochmann
  *
  * This program is free software: you can redistribute it and/or modify
  * it under the terms of the GNU General Public License as published by
@@ -45,8 +45,9 @@ import io.timelimit.android.ui.help.HelpDialogFragment
 import io.timelimit.android.ui.main.ActivityViewModel
 import io.timelimit.android.ui.main.getActivityViewModel
 import io.timelimit.android.ui.manage.category.settings.networks.RequestWifiPermission
-import io.timelimit.android.ui.manage.child.advanced.managedisabletimelimits.ManageDisableTimelimitsViewHelper
 import io.timelimit.android.ui.manage.child.category.create.CreateCategoryDialogFragment
+import io.timelimit.android.ui.manage.child.category.specialmode.SetCategorySpecialModeFragment
+import io.timelimit.android.ui.manage.child.category.specialmode.SpecialModeDialogMode
 import io.timelimit.android.ui.manage.child.primarydevice.UpdatePrimaryDeviceDialogFragment
 import io.timelimit.android.ui.payment.RequiresPurchaseDialogFragment
 import io.timelimit.android.ui.view.SelectTimeSpanViewListener
@@ -114,6 +115,18 @@ class LockActionFragment : Fragment() {
 
             override fun requestLocationPermission() {
                 RequestWifiPermission.doRequest(this@LockActionFragment, LOCATION_REQUEST_CODE)
+            }
+
+            override fun disableLimitsTemporarily() {
+                if (auth.requestAuthenticationOrReturnTrue()) {
+                    if (blockedCategoryId != null) {
+                        SetCategorySpecialModeFragment.newInstance(
+                            childId = userRelatedData.user.id,
+                            categoryId = blockedCategoryId,
+                            mode = SpecialModeDialogMode.DisableLimitsOnly
+                        ).show(parentFragmentManager)
+                    }
+                }
             }
         }
     }
@@ -253,12 +266,6 @@ class LockActionFragment : Fragment() {
                                     categoryId = content.blockedCategoryId,
                                     timeZone = content.userRelatedData.timeZone
                             )
-                            binding.manageDisableTimeLimits.handlers = ManageDisableTimelimitsViewHelper.createHandlers(
-                                    childId = content.userId,
-                                    childTimezone = content.timeZone,
-                                    activity = requireActivity(),
-                                    hasFullVersion = content.hasFullVersion
-                            )
                         }
                         is LockscreenContent.Blocked.BlockDueToNoCategory -> {
                             binding.appCategoryTitle = null
@@ -298,4 +305,5 @@ interface Handlers {
     fun disableTemporarilyLockForAllCategories()
     fun setThisDeviceAsCurrentDevice()
     fun requestLocationPermission()
+    fun disableLimitsTemporarily()
 }
