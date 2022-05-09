@@ -1,5 +1,5 @@
 /*
- * TimeLimit Copyright <C> 2019 - 2021 Jonas Lochmann
+ * TimeLimit Copyright <C> 2019 - 2022 Jonas Lochmann
  *
  * This program is free software: you can redistribute it and/or modify
  * it under the terms of the GNU General Public License as published by
@@ -23,8 +23,11 @@ import androidx.fragment.app.Fragment
 import androidx.lifecycle.Observer
 import androidx.lifecycle.ViewModelProviders
 import androidx.navigation.Navigation
-import com.jaredrummler.android.device.DeviceName
 import io.timelimit.android.R
+import io.timelimit.android.async.Threads
+import io.timelimit.android.coroutines.executeAndWait
+import io.timelimit.android.coroutines.runAsync
+import io.timelimit.android.data.devicename.DeviceName
 import io.timelimit.android.databinding.FragmentSetupParentModeBinding
 import io.timelimit.android.livedata.liveDataFromNonNullValue
 import io.timelimit.android.livedata.map
@@ -99,8 +102,14 @@ class SetupParentModeFragment : Fragment(), AuthenticateByMailFragmentListener {
         })
 
         if (savedInstanceState == null) {
-            // provide an useful default value
-            binding.deviceName.setText(DeviceName.getDeviceName())
+            val ctx = requireContext()
+
+            runAsync {
+                // provide an useful default value
+                val deviceName = Threads.database.executeAndWait { DeviceName.getDeviceNameSync(ctx) }
+
+                binding.deviceName.setText(deviceName)
+            }
         }
 
         binding.ok.setOnClickListener {

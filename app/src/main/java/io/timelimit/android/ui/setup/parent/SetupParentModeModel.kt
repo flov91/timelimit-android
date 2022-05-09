@@ -20,13 +20,13 @@ import android.util.Log
 import android.widget.Toast
 import androidx.lifecycle.AndroidViewModel
 import androidx.lifecycle.MutableLiveData
-import com.jaredrummler.android.device.DeviceName
 import io.timelimit.android.BuildConfig
 import io.timelimit.android.R
 import io.timelimit.android.async.Threads
 import io.timelimit.android.coroutines.executeAndWait
 import io.timelimit.android.coroutines.runAsync
 import io.timelimit.android.data.backup.DatabaseBackup
+import io.timelimit.android.data.devicename.DeviceName
 import io.timelimit.android.livedata.castDown
 import io.timelimit.android.livedata.map
 import io.timelimit.android.logic.DefaultAppLogic
@@ -89,12 +89,13 @@ class SetupParentModeModel(application: Application): AndroidViewModel(applicati
         runAsync {
             try {
                 val api = logic.serverLogic.getServerConfigCoroutine().api
+                val deviceModelName = Threads.database.executeAndWait { DeviceName.getDeviceNameSync(getApplication()) }
 
                 val registerResponse = api.createFamilyByMailToken(
                         mailToken = mailAuthToken.value!!,
                         parentPassword = ParentPassword.createCoroutine(parentPassword),
                         parentDevice = NewDeviceInfo(
-                                model = DeviceName.getDeviceName()
+                                model = deviceModelName
                         ),
                         deviceName = deviceName,
                         parentName = parentName,
@@ -163,11 +164,12 @@ class SetupParentModeModel(application: Application): AndroidViewModel(applicati
         runAsync {
             try {
                 val api = logic.serverLogic.getServerConfigCoroutine().api
+                val deviceModelName = Threads.database.executeAndWait { DeviceName.getDeviceNameSync(getApplication()) }
 
                 val registerResponse = api.signInToFamilyByMailToken(
                         mailToken = mailAuthToken.value!!,
                         parentDevice = NewDeviceInfo(
-                                model = DeviceName.getDeviceName()
+                                model = deviceModelName
                         ),
                         deviceName = deviceName
                 )

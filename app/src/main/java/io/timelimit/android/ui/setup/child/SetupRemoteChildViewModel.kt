@@ -18,11 +18,11 @@ package io.timelimit.android.ui.setup.child
 import android.app.Application
 import androidx.lifecycle.AndroidViewModel
 import androidx.lifecycle.MutableLiveData
-import com.jaredrummler.android.device.DeviceName
 import io.timelimit.android.async.Threads
 import io.timelimit.android.coroutines.executeAndWait
 import io.timelimit.android.coroutines.runAsync
 import io.timelimit.android.data.backup.DatabaseBackup
+import io.timelimit.android.data.devicename.DeviceName
 import io.timelimit.android.livedata.castDown
 import io.timelimit.android.livedata.map
 import io.timelimit.android.logic.AppLogic
@@ -50,11 +50,12 @@ class SetupRemoteChildViewModel(application: Application): AndroidViewModel(appl
         runAsync {
             try {
                 val api = logic.serverLogic.getServerConfigCoroutine().api
+                val deviceModelName = Threads.database.executeAndWait { DeviceName.getDeviceNameSync(getApplication()) }
 
                 val registerResponse = api.registerChildDevice(
-                        childDeviceInfo = NewDeviceInfo(model = DeviceName.getDeviceName()),
+                        childDeviceInfo = NewDeviceInfo(model = deviceModelName),
                         registerToken = registerToken,
-                        deviceName = DeviceName.getDeviceName()
+                        deviceName = deviceModelName
                 )
 
                 val clientStatusResponse = api.pullChanges(registerResponse.deviceAuthToken, ClientDataStatus.empty)
