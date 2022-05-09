@@ -62,11 +62,11 @@ class PurchaseModel(application: Application): AndroidViewModel(application) {
                             if (canDoPurchase.publicKey?.contentEquals(Base64.decode(BuildConfig.googlePlayKey, 0)) == false) {
                                 statusInternal.value = PurchaseFragmentServerHasDifferentPublicKey
                             } else {
-                                val skus = activityPurchaseModel.querySkus(PurchaseIds.BUY_SKUS)
+                                val skus = activityPurchaseModel.queryProducts(PurchaseIds.BUY_SKUS)
 
                                 statusInternal.value = PurchaseFragmentReady(
-                                        monthPrice = skus.find { it.sku == PurchaseIds.SKU_MONTH }?.price.toString(),
-                                        yearPrice = skus.find { it.sku == PurchaseIds.SKU_YEAR }?.price.toString()
+                                        monthPrice = skus.find { it.productId == PurchaseIds.SKU_MONTH }?.oneTimePurchaseOfferDetails?.formattedPrice.toString(),
+                                        yearPrice = skus.find { it.productId == PurchaseIds.SKU_YEAR }?.oneTimePurchaseOfferDetails?.formattedPrice.toString()
                                 )
                             }
                         } else if (canDoPurchase == CanDoPurchaseStatus.NotDueToOldPurchase) {

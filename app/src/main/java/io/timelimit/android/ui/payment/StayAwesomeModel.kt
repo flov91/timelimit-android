@@ -1,5 +1,5 @@
 /*
- * TimeLimit Copyright <C> 2019 - 2021 Jonas Lochmann
+ * TimeLimit Copyright <C> 2019 - 2022 Jonas Lochmann
  *
  * This program is free software: you can redistribute it and/or modify
  * it under the terms of the GNU General Public License as published by
@@ -37,18 +37,18 @@ class StayAwesomeModel(application: Application): AndroidViewModel(application) 
             }
 
             try {
-                val skus = activityPurchaseModel.querySkus(PurchaseIds.SAL_SKUS)
+                val skus = activityPurchaseModel.queryProducts(PurchaseIds.SAL_SKUS)
                 val purchases = activityPurchaseModel.queryPurchases()
 
                 statusInternal.value = ReadyStayAwesomeStatus(
                         PurchaseIds.SAL_SKUS.map { skuId ->
-                            val sku = skus.find { it.sku == skuId }
+                            val sku = skus.find { it.productId == skuId }
 
                             StayAwesomeItem(
                                     id = skuId,
                                     title = sku?.description ?: skuId,
-                                    price = sku?.price ?: "???",
-                                    bought = purchases.find { purchase -> purchase.skus.find { sku -> sku == skuId } != null } != null
+                                    price = sku?.oneTimePurchaseOfferDetails?.formattedPrice.toString(),
+                                    bought = purchases.find { purchase -> purchase.products.find { sku -> sku == skuId } != null } != null
                             )
                         }
                 )

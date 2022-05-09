@@ -1,5 +1,5 @@
 /*
- * TimeLimit Copyright <C> 2019 - 2021 Jonas Lochmann
+ * TimeLimit Copyright <C> 2019 - 2022 Jonas Lochmann
  *
  * This program is free software: you can redistribute it and/or modify
  * it under the terms of the GNU General Public License as published by
@@ -28,20 +28,18 @@ object BillingClient {
 
     fun endConnection() {}
 
-    fun querySkuDetails(param: SkuDetailsParams) = QuerySkuDetailsResult.instance
+    fun queryProductDetails(param: QueryProductDetailsParams) = QueryProductDetailsResult.instance
     fun launchBillingFlow(activity: Activity, params: BillingFlowParams) = BillingResult
     fun acknowledgePurchase(params: AcknowledgePurchaseParams) = BillingResult
     fun consumePurchase(params: ConsumeParams) = BillingResult
-    suspend fun queryPurchasesAsync(type: String) = QueryPurchasesResult
+    suspend fun queryPurchasesAsync(request: QueryPurchasesParams) = QueryPurchasesResult
 
     object BillingResponseCode {
         const val OK = 0
         const val ERR = 1
     }
 
-    object SkuType {
-        const val INAPP = ""
-    }
+    enum class ProductType { INAPP }
 
     object Builder {
         fun enablePendingPurchases() = this
@@ -55,26 +53,20 @@ object BillingResult {
     const val debugMessage = "only mock linked"
 }
 
-object SkuDetails {
-    const val sku = ""
-    const val price = ""
+object ProductDetails {
+    const val productId = ""
     const val description = ""
-}
+    val oneTimePurchaseOfferDetails: OfferDetails? = OfferDetails
 
-object SkuDetailsParams {
-    fun newBuilder() = Builder
-
-    object Builder {
-        fun setSkusList(list: List<String>) = this
-        fun setType(type: String) = this
-        fun build() = SkuDetailsParams
+    object OfferDetails {
+        const val formattedPrice = ""
     }
 }
 
 object Purchase {
     const val purchaseState = PurchaseState.PURCHASED
     const val isAcknowledged = true
-    val skus = listOf("")
+    val products = emptyList<String>()
     const val purchaseToken = ""
     const val originalJson = ""
     const val signature = ""
@@ -103,11 +95,14 @@ object ConsumeParams {
 }
 
 object BillingFlowParams {
-    fun newBuilder() = Builder
+    fun newBuilder() = this
+    fun setProductDetailsParamsList(details: List<ProductDetailsParams>) = this
+    fun build() = this
 
-    object Builder {
-        fun setSkuDetails(details: SkuDetails) = this
-        fun build() = BillingFlowParams
+    object ProductDetailsParams {
+        fun newBuilder() = this
+        fun setProductDetails(details: ProductDetails) = this
+        fun build() = this
     }
 }
 
@@ -116,9 +111,9 @@ object QueryPurchasesResult {
     val purchasesList: List<Purchase> = emptyList()
 }
 
-data class QuerySkuDetailsResult(val billingResult: BillingResult, val details: List<SkuDetails>?) {
+data class QueryProductDetailsResult(val billingResult: BillingResult, val details: List<ProductDetails>?) {
     companion object {
-        val instance = QuerySkuDetailsResult(BillingResult, emptyList())
+        val instance = QueryProductDetailsResult(BillingResult, emptyList())
     }
 }
 
@@ -129,4 +124,23 @@ interface BillingClientStateListener {
 
 interface PurchasesUpdatedListener {
     fun onPurchasesUpdated(p0: BillingResult, p1: MutableList<Purchase>?)
+}
+
+object QueryProductDetailsParams {
+    fun newBuilder() = this
+    fun setProductList(list: List<Product>) = this
+    fun build() = this
+
+    object Product {
+        fun newBuilder() = this
+        fun setProductId(id: String) = this
+        fun setProductType(type: BillingClient.ProductType) = this
+        fun build() = this
+    }
+}
+
+object QueryPurchasesParams {
+    fun newBuilder() = this
+    fun setProductType(type: BillingClient.ProductType) = this
+    fun build() = this
 }

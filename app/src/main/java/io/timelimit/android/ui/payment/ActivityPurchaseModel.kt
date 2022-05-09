@@ -1,5 +1,5 @@
 /*
- * TimeLimit Copyright <C> 2019 - 2021 Jonas Lochmann
+ * TimeLimit Copyright <C> 2019 - 2022 Jonas Lochmann
  *
  * This program is free software: you can redistribute it and/or modify
  * it under the terms of the GNU General Public License as published by
@@ -123,12 +123,16 @@ class ActivityPurchaseModel(application: Application): AndroidViewModel(applicat
         }
     }
 
-    suspend fun querySkus(skuIds: List<String>): List<SkuDetails> = initAndUseClient { client ->
-        val (billingResult, data) = client.querySkuDetails(
-                SkuDetailsParams.newBuilder()
-                        .setSkusList(skuIds)
-                        .setType(BillingClient.SkuType.INAPP)
+    suspend fun queryProducts(productIds: List<String>): List<ProductDetails> = initAndUseClient { client ->
+        val (billingResult, data) = client.queryProductDetails(
+            QueryProductDetailsParams.newBuilder()
+                .setProductList(productIds.map { skuId ->
+                    QueryProductDetailsParams.Product.newBuilder()
+                        .setProductId(skuId)
+                        .setProductType(BillingClient.ProductType.INAPP)
                         .build()
+                })
+                .build()
         )
 
         billingResult.assertSuccess()
@@ -137,7 +141,11 @@ class ActivityPurchaseModel(application: Application): AndroidViewModel(applicat
     }
 
     suspend fun queryPurchases() = initAndUseClient { client ->
-        val response = client.queryPurchasesAsync(BillingClient.SkuType.INAPP)
+        val response = client.queryPurchasesAsync(
+            QueryPurchasesParams.newBuilder()
+                .setProductType(BillingClient.ProductType.INAPP)
+                .build()
+        )
 
         response.billingResult.assertSuccess()
 
@@ -153,7 +161,11 @@ class ActivityPurchaseModel(application: Application): AndroidViewModel(applicat
 
                 try {
                     initAndUseClient { client ->
-                        val result = client.queryPurchasesAsync(BillingClient.SkuType.INAPP)
+                        val result = client.queryPurchasesAsync(
+                            QueryPurchasesParams.newBuilder()
+                                .setProductType(BillingClient.ProductType.INAPP)
+                                .build()
+                        )
 
                         result.billingResult.assertSuccess()
 
@@ -223,7 +235,7 @@ class ActivityPurchaseModel(application: Application): AndroidViewModel(applicat
             Log.d(LOG_TAG, "handlePurchase($purchase)")
         }
 
-        val sku = purchase.skus.single()
+        val sku = purchase.products.single()
 
         if (PurchaseIds.SAL_SKUS.contains(sku)) {
             // just acknowledge
@@ -262,14 +274,14 @@ class ActivityPurchaseModel(application: Application): AndroidViewModel(applicat
         }
     }
 
-    fun startPurchase(sku: String, checkAtBackend: Boolean, activity: Activity) {
+    fun startPurchase(productId: String, checkAtBackend: Boolean, activity: Activity) {
         runAsync {
             try {
-                val skuDetails = querySkus(listOf(sku)).single()
+                val productDetails = queryProducts(listOf(productId)).single()
 
-                if (skuDetails.sku != sku) throw IllegalStateException()
+                if (productDetails.productId != productId) throw IllegalStateException()
 
-                startPurchase(skuDetails, checkAtBackend, activity)
+                startPurchase(productDetails, checkAtBackend, activity)
             } catch (ex: Exception) {
                 if (BuildConfig.DEBUG) {
                     Log.d(LOG_TAG, "could not start purchase", ex)
@@ -280,7 +292,7 @@ class ActivityPurchaseModel(application: Application): AndroidViewModel(applicat
         }
     }
 
-    fun startPurchase(skuDetails: SkuDetails, checkAtBackend: Boolean, activity: Activity) {
+    private fun startPurchase(productDetails: ProductDetails, checkAtBackend: Boolean, activity: Activity) {
         runAsync {
             initAndUseClient { client ->
                 try {
@@ -299,10 +311,14 @@ class ActivityPurchaseModel(application: Application): AndroidViewModel(applicat
                     }
 
                     client.launchBillingFlow(
-                            activity,
-                            BillingFlowParams.newBuilder()
-                                    .setSkuDetails(skuDetails)
+                        activity,
+                        BillingFlowParams.newBuilder()
+                            .setProductDetailsParamsList(listOf(
+                                BillingFlowParams.ProductDetailsParams.newBuilder()
+                                    .setProductDetails(productDetails)
                                     .build()
+                            ))
+                            .build()
                     ).assertSuccess()
                 } catch (ex: Exception) {
                     if (BuildConfig.DEBUG) {
