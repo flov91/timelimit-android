@@ -1,5 +1,5 @@
 /*
- * TimeLimit Copyright <C> 2019 - 2020 Jonas Lochmann
+ * TimeLimit Copyright <C> 2019 - 2022 Jonas Lochmann
  *
  * This program is free software: you can redistribute it and/or modify
  * it under the terms of the GNU General Public License as published by
@@ -144,23 +144,25 @@ class ManageChildCategoriesModel(application: Application): AndroidViewModel(app
 
     private val hasShownHint = logic.database.config().wereHintsShown(HintsToShow.CATEGORIES_INTRODUCTION)
 
-    private val listContentStep1 = hasShownHint.switchMap { hasShownHint ->
-        categoryItems.map { categoryItems ->
-            if (hasShownHint) {
-                categoryItems + listOf(CreateCategoryItem)
-            } else {
-                listOf(CategoriesIntroductionHeader) + categoryItems + listOf(CreateCategoryItem)
-            }
-        }
-    }
+    private val showSyncConsentBanner = logic.syncAppsLogic.shouldAskForConsent
 
-    val listContent = hasNotSuppressedChildDeviceManipulation.switchMap { hasChildDevicesWithManipulation ->
-        listContentStep1.map { listContent ->
-            if (hasChildDevicesWithManipulation) {
-                listOf(ManipulationWarningCategoryItem) + listContent
-            } else {
-                listContent
-            }
-        }
+    val listContent = mergeLiveDataWaitForValues(
+        categoryItems,
+        hasShownHint,
+        showSyncConsentBanner,
+        hasNotSuppressedChildDeviceManipulation
+    ).map { (categoryItems, hasShownHint, showSyncConsentBanner, hasChildDevicesWithManipulation) ->
+        val headers1 = emptyList<ManageChildCategoriesListItem>()
+
+        val headers2 = if (hasShownHint) headers1
+        else headers1 + listOf(CategoriesIntroductionHeader)
+
+        val headers3 = if (showSyncConsentBanner) headers2 + listOf(ManageChildCategoriesListItem.SyncAppListBanner)
+        else headers2
+
+        val headers4 = if (hasChildDevicesWithManipulation) headers3 + listOf(ManipulationWarningCategoryItem)
+        else headers3
+
+        headers4 + categoryItems + listOf(CreateCategoryItem)
     }
 }

@@ -1,5 +1,5 @@
 <!--
-  TimeLimit Copyright <C> 2019 - 2020 Jonas Lochmann
+  TimeLimit Copyright <C> 2019 - 2022 Jonas Lochmann
   This program is free software: you can redistribute it and/or modify
   it under the terms of the GNU General Public License as published by
   the Free Software Foundation version 3 of the License.
@@ -202,6 +202,10 @@
 
                 <include android:id="@+id/network_time_verification"
                     layout="@layout/setup_network_time_verification" />
+
+                <include android:id="@+id/app_list_sync"
+                    android:visibility="@{isAddingChild ? View.VISIBLE : View.GONE}"
+                    layout="@layout/setup_device_app_list_sync" />
 
                 <include android:id="@+id/background_sync"
                     layout="@layout/manage_device_background_sync_view" />

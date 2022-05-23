@@ -37,6 +37,7 @@ import io.timelimit.android.logic.DefaultAppLogic
 import io.timelimit.android.sync.actions.UpdateCategoryDisableLimitsAction
 import io.timelimit.android.sync.actions.UpdateCategorySortingAction
 import io.timelimit.android.sync.actions.UpdateCategoryTemporarilyBlockedAction
+import io.timelimit.android.ui.consent.SyncAppListConsentDialogFragment
 import io.timelimit.android.ui.main.ActivityViewModel
 import io.timelimit.android.ui.main.getActivityViewModel
 import io.timelimit.android.ui.manage.child.ManageChildFragmentArgs
@@ -58,7 +59,7 @@ class ManageChildCategoriesFragment : Fragment() {
     private val model: ManageChildCategoriesModel by viewModels()
     private lateinit var binding: RecyclerFragmentBinding
 
-    override fun onCreateView(inflater: LayoutInflater, container: ViewGroup?, savedInstanceState: Bundle?): View? {
+    override fun onCreateView(inflater: LayoutInflater, container: ViewGroup?, savedInstanceState: Bundle?): View {
         binding = RecyclerFragmentBinding.inflate(inflater, container, false)
 
         return binding.root
@@ -135,6 +136,10 @@ class ManageChildCategoriesFragment : Fragment() {
 
                     false
                 }
+            }
+
+            override fun onRequestAppListSyncConsentClicked() {
+                SyncAppListConsentDialogFragment.newInstance().show(parentFragmentManager)
             }
         }
 

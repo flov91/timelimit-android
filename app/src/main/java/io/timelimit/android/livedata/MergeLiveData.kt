@@ -1,5 +1,5 @@
 /*
- * TimeLimit Copyright <C> 2019 - 2021 Jonas Lochmann
+ * TimeLimit Copyright <C> 2019 - 2022 Jonas Lochmann
  *
  * This program is free software: you can redistribute it and/or modify
  * it under the terms of the GNU General Public License as published by
@@ -232,6 +232,51 @@ fun <T1, T2, T3, T4> mergeLiveDataWaitForValues(d1: LiveData<T1>, d2: LiveData<T
 
     result.addSource(d4) {
         state = state.copy(forth = Option.Some(it))
+
+        update()
+    }
+
+    return result
+}
+
+fun <T1, T2, T3, T4, T5> mergeLiveDataWaitForValues(d1: LiveData<T1>, d2: LiveData<T2>, d3: LiveData<T3>, d4: LiveData<T4>, d5: LiveData<T5>): LiveData<FiveTuple<T1, T2, T3, T4, T5>> {
+    val result = MediatorLiveData<FiveTuple<T1, T2, T3, T4, T5>>()
+    var state = FiveTuple<Option<T1>, Option<T2>, Option<T3>, Option<T4>, Option<T5>>(Option.None(), Option.None(), Option.None(), Option.None(), Option.None())
+
+    fun update() {
+        val (a, b, c, d, e) = state
+
+        if (a is Option.Some && b is Option.Some && c is Option.Some && d is Option.Some && e is Option.Some) {
+            result.value = FiveTuple(a.value, b.value, c.value, d.value, e.value)
+        }
+    }
+
+    result.addSource(d1) {
+        state = state.copy(first = Option.Some(it))
+
+        update()
+    }
+
+    result.addSource(d2) {
+        state = state.copy(second = Option.Some(it))
+
+        update()
+    }
+
+    result.addSource(d3) {
+        state = state.copy(third = Option.Some(it))
+
+        update()
+    }
+
+    result.addSource(d4) {
+        state = state.copy(forth = Option.Some(it))
+
+        update()
+    }
+
+    result.addSource(d5) {
+        state = state.copy(fifth = Option.Some(it))
 
         update()
     }

@@ -30,6 +30,8 @@
     <string name="generic_yes">Ja</string>
     <string name="generic_skip">Überspringen</string>
     <string name="generic_show_details">Details anzeigen</string>
+    <string name="generic_accept">Akzeptieren</string>
+    <string name="generic_reject">Ablehnen</string>
 
     <string name="generic_swipe_to_dismiss">Sie können diesen Hinweis entfernen, indem Sie ihn zur Seite wischen</string>
     <string name="generic_runtime_permission_rejected">Berechtigung abgelehnt; Sie können die Berechtigungen in den Systemeinstellungen verwalten</string>
@@ -275,7 +277,8 @@
         und daher auch keine Apps auf Geräten, die dem Benutzer zugeordnet wurden
     </string>
     <string name="category_apps_add_empty_child_devices_no_apps">Es gibt mindestens ein Gerät für diesen Benutzer,
-        aber es sind keine Apps von diesem Gerät bekannt. Ist die Benutzerzuordnung am entsprechenden Gerät angekommen?
+        aber es sind keine Apps von diesem Gerät bekannt. Ist die Benutzerzuordnung am entsprechenden Gerät angekommen
+        und wurde dort die Synchronisation der App-Liste aktiviert?
     </string>
     <string name="category_apps_add_empty_all_devices_no_apps_no_childs">Es gibt kein Gerät, das einem Kind zugeordnet wurde.
         Daher wurden keine Apps erfasst und dadurch sind jetzt keine Apps bekannt, die zugerodnet werden können.
@@ -1391,7 +1394,7 @@
     <string name="setup_privacy_connected_title">Vernetzung und Datenschutz</string>
     <string name="setup_privacy_connected_text_general_intro">Für den vernetzten Modus
         gibt es eine Zentrale - den Server. Auf diesen werden die Einstellungen,
-        die Nutzungsdauern und die Gerätezustände (erteilte Berechtigungen, installierte Apps und die App- und System-Version)
+        die Nutzungsdauern und die Gerätezustände (erteilte Berechtigungen und die TimeLimit- und System-Version)
         gespeichert.
     </string>
     <string name="setup_privacy_connected_text_default_server">Sie verwenden - da Sie Nichts anderes gewählt haben -
@@ -1403,6 +1406,17 @@
     <string name="setup_privacy_connected_text_general_outro">Sie können die Übertragung der Daten
         verhindern, indem Sie den lokalen Modus verwenden.
     </string>
+
+    <string name="consent_app_list_sync_dialog_title">App-Listen-Synchronisation</string>
+    <string name="consent_app_list_sync_dialog_text">TimeLimit möchte die Liste
+        der installierten Apps synchronisieren, um das Freigeben von Apps mittels Fernsteuerung von anderen
+        verknüpften Geräten aus zu ermöglichen. Dafür wird die Liste auf dem TimeLimit-Server
+        gespeichert. Diese Daten werden für keine anderen Zwecke verwendet.
+        Alternativ können Sie auch den lokalen Modus verwenden.
+    </string>
+    <string name="consent_app_list_sync_switch_label">Synchronisation aktivieren</string>
+    <string name="consent_app_list_sync_card_text">TimeLimit möchte die Liste der installierten Apps
+        für die Fernsteuerungsfunktion synchronisieren.</string>
 
     <string name="setup_remote_child_code_invalid">Dieser Code ist ungültig</string>
     <string name="setup_remote_child_title">Dieses Gerät verknüpfen</string>

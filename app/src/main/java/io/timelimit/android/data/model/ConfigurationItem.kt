@@ -101,6 +101,7 @@ enum class ConfigurationItemType {
     CustomOrganizationName,
     ServerApiLevel,
     AnnoyManualUnblockCounter,
+    ConsentFlags,
 }
 
 object ConfigurationItemTypeUtil {
@@ -128,6 +129,7 @@ object ConfigurationItemTypeUtil {
     private const val CUSTOM_ORGANIZATION_NAME = 23
     private const val SERVER_API_LEVEL = 24
     private const val ANNOY_MANUAL_UNBLOCK_COUNTER = 25
+    private const val CONSENT_FLAGS = 26
 
     val TYPES = listOf(
             ConfigurationItemType.OwnDeviceId,
@@ -153,7 +155,8 @@ object ConfigurationItemTypeUtil {
             ConfigurationItemType.UpdateStatus,
             ConfigurationItemType.CustomOrganizationName,
             ConfigurationItemType.ServerApiLevel,
-            ConfigurationItemType.AnnoyManualUnblockCounter
+            ConfigurationItemType.AnnoyManualUnblockCounter,
+            ConfigurationItemType.ConsentFlags
     )
 
     fun serialize(value: ConfigurationItemType) = when(value) {
@@ -181,6 +184,7 @@ object ConfigurationItemTypeUtil {
         ConfigurationItemType.CustomOrganizationName -> CUSTOM_ORGANIZATION_NAME
         ConfigurationItemType.ServerApiLevel -> SERVER_API_LEVEL
         ConfigurationItemType.AnnoyManualUnblockCounter -> ANNOY_MANUAL_UNBLOCK_COUNTER
+        ConfigurationItemType.ConsentFlags -> CONSENT_FLAGS
     }
 
     fun parse(value: Int) = when(value) {
@@ -208,6 +212,7 @@ object ConfigurationItemTypeUtil {
         CUSTOM_ORGANIZATION_NAME -> ConfigurationItemType.CustomOrganizationName
         SERVER_API_LEVEL -> ConfigurationItemType.ServerApiLevel
         ANNOY_MANUAL_UNBLOCK_COUNTER -> ConfigurationItemType.AnnoyManualUnblockCounter
+        CONSENT_FLAGS -> ConfigurationItemType.ConsentFlags
         else -> throw IllegalArgumentException()
     }
 }
@@ -251,4 +256,8 @@ object ExperimentalFlags {
     // const val INSTANCE_ID_FG_APP_DETECTION = 65536L
     // private const val OBSOLETE_DISABLE_FG_APP_DETECTION_FALLBACK = 131072L
     const val STRICT_OVERLAY_CHECKING = 0x40000L
+}
+
+object ConsentFlags {
+    const val APP_LIST_SYNC = 1L
 }

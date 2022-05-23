@@ -33,6 +33,8 @@
     <string name="generic_yes">Yes</string>
     <string name="generic_skip">Skip</string>
     <string name="generic_show_details">Show details</string>
+    <string name="generic_accept">Accept</string>
+    <string name="generic_reject">Reject</string>
 
     <string name="generic_swipe_to_dismiss">Swipe to the side to remove this message</string>
     <string name="generic_runtime_permission_rejected">Permission rejected; You can manage permissions in the system settings</string>
@@ -315,7 +317,8 @@
     </string>
     <string name="category_apps_add_empty_child_devices_no_apps">
         There is a device assigned to this user, but there are no know Apps.
-        Did the device receive the user assignment?
+        Did the device receive the user assignment and was the App List
+        Synchronisation enabled at this device?
     </string>
     <string name="category_apps_add_empty_all_devices_no_apps_no_childs">There is no device with any child assigned.
         Due to that, no Apps were recorded and thus no assignable Apps are known.
@@ -1427,7 +1430,7 @@
     <string name="setup_privacy_connected_title">Networking and Privacy</string>
     <string name="setup_privacy_connected_text_general_intro">For the connected mode,
         there is a central unit - the server. This server saves the settings, the usage durations
-        and the status of the devices (granted permissions, installed Apps, App and OS version).
+        and the status of the devices (granted permissions, TimeLimit version and OS version).
     </string>
     <string name="setup_privacy_connected_text_default_server">Because you have not selected anything different,
         you are using the default server which is provided by the developer of the App.
@@ -1439,6 +1442,15 @@
     <string name="setup_privacy_connected_text_general_outro">You can prevent
         the data transmission by using the local mode.
     </string>
+
+    <string name="consent_app_list_sync_dialog_title">App List Synchronization</string>
+    <string name="consent_app_list_sync_dialog_text">TimeLimit would like to sync the
+        list of the installed Apps to make it possible to allow Apps remotely. For this,
+        the list is saved at the TimeLimit server. This data is not used for any other purposes.
+        Alternatively, you can use the local mode.
+    </string>
+    <string name="consent_app_list_sync_switch_label">Enable Synchronization</string>
+    <string name="consent_app_list_sync_card_text">TimeLimit would like to sync the list of installed Apps for the remote control.</string>
 
     <string name="setup_remote_child_code_invalid">This code is invalid</string>
     <string name="setup_remote_child_title">Link this device</string>

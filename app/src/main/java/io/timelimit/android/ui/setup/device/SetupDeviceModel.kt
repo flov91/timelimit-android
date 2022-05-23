@@ -16,13 +16,18 @@
 package io.timelimit.android.ui.setup.device
 
 import android.app.Application
+import android.util.Log
+import android.widget.Toast
 import androidx.lifecycle.AndroidViewModel
 import androidx.lifecycle.MutableLiveData
+import io.timelimit.android.BuildConfig
+import io.timelimit.android.R
 import io.timelimit.android.async.Threads
 import io.timelimit.android.coroutines.executeAndWait
 import io.timelimit.android.coroutines.runAsync
 import io.timelimit.android.data.IdGenerator
 import io.timelimit.android.data.model.AppRecommendation
+import io.timelimit.android.data.model.ConsentFlags
 import io.timelimit.android.data.model.NetworkTime
 import io.timelimit.android.data.model.UserType
 import io.timelimit.android.livedata.castDown
@@ -35,6 +40,10 @@ import io.timelimit.android.ui.user.create.DefaultCategories
 import io.timelimit.android.update.UpdateUtil
 
 class SetupDeviceModel(application: Application): AndroidViewModel(application) {
+    companion object {
+        private const val LOG_TAG = "SetupDeviceModel"
+    }
+
     private val logic = DefaultAppLogic.with(application)
     private val statusInternal = MutableLiveData<SetupDeviceModelStatus>().apply { value = SetupDeviceModelStatus.Ready }
 
@@ -48,7 +57,8 @@ class SetupDeviceModel(application: Application): AndroidViewModel(application) 
             appsToNotWhitelist: Set<String>,
             model: ActivityViewModel,
             networkTime: NetworkTime,
-            enableUpdateChecks: Boolean
+            enableUpdateChecks: Boolean,
+            enableAppListSync: Boolean
     ) {
         if (statusInternal.value != SetupDeviceModelStatus.Ready) {
             return
@@ -57,123 +67,158 @@ class SetupDeviceModel(application: Application): AndroidViewModel(application) 
         statusInternal.value = SetupDeviceModelStatus.Working
 
         runAsync {
-            val actions = mutableListOf<ParentAction>()
-            var realUserId = userId
-            var realAllowedAppsCategory = allowedAppsCategory
-            val defaultCategories = DefaultCategories.with(getApplication())
+            try {
+                val actions = mutableListOf<ParentAction>()
+                var realUserId = userId
+                var realAllowedAppsCategory = allowedAppsCategory
+                val defaultCategories = DefaultCategories.with(getApplication())
 
-            val isUserAnChild = when (userId) {
-                SetupDeviceFragment.NEW_PARENT -> {
-                    // generate user id
-                    realUserId = IdGenerator.generateId()
+                val isUserAnChild = when (userId) {
+                    SetupDeviceFragment.NEW_PARENT -> {
+                        // generate user id
+                        realUserId = IdGenerator.generateId()
 
-                    // create parent
-                    actions.add(AddUserAction(
-                            userId = realUserId,
-                            name = username,
-                            timeZone = logic.timeApi.getSystemTimeZone().id,
-                            userType = UserType.Parent,
-                            password = ParentPassword.createCoroutine(password)
-                    ))
+                        // create parent
+                        actions.add(
+                            AddUserAction(
+                                userId = realUserId,
+                                name = username,
+                                timeZone = logic.timeApi.getSystemTimeZone().id,
+                                userType = UserType.Parent,
+                                password = ParentPassword.createCoroutine(password)
+                            )
+                        )
 
-                    false
+                        false
+                    }
+                    SetupDeviceFragment.NEW_CHILD -> {
+                        // generate user id
+                        realUserId = IdGenerator.generateId()
+
+                        // create child
+                        actions.add(
+                            AddUserAction(
+                                userId = realUserId,
+                                name = username,
+                                timeZone = logic.timeApi.getSystemTimeZone().id,
+                                userType = UserType.Child,
+                                password = if (password.isEmpty()) null else ParentPassword.createCoroutine(
+                                    password
+                                )
+                            )
+                        )
+
+                        // create default categories
+                        realAllowedAppsCategory = IdGenerator.generateId()
+                        val allowedGamesCategory = IdGenerator.generateId()
+
+                        actions.add(
+                            CreateCategoryAction(
+                                childId = realUserId,
+                                categoryId = realAllowedAppsCategory,
+                                title = defaultCategories.allowedAppsTitle
+                            )
+                        )
+
+                        actions.add(
+                            CreateCategoryAction(
+                                childId = realUserId,
+                                categoryId = allowedGamesCategory,
+                                title = defaultCategories.allowedGamesTitle
+                            )
+                        )
+
+                        defaultCategories.generateGamesTimeLimitRules(allowedGamesCategory)
+                            .forEach { rule ->
+                                actions.add(CreateTimeLimitRuleAction(rule))
+                            }
+
+                        true
+                    }
+                    else -> {
+                        logic.database.user().getUserByIdLive(userId)
+                            .waitForNullableValue()!!.type == UserType.Child
+                    }
                 }
-                SetupDeviceFragment.NEW_CHILD -> {
-                    // generate user id
-                    realUserId = IdGenerator.generateId()
 
-                    // create child
-                    actions.add(AddUserAction(
-                            userId = realUserId,
-                            name = username,
-                            timeZone = logic.timeApi.getSystemTimeZone().id,
-                            userType = UserType.Child,
-                            password = if (password.isEmpty()) null else ParentPassword.createCoroutine(password)
-                    ))
+                if (isUserAnChild) {
+                    if (realAllowedAppsCategory == "") {
+                        // create allowed apps category if none was specified and overwrite its id
+                        realAllowedAppsCategory = IdGenerator.generateId()
 
-                    // create default categories
-                    realAllowedAppsCategory = IdGenerator.generateId()
-                    val allowedGamesCategory = IdGenerator.generateId()
-
-                    actions.add(CreateCategoryAction(
-                            childId = realUserId,
-                            categoryId = realAllowedAppsCategory,
-                            title = defaultCategories.allowedAppsTitle
-                    ))
-
-                    actions.add(CreateCategoryAction(
-                            childId = realUserId,
-                            categoryId = allowedGamesCategory,
-                            title = defaultCategories.allowedGamesTitle
-                    ))
-
-                    defaultCategories.generateGamesTimeLimitRules(allowedGamesCategory).forEach { rule ->
-                        actions.add(CreateTimeLimitRuleAction(rule))
+                        actions.add(
+                            CreateCategoryAction(
+                                childId = realUserId,
+                                categoryId = realAllowedAppsCategory,
+                                title = defaultCategories.allowedAppsTitle
+                            )
+                        )
                     }
 
-                    true
+                    val alreadyAssignedApps = Threads.database.executeAndWait {
+                        logic.database.categoryApp().getCategoryAppsByUserIdSync(realUserId)
+                            .filter { it.appSpecifier.deviceId == null }
+                            .map { it.appSpecifier.packageName }
+                            .toSet()
+                    }
+
+                    // add allowed apps
+                    val allowedAppsPackages =
+                        logic.platformIntegration.getLocalApps(IdGenerator.generateId())
+                            .filter { app -> app.recommendation == AppRecommendation.Whitelist }
+                            .map { app -> app.packageName }
+                            .toMutableSet().apply {
+                                removeAll(appsToNotWhitelist)
+                                removeAll(alreadyAssignedApps)
+                            }.toList()
+
+                    if (allowedAppsPackages.isNotEmpty()) {
+                        actions.add(
+                            AddCategoryAppsAction(
+                                categoryId = realAllowedAppsCategory,
+                                packageNames = allowedAppsPackages
+                            )
+                        )
+                    }
                 }
-                else -> {
-                    logic.database.user().getUserByIdLive(userId).waitForNullableValue()!!.type == UserType.Child
+
+                // apply the network time mode
+                val deviceId = logic.deviceId.waitForNullableValue()!!
+
+                actions.add(
+                    UpdateNetworkTimeVerificationAction(
+                        deviceId = deviceId,
+                        mode = networkTime
+                    )
+                )
+
+                // assign user to this device
+                actions.add(
+                    SetDeviceUserAction(
+                        deviceId = deviceId,
+                        userId = realUserId
+                    )
+                )
+
+                // configure update check
+                UpdateUtil.setEnableChecks(getApplication(), enableUpdateChecks)
+
+                Threads.database.executeAndWait {
+                    DefaultAppLogic.with(getApplication()).database.config().setConsentFlagSync(ConsentFlags.APP_LIST_SYNC, enableAppListSync)
                 }
-            }
 
-            if (isUserAnChild) {
-                if (realAllowedAppsCategory == "") {
-                    // create allowed apps category if none was specified and overwrite its id
-                    realAllowedAppsCategory = IdGenerator.generateId()
-
-                    actions.add(CreateCategoryAction(
-                            childId = realUserId,
-                            categoryId = realAllowedAppsCategory,
-                            title = defaultCategories.allowedAppsTitle
-                    ))
+                if (model.tryDispatchParentActions(actions)) {
+                    statusInternal.value = SetupDeviceModelStatus.Done
+                } else {
+                    statusInternal.value = SetupDeviceModelStatus.Ready
+                }
+            } catch (ex: Exception) {
+                if (BuildConfig.DEBUG) {
+                    Log.d(LOG_TAG, "could not setup device", ex)
                 }
 
-                val alreadyAssignedApps = Threads.database.executeAndWait {
-                    logic.database.categoryApp().getCategoryAppsByUserIdSync(realUserId)
-                        .filter { it.appSpecifier.deviceId == null }
-                        .map { it.appSpecifier.packageName }
-                        .toSet()
-                }
+                Toast.makeText(getApplication(), R.string.error_general, Toast.LENGTH_SHORT).show()
 
-                // add allowed apps
-                val allowedAppsPackages = logic.platformIntegration.getLocalApps(IdGenerator.generateId())
-                        .filter { app -> app.recommendation == AppRecommendation.Whitelist }
-                        .map { app -> app.packageName }
-                        .toMutableSet().apply {
-                            removeAll(appsToNotWhitelist)
-                            removeAll(alreadyAssignedApps)
-                        }.toList()
-
-                if (allowedAppsPackages.isNotEmpty()) {
-                    actions.add(AddCategoryAppsAction(
-                            categoryId = realAllowedAppsCategory,
-                            packageNames = allowedAppsPackages
-                    ))
-                }
-            }
-
-            // apply the network time mode
-            val deviceId = logic.deviceId.waitForNullableValue()!!
-
-            actions.add(UpdateNetworkTimeVerificationAction(
-                    deviceId = deviceId,
-                    mode = networkTime
-            ))
-
-            // assign user to this device
-            actions.add(SetDeviceUserAction(
-                    deviceId = deviceId,
-                    userId = realUserId
-            ))
-
-            // configure update check
-            UpdateUtil.setEnableChecks(getApplication(), enableUpdateChecks)
-
-            if (model.tryDispatchParentActions(actions)) {
-                statusInternal.value = SetupDeviceModelStatus.Done
-            } else {
                 statusInternal.value = SetupDeviceModelStatus.Ready
             }
         }

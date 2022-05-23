@@ -1,5 +1,5 @@
 /*
- * TimeLimit Copyright <C> 2019 - 2020 Jonas Lochmann
+ * TimeLimit Copyright <C> 2019 - 2022 Jonas Lochmann
  *
  * This program is free software: you can redistribute it and/or modify
  * it under the terms of the GNU General Public License as published by
@@ -23,6 +23,7 @@ import androidx.recyclerview.widget.RecyclerView
 import io.timelimit.android.R
 import io.timelimit.android.data.model.Category
 import io.timelimit.android.databinding.AddItemViewBinding
+import io.timelimit.android.databinding.AppListSyncPermissionRequestCardBinding
 import io.timelimit.android.databinding.CategoryRichCardBinding
 import io.timelimit.android.databinding.IntroCardBinding
 import io.timelimit.android.ui.util.DateUtil
@@ -35,6 +36,7 @@ class Adapter: RecyclerView.Adapter<ViewHolder>() {
         private const val TYPE_ADD = 1
         private const val TYPE_INTRO = 2
         private const val TYPE_MANIPULATION_WARNING = 3
+        private const val TYPE_APP_LIST_BANNER = 4
     }
 
     var categories: List<ManageChildCategoriesListItem>? by Delegates.observable(null as List<ManageChildCategoriesListItem>?) { _, _, _ -> notifyDataSetChanged() }
@@ -53,6 +55,7 @@ class Adapter: RecyclerView.Adapter<ViewHolder>() {
             CreateCategoryItem -> item.hashCode()
             CategoriesIntroductionHeader -> item.hashCode()
             ManipulationWarningCategoryItem -> item.hashCode()
+            ManageChildCategoriesListItem.SyncAppListBanner -> item.hashCode()
         }.toLong()
     }
 
@@ -61,6 +64,7 @@ class Adapter: RecyclerView.Adapter<ViewHolder>() {
         CreateCategoryItem -> TYPE_ADD
         CategoriesIntroductionHeader -> TYPE_INTRO
         ManipulationWarningCategoryItem -> TYPE_MANIPULATION_WARNING
+        ManageChildCategoriesListItem.SyncAppListBanner -> TYPE_APP_LIST_BANNER
     }
 
     override fun getItemCount() = categories?.size ?: 0
@@ -102,6 +106,13 @@ class Adapter: RecyclerView.Adapter<ViewHolder>() {
             ManipulationWarningViewHolder(
                     LayoutInflater.from(parent.context)
                             .inflate(R.layout.manage_child_manipulation_warning, parent, false)
+            )
+
+        TYPE_APP_LIST_BANNER ->
+            SyncAppListViewHolder(
+                AppListSyncPermissionRequestCardBinding.inflate(LayoutInflater.from(parent.context), parent, false).also {
+                    it.detailButton.setOnClickListener { handlers?.onRequestAppListSyncConsentClicked() }
+                }.root
             )
 
         else -> throw IllegalStateException()
@@ -163,6 +174,9 @@ class Adapter: RecyclerView.Adapter<ViewHolder>() {
             ManipulationWarningCategoryItem -> {
                 // nothing to do
             }
+            ManageChildCategoriesListItem.SyncAppListBanner -> {
+                // nothing to do
+            }
         }.let {  }
     }
 }
@@ -171,10 +185,12 @@ sealed class ViewHolder(view: View): RecyclerView.ViewHolder(view)
 class AddViewHolder(view: View): ViewHolder(view)
 class IntroViewHolder(view: View): ViewHolder(view)
 class ManipulationWarningViewHolder(view: View): ViewHolder(view)
+class SyncAppListViewHolder(view: View): ViewHolder(view)
 class ItemViewHolder(val binding: CategoryRichCardBinding): ViewHolder(binding.root)
 
 interface Handlers {
     fun onCategoryClicked(category: Category)
     fun onCreateCategoryClicked()
     fun onCategorySwitched(category: CategoryItem, isChecked: Boolean): Boolean
+    fun onRequestAppListSyncConsentClicked()
 }

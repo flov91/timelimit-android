@@ -25,6 +25,7 @@ import io.timelimit.android.coroutines.executeAndWait
 import io.timelimit.android.coroutines.runAsyncExpectForever
 import io.timelimit.android.data.model.App
 import io.timelimit.android.data.model.AppActivity
+import io.timelimit.android.data.model.ConsentFlags
 import io.timelimit.android.data.model.UserType
 import io.timelimit.android.integration.platform.ProtectionLevel
 import io.timelimit.android.livedata.*
@@ -45,17 +46,53 @@ class SyncInstalledAppsLogic(val appLogic: AppLogic) {
         requestSync.value = true
     }
 
+    private val deviceStateLive = mergeLiveDataWaitForValues(
+        appLogic.deviceEntryIfEnabled,
+        appLogic.database.config().isConsentFlagSetAsync(ConsentFlags.APP_LIST_SYNC),
+        appLogic.database.config().getDeviceAuthTokenAsync().map { it.isEmpty() },
+        appLogic.deviceUserEntry,
+        appLogic.deviceEntryIfEnabled.switchMap { deviceEntry ->
+            val defaultUser = deviceEntry?.defaultUser
+
+            if (defaultUser.isNullOrEmpty()) liveDataFromNullableValue(null)
+            else appLogic.database.user().getUserByIdLive(defaultUser)
+        }
+    ).map { (deviceEntry, hasSyncConsent, isLocalMode, deviceUser, deviceDefaultUser) ->
+        deviceEntry?.let { device ->
+            DeviceState(
+                id = device.id,
+                isCurrentUserChild = deviceUser?.type == UserType.Child,
+                isDefaultUserChild = deviceDefaultUser?.type == UserType.Child,
+                enableActivityLevelBlocking = device.enableActivityLevelBlocking,
+                isDeviceOwner = device.currentProtectionLevel == ProtectionLevel.DeviceOwner,
+                hasSyncConsent = hasSyncConsent,
+                isLocalMode = isLocalMode
+            )
+        }
+    }.ignoreUnchanged()
+
+    val shouldAskForConsent = deviceStateLive.map { it?.shouldAskForConsent ?: false }.ignoreUnchanged()
+
+    private fun getDeviceStateSync(): DeviceState? {
+        val userAndDeviceData = appLogic.database.derivedDataDao().getUserAndDeviceRelatedDataSync() ?: return null
+        val deviceRelatedData = userAndDeviceData.deviceRelatedData
+        val device = deviceRelatedData.deviceEntry
+        val defaultUser = if (device.defaultUser.isNotEmpty()) appLogic.database.user().getUserByIdSync(device.defaultUser) else null
+
+        return DeviceState(
+            id = device.id,
+            isCurrentUserChild = userAndDeviceData.userRelatedData?.user?.type == UserType.Child,
+            isDefaultUserChild = defaultUser?.type == UserType.Child,
+            enableActivityLevelBlocking = device.enableActivityLevelBlocking,
+            isDeviceOwner = device.currentProtectionLevel == ProtectionLevel.DeviceOwner,
+            hasSyncConsent = deviceRelatedData.consentFlags and ConsentFlags.APP_LIST_SYNC == ConsentFlags.APP_LIST_SYNC,
+            isLocalMode = deviceRelatedData.isLocalMode
+        )
+    }
+
     init {
         appLogic.platformIntegration.installedAppsChangeListener = Runnable { requestSync() }
-        appLogic.deviceEntryIfEnabled.map { device ->
-            device?.let { DeviceState(
-                id = device.id,
-                currentUserId = device.currentUserId,
-                defaultUser = device.defaultUser,
-                enableActivityLevelBlocking = device.enableActivityLevelBlocking,
-                isDeviceOwner = device.currentProtectionLevel == ProtectionLevel.DeviceOwner
-            ) }
-        }.ignoreUnchanged().observeForever { requestSync() }
+        deviceStateLive.observeForever { requestSync() }
 
         runAsyncExpectForever { syncLoop() }
     }
@@ -88,26 +125,17 @@ class SyncInstalledAppsLogic(val appLogic: AppLogic) {
 
     private suspend fun doSyncNow() {
         doSyncLock.withLock {
-            val deviceEntry = appLogic.deviceEntryIfEnabled.waitForNullableValue()
+            val deviceState = Threads.database.executeAndWait { getDeviceStateSync() } ?: return
 
-            if (deviceEntry == null) {
-                return
-            }
-
-            if (appLogic.database.config().getDeviceAuthTokenAsync().waitForNullableValue().isNullOrEmpty()) {
+            if (deviceState.isLocalMode) {
                 // local mode -> sync always
             } else {
                 // connected mode -> don't sync always
-
-                val userEntry = appLogic.deviceUserEntry.waitForNullableValue()
-                val defaultUserEntry = appLogic.database.user().getUserByIdLive(deviceEntry.defaultUser).waitForNullableValue()
-
-                if (userEntry?.type != UserType.Child && defaultUserEntry?.type != UserType.Child) {
-                    return@withLock
-                }
+                if (!deviceState.hasSyncConsent) return@withLock
+                if (!deviceState.hasAnyChildUser) return@withLock
             }
 
-            val deviceId = deviceEntry.id
+            val deviceId = deviceState.id
 
             val currentlyInstalledApps = getCurrentApps(deviceId)
 
@@ -153,7 +181,7 @@ class SyncInstalledAppsLogic(val appLogic: AppLogic) {
             run {
                 fun buildKey(activity: AppActivity) = "${activity.appPackageName}:${activity.activityClassName}"
 
-                val currentlyInstalled = if (deviceEntry.enableActivityLevelBlocking)
+                val currentlyInstalled = if (deviceState.enableActivityLevelBlocking)
                     Threads.backgroundOSInteraction.executeAndWait {
                         val realActivities = appLogic.platformIntegration.getLocalAppActivities(deviceId = deviceId)
                         val dummyActivities = currentlyInstalledApps.keys.map { packageName ->
@@ -220,9 +248,14 @@ class SyncInstalledAppsLogic(val appLogic: AppLogic) {
 
     internal data class DeviceState(
         val id: String,
-        val currentUserId: String,
-        val defaultUser: String,
+        val isCurrentUserChild: Boolean,
+        val isDefaultUserChild: Boolean,
         val enableActivityLevelBlocking: Boolean,
-        val isDeviceOwner: Boolean
-    )
+        val isDeviceOwner: Boolean,
+        val hasSyncConsent: Boolean,
+        val isLocalMode: Boolean
+    ) {
+        val hasAnyChildUser = isCurrentUserChild || isDefaultUserChild
+        val shouldAskForConsent = hasAnyChildUser && !isLocalMode && !hasSyncConsent
+    }
 }

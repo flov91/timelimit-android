@@ -21,37 +21,37 @@ import io.timelimit.android.data.model.TimeLimitRule
 import io.timelimit.android.extensions.MinuteOfDay
 
 object DatabaseMigrations {
-    val MIGRATE_TO_V2 = object: Migration(1, 2) {
+    private val MIGRATE_TO_V2 = object: Migration(1, 2) {
         override fun migrate(database: SupportSQLiteDatabase) {
             database.execSQL("ALTER TABLE device ADD COLUMN did_report_uninstall INTEGER NOT NULL DEFAULT 0")
         }
     }
 
-    val MIGRATE_TO_V3 = object: Migration(2, 3) {
+    private val MIGRATE_TO_V3 = object: Migration(2, 3) {
         override fun migrate(database: SupportSQLiteDatabase) {
             database.execSQL("ALTER TABLE device ADD COLUMN is_user_kept_signed_in INTEGER NOT NULL DEFAULT 0")
         }
     }
 
-    val MIGRATE_TO_V4 = object: Migration(3, 4) {
+    private val MIGRATE_TO_V4 = object: Migration(3, 4) {
         override fun migrate(database: SupportSQLiteDatabase) {
             database.execSQL("ALTER TABLE `user` ADD COLUMN `category_for_not_assigned_apps` TEXT NOT NULL DEFAULT \"\"")
         }
     }
 
-    val MIGRATE_TO_V5 = object: Migration(4, 5) {
+    private val MIGRATE_TO_V5 = object: Migration(4, 5) {
         override fun migrate(database: SupportSQLiteDatabase) {
             database.execSQL("ALTER TABLE `category` ADD COLUMN `parent_category_id` TEXT NOT NULL DEFAULT \"\"")
         }
     }
 
-    val MIGRATE_TO_V6 = object: Migration(5, 6) {
+    private val MIGRATE_TO_V6 = object: Migration(5, 6) {
         override fun migrate(database: SupportSQLiteDatabase) {
             database.execSQL("ALTER TABLE `device` ADD COLUMN `show_device_connected` INTEGER NOT NULL DEFAULT 0")
         }
     }
 
-    val MIGRATE_TO_V7 = object: Migration(6, 7) {
+    private val MIGRATE_TO_V7 = object: Migration(6, 7) {
         override fun migrate(database: SupportSQLiteDatabase) {
             database.execSQL("ALTER TABLE `device` ADD COLUMN `default_user` TEXT NOT NULL DEFAULT \"\"")
             database.execSQL("ALTER TABLE `device` ADD COLUMN `default_user_timeout` INTEGER NOT NULL DEFAULT 0")
@@ -59,7 +59,7 @@ object DatabaseMigrations {
         }
     }
 
-    val MIGRATE_TO_V8 = object: Migration(7, 8) {
+    private val MIGRATE_TO_V8 = object: Migration(7, 8) {
         override fun migrate(database: SupportSQLiteDatabase) {
             // this is empty
             //
@@ -67,14 +67,14 @@ object DatabaseMigrations {
         }
     }
 
-    val MIGRATE_TO_V9 = object: Migration(8, 9) {
+    private val MIGRATE_TO_V9 = object: Migration(8, 9) {
         override fun migrate(database: SupportSQLiteDatabase) {
             database.execSQL("ALTER TABLE `device` ADD COLUMN `did_reboot` INTEGER NOT NULL DEFAULT 0")
             database.execSQL("ALTER TABLE `device` ADD COLUMN `consider_reboot_manipulation` INTEGER NOT NULL DEFAULT 0")
         }
     }
 
-    val MIGRATE_TO_V10 = object: Migration(9, 10) {
+    private val MIGRATE_TO_V10 = object: Migration(9, 10) {
         override fun migrate(database: SupportSQLiteDatabase) {
             // this is empty
             //
@@ -82,40 +82,40 @@ object DatabaseMigrations {
         }
     }
 
-    val MIGRATE_TO_V11 = object: Migration(10, 11) {
+    private val MIGRATE_TO_V11 = object: Migration(10, 11) {
         override fun migrate(database: SupportSQLiteDatabase) {
             database.execSQL("ALTER TABLE `user` ADD COLUMN `mail_notification_flags` INTEGER NOT NULL DEFAULT 0")
         }
     }
 
-    val MIGRATE_TO_V12 = object: Migration(11, 12) {
+    private val MIGRATE_TO_V12 = object: Migration(11, 12) {
         override fun migrate(database: SupportSQLiteDatabase) {
             database.execSQL("ALTER TABLE `category` ADD COLUMN `block_all_notifications` INTEGER NOT NULL DEFAULT 0")
         }
     }
 
-    val MIGRATE_TO_V13 = object: Migration(12, 13) {
+    private val MIGRATE_TO_V13 = object: Migration(12, 13) {
         override fun migrate(database: SupportSQLiteDatabase) {
             database.execSQL("ALTER TABLE `device` ADD COLUMN `current_overlay_permission` TEXT NOT NULL DEFAULT \"not granted\"")
             database.execSQL("ALTER TABLE `device` ADD COLUMN `highest_overlay_permission` TEXT NOT NULL DEFAULT \"not granted\"")
         }
     }
 
-    val MIGRATE_TO_V14 = object: Migration(13, 14) {
+    private val MIGRATE_TO_V14 = object: Migration(13, 14) {
         override fun migrate(database: SupportSQLiteDatabase) {
             database.execSQL("ALTER TABLE `device` ADD COLUMN `current_accessibility_service_permission` INTEGER NOT NULL DEFAULT 0")
             database.execSQL("ALTER TABLE `device` ADD COLUMN `was_accessibility_service_permission` INTEGER NOT NULL DEFAULT 0")
         }
     }
 
-    val MIGRATE_TO_V15 = object: Migration(14, 15) {
+    private val MIGRATE_TO_V15 = object: Migration(14, 15) {
         override fun migrate(database: SupportSQLiteDatabase) {
             database.execSQL("CREATE TABLE `app_activity` (`device_id` TEXT NOT NULL, `app_package_name` TEXT NOT NULL, `activity_class_name` TEXT NOT NULL, `activity_title` TEXT NOT NULL, PRIMARY KEY(`device_id`, `app_package_name`, `activity_class_name`))")
             database.execSQL("ALTER TABLE `device` ADD COLUMN `enable_activity_level_blocking` INTEGER NOT NULL DEFAULT 0")
         }
     }
 
-    val MIGRATE_TO_V16 = object: Migration(15, 16) {
+    private val MIGRATE_TO_V16 = object: Migration(15, 16) {
         override fun migrate(database: SupportSQLiteDatabase) {
             // this is empty
             //
@@ -123,20 +123,20 @@ object DatabaseMigrations {
         }
     }
 
-    val MIGRATE_TO_V17 = object: Migration(16, 17) {
+    private val MIGRATE_TO_V17 = object: Migration(16, 17) {
         override fun migrate(database: SupportSQLiteDatabase) {
             database.execSQL("CREATE TABLE IF NOT EXISTS `notification` (`type` INTEGER NOT NULL, `id` TEXT NOT NULL, `first_notify_time` INTEGER NOT NULL, `dismissed` INTEGER NOT NULL, PRIMARY KEY(`type`, `id`))")
         }
     }
 
-    val MIGRATE_TO_V18 = object: Migration(17, 18) {
+    private val MIGRATE_TO_V18 = object: Migration(17, 18) {
         override fun migrate(database: SupportSQLiteDatabase) {
             database.execSQL("ALTER TABLE `device` ADD COLUMN `q_or_later` INTEGER NOT NULL DEFAULT 0")
             database.execSQL("ALTER TABLE `category` ADD COLUMN `time_warnings` INTEGER NOT NULL DEFAULT 0")
         }
     }
 
-    val MIGRATE_TO_V19 = object: Migration(18, 19) {
+    private val MIGRATE_TO_V19 = object: Migration(18, 19) {
         override fun migrate(database: SupportSQLiteDatabase) {
             // this is empty
             //
@@ -144,44 +144,44 @@ object DatabaseMigrations {
         }
     }
 
-    val MIGRATE_TO_V20 = object: Migration(19, 20) {
+    private val MIGRATE_TO_V20 = object: Migration(19, 20) {
         override fun migrate(database: SupportSQLiteDatabase) {
             database.execSQL("CREATE TABLE IF NOT EXISTS `allowed_contact` (`id` INTEGER PRIMARY KEY AUTOINCREMENT NOT NULL, `title` TEXT NOT NULL, `phone` TEXT NOT NULL)")
         }
     }
 
-    val MIGRATE_TO_V21 = object: Migration(20, 21) {
+    private val MIGRATE_TO_V21 = object: Migration(20, 21) {
         override fun migrate(database: SupportSQLiteDatabase) {
             database.execSQL("ALTER TABLE `device` ADD COLUMN `had_manipulation_flags` INTEGER NOT NULL DEFAULT 0")
         }
     }
 
-    val MIGRATE_TO_V22 = object: Migration(21, 22) {
+    private val MIGRATE_TO_V22 = object: Migration(21, 22) {
         override fun migrate(database: SupportSQLiteDatabase) {
             database.execSQL("ALTER TABLE `user` ADD COLUMN `blocked_times` TEXT NOT NULL DEFAULT \"\"")
         }
     }
 
-    val MIGRATE_TO_V23 = object: Migration(22, 23) {
+    private val MIGRATE_TO_V23 = object: Migration(22, 23) {
         override fun migrate(database: SupportSQLiteDatabase) {
             database.execSQL("ALTER TABLE `category` ADD COLUMN `min_battery_charging` INTEGER NOT NULL DEFAULT 0")
             database.execSQL("ALTER TABLE `category` ADD COLUMN `min_battery_mobile` INTEGER NOT NULL DEFAULT 0")
         }
     }
 
-    val MIGRATE_TO_V24 = object: Migration(23, 24) {
+    private val MIGRATE_TO_V24 = object: Migration(23, 24) {
         override fun migrate(database: SupportSQLiteDatabase) {
             database.execSQL("ALTER TABLE `category` ADD COLUMN `temporarily_blocked_end_time` INTEGER NOT NULL DEFAULT 0")
         }
     }
 
-    val MIGRATE_TO_V25 = object: Migration(24, 25) {
+    private val MIGRATE_TO_V25 = object: Migration(24, 25) {
         override fun migrate(database: SupportSQLiteDatabase) {
             database.execSQL("ALTER TABLE `category` ADD COLUMN `sort` INTEGER NOT NULL DEFAULT 0")
         }
     }
 
-    val MIGRATE_TO_V26 = object: Migration(25, 26) {
+    private val MIGRATE_TO_V26 = object: Migration(25, 26) {
         override fun migrate(database: SupportSQLiteDatabase) {
             // this is empty
             //
@@ -189,20 +189,20 @@ object DatabaseMigrations {
         }
     }
 
-    val MIGRATE_TO_V27 = object: Migration(26, 27) {
+    private val MIGRATE_TO_V27 = object: Migration(26, 27) {
         override fun migrate(database: SupportSQLiteDatabase) {
             database.execSQL("ALTER TABLE `category` ADD COLUMN `extra_time_day` INTEGER NOT NULL DEFAULT -1")
         }
     }
 
-    val MIGRATE_TO_V28 = object: Migration(27, 28) {
+    private val MIGRATE_TO_V28 = object: Migration(27, 28) {
         override fun migrate(database: SupportSQLiteDatabase) {
             database.execSQL("CREATE TABLE IF NOT EXISTS `user_key` (`user_id` TEXT NOT NULL, `key` BLOB NOT NULL, `last_use` INTEGER NOT NULL, PRIMARY KEY(`user_id`), FOREIGN KEY(`user_id`) REFERENCES `user`(`id`) ON UPDATE CASCADE ON DELETE CASCADE )")
             database.execSQL("CREATE UNIQUE INDEX IF NOT EXISTS `index_user_key_key` ON `user_key` (`key`)")
         }
     }
 
-    val MIGRATE_TO_V29 = object: Migration(28, 29) {
+    private val MIGRATE_TO_V29 = object: Migration(28, 29) {
         override fun migrate(database: SupportSQLiteDatabase) {
             database.execSQL("ALTER TABLE `time_limit_rule` ADD COLUMN `start_minute_of_day` INTEGER NOT NULL DEFAULT ${TimeLimitRule.MIN_START_MINUTE}")
             database.execSQL("ALTER TABLE `time_limit_rule` ADD COLUMN `end_minute_of_day` INTEGER NOT NULL DEFAULT ${TimeLimitRule.MAX_END_MINUTE}")
@@ -219,71 +219,120 @@ object DatabaseMigrations {
         }
     }
 
-    val MIGRATE_TO_V30 = object: Migration(29, 30) {
+    private val MIGRATE_TO_V30 = object: Migration(29, 30) {
         override fun migrate(database: SupportSQLiteDatabase) {
             database.execSQL("ALTER TABLE `user` ADD COLUMN `flags` INTEGER NOT NULL DEFAULT 0")
         }
     }
 
-    val MIGRATE_TO_V31 = object: Migration(30, 31) {
+    private val MIGRATE_TO_V31 = object: Migration(30, 31) {
         override fun migrate(database: SupportSQLiteDatabase) {
             database.execSQL("CREATE TABLE IF NOT EXISTS `user_limit_login_category` (`user_id` TEXT NOT NULL, `category_id` TEXT NOT NULL, PRIMARY KEY(`user_id`), FOREIGN KEY(`user_id`) REFERENCES `user`(`id`) ON UPDATE CASCADE ON DELETE CASCADE , FOREIGN KEY(`category_id`) REFERENCES `category`(`id`) ON UPDATE CASCADE ON DELETE CASCADE )")
             database.execSQL("CREATE INDEX IF NOT EXISTS `user_limit_login_category_index_category_id` ON `user_limit_login_category` (`category_id`)")
         }
     }
 
-    val MIGRATE_TO_V32 = object: Migration(31, 32) {
+    private val MIGRATE_TO_V32 = object: Migration(31, 32) {
         override fun migrate(database: SupportSQLiteDatabase) {
             database.execSQL("CREATE TABLE IF NOT EXISTS `category_network_id` (`category_id` TEXT NOT NULL, `network_item_id` TEXT NOT NULL, `hashed_network_id` TEXT NOT NULL, PRIMARY KEY(`category_id`, `network_item_id`), FOREIGN KEY(`category_id`) REFERENCES `category`(`id`) ON UPDATE CASCADE ON DELETE CASCADE )")
         }
     }
 
-    val MIGRATE_TO_V33 = object: Migration(32, 33) {
+    private val MIGRATE_TO_V33 = object: Migration(32, 33) {
         override fun migrate(database: SupportSQLiteDatabase) {
             database.execSQL("ALTER TABLE `category` ADD COLUMN `disable_limits_until` INTEGER NOT NULL DEFAULT 0")
         }
     }
 
-    val MIGRATE_TO_V34 = object: Migration(33, 34) {
+    private val MIGRATE_TO_V34 = object: Migration(33, 34) {
         override fun migrate(database: SupportSQLiteDatabase) {
             database.execSQL("CREATE TABLE IF NOT EXISTS `child_task` (`task_id` TEXT NOT NULL, `category_id` TEXT NOT NULL, `task_title` TEXT NOT NULL, `extra_time_duration` INTEGER NOT NULL, `pending_request` INTEGER NOT NULL, `last_grant_timestamp` INTEGER NOT NULL, PRIMARY KEY(`task_id`), FOREIGN KEY(`category_id`) REFERENCES `category`(`id`) ON UPDATE CASCADE ON DELETE CASCADE )")
             database.execSQL("ALTER TABLE `category` ADD COLUMN `tasks_version` TEXT NOT NULL DEFAULT ''")
         }
     }
 
-    val MIGRATE_TO_V35 = object: Migration(34, 35) {
+    private val MIGRATE_TO_V35 = object: Migration(34, 35) {
         override fun migrate(database: SupportSQLiteDatabase) {
             database.execSQL("ALTER TABLE `time_limit_rule` ADD COLUMN `per_day` INTEGER NOT NULL DEFAULT 0")
         }
     }
 
-    val MIGRATE_TO_V36 = object: Migration(35, 36) {
+    private val MIGRATE_TO_V36 = object: Migration(35, 36) {
         override fun migrate(database: SupportSQLiteDatabase) {
             database.execSQL("ALTER TABLE `user_limit_login_category` ADD COLUMN pre_block_duration INTEGER NOT NULL DEFAULT 0")
         }
     }
 
-    val MIGRATE_TO_V37 = object: Migration(36, 37) {
+    private val MIGRATE_TO_V37 = object: Migration(36, 37) {
         override fun migrate(database: SupportSQLiteDatabase) {
             database.execSQL("ALTER TABLE `category` ADD COLUMN `flags` INTEGER NOT NULL DEFAULT 0")
         }
     }
 
-    val MIGRATE_TO_V38 = object: Migration(37, 38) {
+    private val MIGRATE_TO_V38 = object: Migration(37, 38) {
         override fun migrate(database: SupportSQLiteDatabase) {
             database.execSQL("ALTER TABLE category ADD COLUMN block_notification_delay INTEGER NOT NULL DEFAULT 0")
         }
     }
 
-    val MIGRATE_TO_V39 = object: Migration(38, 39) {
+    private val MIGRATE_TO_V39 = object: Migration(38, 39) {
         override fun migrate(database: SupportSQLiteDatabase) {
             // nothing to do, there was just a new config item type added
         }
     }
 
-    val MIGRATE_TO_V40 = object: Migration(39, 40) {
+    private val MIGRATE_TO_V40 = object: Migration(39, 40) {
         override fun migrate(database: SupportSQLiteDatabase) {
             database.execSQL("CREATE TABLE IF NOT EXISTS `category_time_warning` (`category_id` TEXT NOT NULL, `minutes` INTEGER NOT NULL, PRIMARY KEY(`category_id`, `minutes`), FOREIGN KEY(`category_id`) REFERENCES `category`(`id`) ON UPDATE CASCADE ON DELETE CASCADE )")
         }
     }
+
+    private val MIGRATE_TO_V41 = object: Migration(40, 41) {
+        override fun migrate(database: SupportSQLiteDatabase) {
+            // nothing to do, there was just a new config item type added
+        }
+    }
+
+    val ALL = arrayOf(
+        MIGRATE_TO_V2,
+        MIGRATE_TO_V3,
+        MIGRATE_TO_V4,
+        MIGRATE_TO_V5,
+        MIGRATE_TO_V6,
+        MIGRATE_TO_V7,
+        MIGRATE_TO_V8,
+        MIGRATE_TO_V9,
+        MIGRATE_TO_V10,
+        MIGRATE_TO_V11,
+        MIGRATE_TO_V12,
+        MIGRATE_TO_V13,
+        MIGRATE_TO_V14,
+        MIGRATE_TO_V15,
+        MIGRATE_TO_V16,
+        MIGRATE_TO_V17,
+        MIGRATE_TO_V18,
+        MIGRATE_TO_V19,
+        MIGRATE_TO_V20,
+        MIGRATE_TO_V21,
+        MIGRATE_TO_V22,
+        MIGRATE_TO_V23,
+        MIGRATE_TO_V24,
+        MIGRATE_TO_V25,
+        MIGRATE_TO_V26,
+        MIGRATE_TO_V27,
+        MIGRATE_TO_V28,
+        MIGRATE_TO_V29,
+        MIGRATE_TO_V30,
+        MIGRATE_TO_V31,
+        MIGRATE_TO_V32,
+        MIGRATE_TO_V33,
+        MIGRATE_TO_V34,
+        MIGRATE_TO_V35,
+        MIGRATE_TO_V36,
+        MIGRATE_TO_V37,
+        MIGRATE_TO_V38,
+        MIGRATE_TO_V39,
+        MIGRATE_TO_V40,
+        MIGRATE_TO_V41
+    )
 }

@@ -330,4 +330,28 @@ abstract class ConfigDao {
 
     fun getAnnoyManualUnblockCounter() = getValueOfKeySync(ConfigurationItemType.AnnoyManualUnblockCounter).let { it?.toInt() ?: 0 }
     fun setAnoyManualUnblockCounterSync(counter: Int) { updateValueSync(ConfigurationItemType.AnnoyManualUnblockCounter, counter.toString()) }
+
+    private val consentFlags: LiveData<Long> by lazy {
+        getValueOfKeyAsync(ConfigurationItemType.ConsentFlags).map {
+            it?.toLong(16) ?: 0
+        }
+    }
+
+    fun getConsentFlagsSync(): Long = getValueOfKeySync(ConfigurationItemType.ConsentFlags).let {
+        it?.toLong(16) ?: 0
+    }
+
+    fun isConsentFlagSetAsync(flags: Long) = consentFlags.map {
+        (it and flags) == flags
+    }.ignoreUnchanged()
+
+    fun setConsentFlagSync(flags: Long, enable: Boolean) {
+        updateValueSync(
+            ConfigurationItemType.ConsentFlags,
+            if (enable)
+                (getConsentFlagsSync() or flags).toString(16)
+            else
+                (getConsentFlagsSync() and (flags.inv())).toString(16)
+        )
+    }
 }

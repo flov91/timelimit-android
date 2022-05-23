@@ -1,5 +1,5 @@
 /*
- * TimeLimit Copyright <C> 2019 - 2020 Jonas Lochmann
+ * TimeLimit Copyright <C> 2019 - 2022 Jonas Lochmann
  *
  * This program is free software: you can redistribute it and/or modify
  * it under the terms of the GNU General Public License as published by
@@ -28,7 +28,8 @@ data class DeviceRelatedData (
         val isLocalMode: Boolean,
         val hasValidDefaultUser: Boolean,
         val temporarilyAllowedApps: Set<String>,
-        val experimentalFlags: Long
+        val experimentalFlags: Long,
+        val consentFlags: Long
 ): Observer {
     companion object {
         private val relatedTables = arrayOf(Table.ConfigurationItem, Table.Device, Table.User, Table.TemporarilyAllowedApp)
@@ -41,6 +42,7 @@ data class DeviceRelatedData (
             val hasValidDefaultUser = database.user().getUserByIdSync(deviceEntry.defaultUser) != null
             val temporarilyAllowedApps = database.temporarilyAllowedApp().getTemporarilyAllowedAppsSync().toSet()
             val experimentalFlags = database.config().getExperimentalFlagsSync()
+            val consentFlags = database.config().getConsentFlagsSync()
 
             DeviceRelatedData(
                     deviceEntry = deviceEntry,
@@ -48,7 +50,8 @@ data class DeviceRelatedData (
                     isLocalMode = isLocalMode,
                     hasValidDefaultUser = hasValidDefaultUser,
                     temporarilyAllowedApps = temporarilyAllowedApps,
-                    experimentalFlags = experimentalFlags
+                    experimentalFlags = experimentalFlags,
+                    consentFlags = consentFlags
             ).also {
                 database.registerWeakObserver(relatedTables, WeakReference(it))
             }

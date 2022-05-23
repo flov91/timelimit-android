@@ -1,5 +1,5 @@
 /*
- * TimeLimit Copyright <C> 2019 - 2021 Jonas Lochmann
+ * TimeLimit Copyright <C> 2019 - 2022 Jonas Lochmann
  *
  * This program is free software: you can redistribute it and/or modify
  * it under the terms of the GNU General Public License as published by
@@ -24,10 +24,10 @@ import android.view.ViewGroup
 import android.widget.CheckBox
 import androidx.appcompat.widget.AppCompatRadioButton
 import androidx.fragment.app.Fragment
+import androidx.fragment.app.viewModels
 import androidx.lifecycle.LiveData
 import androidx.lifecycle.MutableLiveData
 import androidx.lifecycle.Observer
-import androidx.lifecycle.ViewModelProviders
 import androidx.navigation.Navigation
 import io.timelimit.android.R
 import io.timelimit.android.coroutines.runAsync
@@ -60,6 +60,7 @@ class SetupDeviceFragment : Fragment(), FragmentWithCustomTitle {
         private const val STATUS_ALLOWED_APPS_CATEGORY = "c"
     }
 
+    private val model: SetupDeviceModel by viewModels()
     private val selectedUser = MutableLiveData<String>()
     private val selectedAppsToNotWhitelist = mutableSetOf<String>()
     private var allowedAppsCategory = ""
@@ -89,11 +90,10 @@ class SetupDeviceFragment : Fragment(), FragmentWithCustomTitle {
         outState.putString(STATUS_ALLOWED_APPS_CATEGORY, allowedAppsCategory)
     }
 
-    override fun onCreateView(inflater: LayoutInflater, container: ViewGroup?, savedInstanceState: Bundle?): View? {
+    override fun onCreateView(inflater: LayoutInflater, container: ViewGroup?, savedInstanceState: Bundle?): View {
         val binding = FragmentSetupDeviceBinding.inflate(inflater, container, false)
         val logic = DefaultAppLogic.with(requireContext())
         val activity = activity as ActivityViewModelHolder
-        val model = ViewModelProviders.of(this).get(SetupDeviceModel::class.java)
         val navigation = Navigation.findNavController(container!!)
 
         binding.needsParent.authBtn.setOnClickListener {
@@ -136,7 +136,7 @@ class SetupDeviceFragment : Fragment(), FragmentWithCustomTitle {
             }
         })
 
-        logic.database.user().getAllUsersLive().observe(this, Observer { users ->
+        logic.database.user().getAllUsersLive().observe(viewLifecycleOwner) { users ->
             // ID to label
             val items = mutableListOf<Pair<String, String>>()
 
@@ -150,7 +150,9 @@ class SetupDeviceFragment : Fragment(), FragmentWithCustomTitle {
 
             // select the first item if nothing is selected currently
             if (items.find { (id) -> id == selectedUser.value } == null) {
-                selectedUser.value = items.first().first
+                items.firstOrNull()?.first?.let {
+                    selectedUser.value = it
+                }
             }
 
             // build the views
@@ -166,7 +168,7 @@ class SetupDeviceFragment : Fragment(), FragmentWithCustomTitle {
             binding.selectUserRadioGroup.removeAllViews()
             views.forEach { view -> binding.selectUserRadioGroup.addView(view) }
             views.find { it.tag == selectedUser.value }?.isChecked = true
-        })
+        }
 
         val isNewUser = selectedUser.map { NEW_USER.contains(it) }
         val isParentUser = selectedUser.switchMap {
@@ -181,8 +183,8 @@ class SetupDeviceFragment : Fragment(), FragmentWithCustomTitle {
             }
         }
 
-        isNewUser.observe(this, Observer { binding.isAddingNewUser = it })
-        isParentUser.observe(this, Observer { binding.isAddingChild = !it })
+        isNewUser.observe(viewLifecycleOwner) { binding.isAddingNewUser = it }
+        isParentUser.observe(viewLifecycleOwner) { binding.isAddingChild = !it }
 
         val categoriesOfTheSelectedUser = selectedUser.switchMap { user ->
             if (NEW_USER.contains(user)) {
@@ -204,7 +206,7 @@ class SetupDeviceFragment : Fragment(), FragmentWithCustomTitle {
             recommendWhitelistLocalApps.filterNot { app -> assignedApps.contains(app.packageName) }
         }
 
-        appsToWhitelist.observe(this, Observer { apps ->
+        appsToWhitelist.observe(viewLifecycleOwner) { apps ->
             binding.areThereAnyApps = apps.isNotEmpty()
 
             binding.suggestedAllowedApps.removeAllViews()
@@ -225,9 +227,9 @@ class SetupDeviceFragment : Fragment(), FragmentWithCustomTitle {
                         }
                 )
             }
-        })
+        }
 
-        categoriesOfTheSelectedUser.observe(this, Observer { categories ->
+        categoriesOfTheSelectedUser.observe(viewLifecycleOwner) { categories ->
             // id to title
             val items = mutableListOf<Pair<String, String>>()
 
@@ -241,7 +243,7 @@ class SetupDeviceFragment : Fragment(), FragmentWithCustomTitle {
             } else {
                 if (items.find { (id) -> id == allowedAppsCategory } == null) {
                     // use the one with the lowest blocked times
-                    allowedAppsCategory = categories.sortedBy { it.blockedMinutesInWeek.dataNotToModify.cardinality() }.first().id
+                    allowedAppsCategory = categories.minByOrNull { it.blockedMinutesInWeek.dataNotToModify.cardinality() }!!.id
                 }
 
                 binding.areThereAnyCategories = true
@@ -258,7 +260,7 @@ class SetupDeviceFragment : Fragment(), FragmentWithCustomTitle {
                 views.forEach { view -> binding.allowedAppsCategory.addView(view) }
                 views.find { it.tag == allowedAppsCategory }?.isChecked = true
             }
-        })
+        }
 
         val selectedName = MutableLiveData<String>().apply { value = binding.newUserName.text.toString() }
         binding.newUserName.addTextChangedListener(object: TextWatcher {
@@ -281,9 +283,9 @@ class SetupDeviceFragment : Fragment(), FragmentWithCustomTitle {
         )
         val validationOfAll = (validationOfName.and(validationOfPassword)).or(isNewUser.invert())
 
-        validationOfAll.observe(this, Observer { binding.confirmBtn.isEnabled = it })
+        validationOfAll.observe(viewLifecycleOwner) { binding.confirmBtn.isEnabled = it }
 
-        isPasswordRequired.observe(this, Observer { binding.setPasswordView.allowNoPassword.value = !it })
+        isPasswordRequired.observe(viewLifecycleOwner) { binding.setPasswordView.allowNoPassword.value = !it }
 
         ManageDeviceBackgroundSync.bind(
                 view = binding.backgroundSync,
@@ -302,7 +304,8 @@ class SetupDeviceFragment : Fragment(), FragmentWithCustomTitle {
                     appsToNotWhitelist = selectedAppsToNotWhitelist,
                     model = activity.getActivityViewModel(),
                     networkTime = SetupNetworkTimeVerification.readSelection(binding.networkTimeVerification),
-                    enableUpdateChecks = binding.update.enableSwitch.isChecked
+                    enableUpdateChecks = binding.update.enableSwitch.isChecked,
+                    enableAppListSync = binding.appListSync.enableSwitch.isChecked && (isParentUser.value == false)
             )
         }
 

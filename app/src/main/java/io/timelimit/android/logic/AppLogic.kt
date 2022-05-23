@@ -54,7 +54,7 @@ class AppLogic(
         }
     }.ignoreUnchanged()
 
-    val deviceEntryIfEnabled = enable.switchMap {
+    val deviceEntryIfEnabled: LiveData<Device?> = enable.switchMap {
         if (it == null || it == false) {
             liveDataFromNullableValue(null as Device?)
         } else {
@@ -95,8 +95,9 @@ class AppLogic(
             websocketClientCreator = websocketClientCreator
     )
 
+    val syncAppsLogic = SyncInstalledAppsLogic(this)
+
     init {
-        SyncInstalledAppsLogic(this)
         WatchdogLogic(this)
     }
 
