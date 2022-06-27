@@ -1,1 +1,1 @@
-- asking for permission to sync the list of installed Apps if the sync would be useful
+- added missing processing if the current network for limit login categories
