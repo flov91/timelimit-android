@@ -348,6 +348,8 @@ class SetupDeviceFragment : Fragment(), FragmentWithCustomTitle {
 
         notifyPermission.observe(viewLifecycleOwner) { NotifyPermissionCard.bind(it, binding.notifyPermissionCard) }
 
+        logic.fullVersion.isLocalMode.observe(viewLifecycleOwner) { binding.isConnectedMode = !it }
+
         return binding.root
     }
 

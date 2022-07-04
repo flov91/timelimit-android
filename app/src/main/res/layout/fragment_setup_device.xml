@@ -34,6 +34,10 @@
             name="areThereAnyApps"
             type="Boolean" />
 
+        <variable
+            name="isConnectedMode"
+            type="boolean" />
+
         <import type="android.view.View" />
     </data>
 
@@ -207,7 +211,7 @@
                     layout="@layout/setup_network_time_verification" />
 
                 <include android:id="@+id/app_list_sync"
-                    android:visibility="@{isAddingChild ? View.VISIBLE : View.GONE}"
+                    android:visibility="@{isAddingChild &amp;&amp; isConnectedMode ? View.VISIBLE : View.GONE}"
                     layout="@layout/setup_device_app_list_sync" />
 
                 <include android:id="@+id/background_sync"
