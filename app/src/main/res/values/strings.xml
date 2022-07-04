@@ -1178,6 +1178,12 @@
     <string name="notification_channel_background_sync_title">Background sync</string>
     <string name="notification_channel_background_sync_text">Sometimes shows technically required notifications when TimeLimit syncs in the background</string>
 
+    <string name="notification_channel_apps_temporarily_allowed_title">Temporarily allowed Apps</string>
+    <string name="notification_channel_apps_temporarily_allowed_text">Shows that some Apps were temporarily allowed and provides the option to revoke that</string>
+
+    <string name="notification_channel_reset_title">Reset Notification</string>
+    <string name="notification_channel_reset_text">Shows a notification if TimeLimit was reset at this device</string>
+
     <string name="notification_filter_not_blocked_title">TimeLimit has blocked a notification</string>
     <string name="notification_filter_blocking_failed_title">TimeLimit could not block a notification</string>
 

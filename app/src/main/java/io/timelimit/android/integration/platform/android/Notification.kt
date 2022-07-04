@@ -1,5 +1,5 @@
 /*
- * TimeLimit Copyright <C> 2019 - 2021 Jonas Lochmann
+ * TimeLimit Copyright <C> 2019 - 2022 Jonas Lochmann
  *
  * This program is free software: you can redistribute it and/or modify
  * it under the terms of the GNU General Public License as published by
@@ -43,6 +43,8 @@ object NotificationChannels {
     const val TIME_WARNING = "time warning"
     const val PREMIUM_EXPIRES_NOTIFICATION = "premium expires"
     const val BACKGROUND_SYNC_NOTIFICATION = "background sync"
+    const val TEMP_ALLOWED_APP = "temporarily allowed App"
+    const val APP_RESET = "app reset"
 
     private fun createAppStatusChannel(notificationManager: NotificationManager, context: Context) {
         if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.O) {
@@ -158,6 +160,39 @@ object NotificationChannels {
         }
     }
 
+    private fun createTempAllowedAppChannel(notificationManager: NotificationManager, context: Context) {
+        if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.O) {
+            notificationManager.createNotificationChannel(
+                NotificationChannel(
+                    TEMP_ALLOWED_APP,
+                    context.getString(R.string.notification_channel_apps_temporarily_allowed_title),
+                    NotificationManager.IMPORTANCE_LOW
+                ).apply {
+                    description = context.getString(R.string.notification_channel_apps_temporarily_allowed_text)
+                    enableLights(false)
+                    setSound(null, null)
+                    enableVibration(false)
+                    setShowBadge(false)
+                    lockscreenVisibility = NotificationCompat.VISIBILITY_SECRET
+                }
+            )
+        }
+    }
+
+    private fun createAppResetChannel(notificationManager: NotificationManager, context: Context) {
+        if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.O) {
+            notificationManager.createNotificationChannel(
+                NotificationChannel(
+                    APP_RESET,
+                    context.getString(R.string.notification_channel_reset_title),
+                    NotificationManager.IMPORTANCE_DEFAULT
+                ).apply {
+                    description = context.getString(R.string.notification_channel_reset_text)
+                }
+            )
+        }
+    }
+
     fun createNotificationChannels(notificationManager: NotificationManager, context: Context) {
         createAppStatusChannel(notificationManager, context)
         createBlockedNotificationChannel(notificationManager, context)
@@ -166,6 +201,8 @@ object NotificationChannels {
         createTimeWarningsNotificationChannel(notificationManager, context)
         createPremiumExpiresChannel(notificationManager, context)
         createBackgroundSyncChannel(notificationManager, context)
+        createTempAllowedAppChannel(notificationManager, context)
+        createAppResetChannel(notificationManager, context)
     }
 }
 

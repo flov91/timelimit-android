@@ -1136,6 +1136,12 @@
     <string name="notification_channel_background_sync_title">Hintergrundsychronisation</string>
     <string name="notification_channel_background_sync_text">Zeigt manchmal technisch notwendige Benachrichtigungen an, wenn TimeLimit im Hintergrund synchronisiert</string>
 
+    <string name="notification_channel_apps_temporarily_allowed_title">vorübergehend erlaubte Apps</string>
+    <string name="notification_channel_apps_temporarily_allowed_text">Zeigt an, wenn Apps vorübergehend erlaubt wurden, und bietet die Option, dies rückgängig zu machen</string>
+
+    <string name="notification_channel_reset_title">Reset-Benachrichtigung</string>
+    <string name="notification_channel_reset_text">Zeigt eine Benachrichtigung an, wenn TimeLimit an diesem Gerät zurückgesetzt wurde</string>
+
     <string name="notification_filter_not_blocked_title">TimeLimit hat eine Benachrichtigung blockiert</string>
     <string name="notification_filter_blocking_failed_title">TimeLimit konnte eine Benachrichtigung nicht blockieren</string>
 
