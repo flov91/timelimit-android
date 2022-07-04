@@ -200,6 +200,9 @@
                     </LinearLayout>
                 </androidx.cardview.widget.CardView>
 
+                <include android:id="@+id/notify_permission_card"
+                    layout="@layout/notify_permission_card" />
+
                 <include android:id="@+id/network_time_verification"
                     layout="@layout/setup_network_time_verification" />
 

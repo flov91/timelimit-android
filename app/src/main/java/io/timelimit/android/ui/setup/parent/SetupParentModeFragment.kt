@@ -15,13 +15,18 @@
  */
 package io.timelimit.android.ui.setup.parent
 
+import android.Manifest
 import android.os.Bundle
 import android.view.LayoutInflater
 import android.view.View
 import android.view.ViewGroup
+import android.widget.Toast
+import androidx.activity.result.contract.ActivityResultContracts
 import androidx.fragment.app.Fragment
+import androidx.lifecycle.MutableLiveData
 import androidx.lifecycle.Observer
 import androidx.lifecycle.ViewModelProviders
+import androidx.lifecycle.observe
 import androidx.navigation.Navigation
 import io.timelimit.android.R
 import io.timelimit.android.async.Threads
@@ -29,17 +34,48 @@ import io.timelimit.android.coroutines.executeAndWait
 import io.timelimit.android.coroutines.runAsync
 import io.timelimit.android.data.devicename.DeviceName
 import io.timelimit.android.databinding.FragmentSetupParentModeBinding
-import io.timelimit.android.livedata.liveDataFromNonNullValue
-import io.timelimit.android.livedata.map
-import io.timelimit.android.livedata.switchMap
+import io.timelimit.android.livedata.*
 import io.timelimit.android.logic.DefaultAppLogic
 import io.timelimit.android.sync.network.StatusOfMailAddress
 import io.timelimit.android.ui.authentication.AuthenticateByMailFragment
 import io.timelimit.android.ui.authentication.AuthenticateByMailFragmentListener
 import io.timelimit.android.ui.update.UpdateConsentCard
+import io.timelimit.android.ui.view.NotifyPermissionCard
 
 class SetupParentModeFragment : Fragment(), AuthenticateByMailFragmentListener {
-    val model: SetupParentModeModel by lazy { ViewModelProviders.of(this).get(SetupParentModeModel::class.java) }
+    companion object {
+        private const val STATUS_NOTIFY_PERMISSION = "notify permission"
+    }
+
+    private val model: SetupParentModeModel by lazy { ViewModelProviders.of(this).get(SetupParentModeModel::class.java) }
+    private var notifyPermission = MutableLiveData<NotifyPermissionCard.Status>()
+
+    private val requestNotifyPermission = registerForActivityResult(ActivityResultContracts.RequestPermission()) { isGranted ->
+        if (isGranted) notifyPermission.value = NotifyPermissionCard.Status.Granted
+        else Toast.makeText(requireContext(), R.string.notify_permission_rejected_toast, Toast.LENGTH_SHORT).show()
+    }
+
+    override fun onCreate(savedInstanceState: Bundle?) {
+        super.onCreate(savedInstanceState)
+
+        if (savedInstanceState != null) {
+            notifyPermission.value = savedInstanceState.getSerializable(STATUS_NOTIFY_PERMISSION, NotifyPermissionCard.Status::class.java)!!
+        }
+
+        notifyPermission.value = NotifyPermissionCard.updateStatus(notifyPermission.value ?: NotifyPermissionCard.Status.Unknown, requireContext())
+    }
+
+    override fun onResume() {
+        super.onResume()
+
+        notifyPermission.value = NotifyPermissionCard.updateStatus(notifyPermission.value ?: NotifyPermissionCard.Status.Unknown, requireContext())
+    }
+
+    override fun onSaveInstanceState(outState: Bundle) {
+        super.onSaveInstanceState(outState)
+
+        outState.putSerializable(STATUS_NOTIFY_PERMISSION, notifyPermission.value)
+    }
 
     override fun onCreateView(inflater: LayoutInflater, container: ViewGroup?, savedInstanceState: Bundle?): View? {
         val binding = FragmentSetupParentModeBinding.inflate(layoutInflater, container, false)
@@ -85,8 +121,7 @@ class SetupParentModeFragment : Fragment(), AuthenticateByMailFragmentListener {
             }
         })
 
-        // TODO: require that an device name and an parent name are set
-        val isInputValid = model.statusOfMailAddress.switchMap {
+        val isPasswordValid = model.statusOfMailAddress.switchMap {
             if (it == null) {
                 liveDataFromNonNullValue(false)
             } else {
@@ -97,7 +132,24 @@ class SetupParentModeFragment : Fragment(), AuthenticateByMailFragmentListener {
             }
         }
 
-        isInputValid.observe(viewLifecycleOwner, Observer {
+        val isNotifyPermissionValid = notifyPermission.map { NotifyPermissionCard.canProceed(it) }
+
+        val isPreNameValid = model.statusOfMailAddress.switchMap {
+            if (it == null) {
+                liveDataFromNonNullValue(false)
+            } else {
+                when (it.status) {
+                    StatusOfMailAddress.MailAddressWithFamily -> liveDataFromNonNullValue(true)
+                    StatusOfMailAddress.MailAddressWithoutFamily -> binding.prename.getTextLive().map { prename -> prename.isNotBlank() }
+                }
+            }
+        }
+
+        val isDeviceNameValid = binding.deviceName.getTextLive().map { it.isNotBlank() }
+
+        val isInputValid = isPasswordValid.and(isNotifyPermissionValid).and(isPreNameValid).and(isDeviceNameValid)
+
+        isInputValid.ignoreUnchanged().observe(viewLifecycleOwner, Observer {
             binding.enableOkButton = it!!
         })
 
@@ -150,6 +202,13 @@ class SetupParentModeFragment : Fragment(), AuthenticateByMailFragmentListener {
                 lifecycleOwner = viewLifecycleOwner,
                 database = DefaultAppLogic.with(requireContext()).database
         )
+
+        NotifyPermissionCard.bind(object: NotifyPermissionCard.Listener {
+            override fun onGrantClicked() { requestNotifyPermission.launch(Manifest.permission.POST_NOTIFICATIONS) }
+            override fun onSkipClicked() { notifyPermission.value = NotifyPermissionCard.Status.SkipGrant }
+        }, binding.notifyPermissionCard)
+
+        notifyPermission.observe(viewLifecycleOwner) { NotifyPermissionCard.bind(it, binding.notifyPermissionCard) }
 
         return binding.root
     }

@@ -15,6 +15,7 @@
  */
 package io.timelimit.android.ui.setup.device
 
+import android.Manifest
 import android.os.Bundle
 import android.text.Editable
 import android.text.TextWatcher
@@ -22,12 +23,15 @@ import android.view.LayoutInflater
 import android.view.View
 import android.view.ViewGroup
 import android.widget.CheckBox
+import android.widget.Toast
+import androidx.activity.result.contract.ActivityResultContracts
 import androidx.appcompat.widget.AppCompatRadioButton
 import androidx.fragment.app.Fragment
 import androidx.fragment.app.viewModels
 import androidx.lifecycle.LiveData
 import androidx.lifecycle.MutableLiveData
 import androidx.lifecycle.Observer
+import androidx.lifecycle.observe
 import androidx.navigation.Navigation
 import io.timelimit.android.R
 import io.timelimit.android.coroutines.runAsync
@@ -45,6 +49,7 @@ import io.timelimit.android.ui.mustread.MustReadFragment
 import io.timelimit.android.ui.overview.main.MainFragmentDirections
 import io.timelimit.android.ui.setup.SetupNetworkTimeVerification
 import io.timelimit.android.ui.update.UpdateConsentCard
+import io.timelimit.android.ui.view.NotifyPermissionCard
 
 class SetupDeviceFragment : Fragment(), FragmentWithCustomTitle {
     companion object {
@@ -58,12 +63,19 @@ class SetupDeviceFragment : Fragment(), FragmentWithCustomTitle {
         private const val STATUS_SELECTED_USER = "a"
         private const val STATUS_SELECTED_APPS_TO_NOT_WHITELIST = "b"
         private const val STATUS_ALLOWED_APPS_CATEGORY = "c"
+        private const val STATUS_NOTIFY_PERMISSION = "notify permission"
     }
 
     private val model: SetupDeviceModel by viewModels()
     private val selectedUser = MutableLiveData<String>()
     private val selectedAppsToNotWhitelist = mutableSetOf<String>()
     private var allowedAppsCategory = ""
+    private var notifyPermission = MutableLiveData<NotifyPermissionCard.Status>()
+
+    private val requestNotifyPermission = registerForActivityResult(ActivityResultContracts.RequestPermission()) { isGranted ->
+        if (isGranted) notifyPermission.value = NotifyPermissionCard.Status.Granted
+        else Toast.makeText(requireContext(), R.string.notify_permission_rejected_toast, Toast.LENGTH_SHORT).show()
+    }
 
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
@@ -79,7 +91,17 @@ class SetupDeviceFragment : Fragment(), FragmentWithCustomTitle {
             )
 
             allowedAppsCategory = savedInstanceState.getString(STATUS_ALLOWED_APPS_CATEGORY)!!
+
+            notifyPermission.value = savedInstanceState.getSerializable(STATUS_NOTIFY_PERMISSION, NotifyPermissionCard.Status::class.java)!!
         }
+
+        notifyPermission.value = NotifyPermissionCard.updateStatus(notifyPermission.value ?: NotifyPermissionCard.Status.Unknown, requireContext())
+    }
+
+    override fun onResume() {
+        super.onResume()
+
+        notifyPermission.value = NotifyPermissionCard.updateStatus(notifyPermission.value ?: NotifyPermissionCard.Status.Unknown, requireContext())
     }
 
     override fun onSaveInstanceState(outState: Bundle) {
@@ -88,6 +110,7 @@ class SetupDeviceFragment : Fragment(), FragmentWithCustomTitle {
         outState.putString(STATUS_SELECTED_USER, selectedUser.value)
         outState.putStringArrayList(STATUS_SELECTED_APPS_TO_NOT_WHITELIST, ArrayList(selectedAppsToNotWhitelist))
         outState.putString(STATUS_ALLOWED_APPS_CATEGORY, allowedAppsCategory)
+        outState.putSerializable(STATUS_NOTIFY_PERMISSION, notifyPermission.value)
     }
 
     override fun onCreateView(inflater: LayoutInflater, container: ViewGroup?, savedInstanceState: Bundle?): View {
@@ -281,7 +304,8 @@ class SetupDeviceFragment : Fragment(), FragmentWithCustomTitle {
                 isPasswordRequired.invert()
                         .and(isPasswordEmpty)
         )
-        val validationOfAll = (validationOfName.and(validationOfPassword)).or(isNewUser.invert())
+        val validationOfNotifyPermission = notifyPermission.map { NotifyPermissionCard.canProceed(it) }
+        val validationOfAll = ((validationOfName.and(validationOfPassword)).or(isNewUser.invert())).and(validationOfNotifyPermission)
 
         validationOfAll.observe(viewLifecycleOwner) { binding.confirmBtn.isEnabled = it }
 
@@ -316,6 +340,13 @@ class SetupDeviceFragment : Fragment(), FragmentWithCustomTitle {
                 lifecycleOwner = viewLifecycleOwner,
                 database = logic.database
         )
+
+        NotifyPermissionCard.bind(object: NotifyPermissionCard.Listener {
+            override fun onGrantClicked() { requestNotifyPermission.launch(Manifest.permission.POST_NOTIFICATIONS) }
+            override fun onSkipClicked() { notifyPermission.value = NotifyPermissionCard.Status.SkipGrant }
+        }, binding.notifyPermissionCard)
+
+        notifyPermission.observe(viewLifecycleOwner) { NotifyPermissionCard.bind(it, binding.notifyPermissionCard) }
 
         return binding.root
     }

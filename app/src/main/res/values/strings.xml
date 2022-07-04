@@ -1675,4 +1675,17 @@
     <string name="dummy_app_unassigned_system_image_app">not assigned Apps from the system image</string>
     <string name="dummy_app_feature_adb">Developer Options</string>
     <string name="dummy_app_activity_audio">Background Audio Playback</string>
+
+    <string name="notify_permission_title">Notifications</string>
+    <string name="notify_permission_text">Apps including TimeLimit need your permission to
+        show notifications at some Android versions.
+        TimeLimit uses this at restricted devices e.g. to show the remaining time and to
+        show a message when a notification was blocked. The notifications are used at
+        unrestricted and at restricted devices to inform about problems. It is highly recommend
+        to allow showing notifications.
+    </string>
+    <string name="notify_permission_text_granted">Showing notifications was allowed</string>
+    <string name="notify_permission_btn_grant">Allow</string>
+    <string name="notify_permission_btn_later">Continue without enabling notifications</string>
+    <string name="notify_permission_rejected_toast">rejected; it could be that you can only change this using the system settings</string>
 </resources>
