@@ -188,7 +188,8 @@ object ApplyServerDataStatus {
                                         accessibilityServiceEnabled = newDevice.accessibilityServiceEnabled,
                                         wasAccessibilityServiceEnabled = newDevice.wasAccessibilityServiceEnabled,
                                         enableActivityLevelBlocking = newDevice.enableActivityLevelBlocking,
-                                        qOrLater = newDevice.qOrLater
+                                        qOrLater = newDevice.qOrLater,
+                                        manipulationFlags = newDevice.manipulationFlags
                                 ))
                             } else {
                                 // eventually update old entry
@@ -222,7 +223,8 @@ object ApplyServerDataStatus {
                                         accessibilityServiceEnabled = newDevice.accessibilityServiceEnabled,
                                         wasAccessibilityServiceEnabled = newDevice.wasAccessibilityServiceEnabled,
                                         enableActivityLevelBlocking = newDevice.enableActivityLevelBlocking,
-                                        qOrLater = newDevice.qOrLater
+                                        qOrLater = newDevice.qOrLater,
+                                        manipulationFlags = newDevice.manipulationFlags
                                 )
 
                                 if (updatedDeviceEntry != oldDeviceEntry) {

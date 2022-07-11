@@ -305,6 +305,10 @@ object LocalDatabaseAppLogicActionDispatcher {
                         device = device.copy(qOrLater = true)
                     }
 
+                    if (action.addedManipulationFlags != 0L) {
+                        device = device.copy(manipulationFlags = device.manipulationFlags or action.addedManipulationFlags)
+                    }
+
                     database.device().updateDeviceEntry(device)
 
                     null

@@ -465,6 +465,12 @@ object LocalDatabaseParentActionDispatcher {
                         }
                     }
 
+                    if (action.ignoreManipulationFlags != 0L) {
+                        deviceEntry = deviceEntry.copy(
+                            manipulationFlags = deviceEntry.manipulationFlags and (action.ignoreManipulationFlags.inv())
+                        )
+                    }
+
                     database.device().updateDeviceEntry(deviceEntry)
                 }
                 is SetKeepSignedInAction -> {

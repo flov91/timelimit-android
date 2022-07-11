@@ -298,7 +298,8 @@ data class ServerDeviceData(
         val accessibilityServiceEnabled: Boolean,
         val wasAccessibilityServiceEnabled: Boolean,
         val enableActivityLevelBlocking: Boolean,
-        val qOrLater: Boolean
+        val qOrLater: Boolean,
+        val manipulationFlags: Long
 ) {
     companion object {
         private const val DEVICE_ID = "deviceId"
@@ -331,6 +332,7 @@ data class ServerDeviceData(
         private const val WAS_ACCESSIBILITY_SERVICE_ENABLED = "wasAsEnabled"
         private const val ENABLE_ACTIVITY_LEVEL_BLOCKING = "activityLevelBlocking"
         private const val Q_OR_LATER = "qOrLater"
+        private const val MANIPULATION_FLAGS = "mFlags"
 
         fun parse(reader: JsonReader): ServerDeviceData {
             var deviceId: String? = null
@@ -363,6 +365,7 @@ data class ServerDeviceData(
             var wasAccessibilityServiceEnabled: Boolean? = null
             var enableActivityLevelBlocking = false
             var qOrLater = false
+            var manipulationFlags = 0L
 
             reader.beginObject()
             while (reader.hasNext()) {
@@ -397,6 +400,7 @@ data class ServerDeviceData(
                     WAS_ACCESSIBILITY_SERVICE_ENABLED -> wasAccessibilityServiceEnabled = reader.nextBoolean()
                     ENABLE_ACTIVITY_LEVEL_BLOCKING -> enableActivityLevelBlocking = reader.nextBoolean()
                     Q_OR_LATER -> qOrLater = reader.nextBoolean()
+                    MANIPULATION_FLAGS -> manipulationFlags = reader.nextLong()
                     else -> reader.skipValue()
                 }
             }
@@ -432,7 +436,8 @@ data class ServerDeviceData(
                     accessibilityServiceEnabled = accessibilityServiceEnabled!!,
                     wasAccessibilityServiceEnabled = wasAccessibilityServiceEnabled!!,
                     enableActivityLevelBlocking = enableActivityLevelBlocking,
-                    qOrLater = qOrLater
+                    qOrLater = qOrLater,
+                    manipulationFlags = manipulationFlags
             )
         }
 

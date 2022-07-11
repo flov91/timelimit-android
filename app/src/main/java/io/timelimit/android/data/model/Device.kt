@@ -1,5 +1,5 @@
 /*
- * TimeLimit Copyright <C> 2019 Jonas Lochmann
+ * TimeLimit Copyright <C> 2019 - 2022 Jonas Lochmann
  *
  * This program is free software: you can redistribute it and/or modify
  * it under the terms of the GNU General Public License as published by
@@ -92,7 +92,9 @@ data class Device(
         @ColumnInfo(name = "enable_activity_level_blocking")
         val enableActivityLevelBlocking: Boolean,
         @ColumnInfo(name = "q_or_later")
-        val qOrLater: Boolean
+        val qOrLater: Boolean,
+        @ColumnInfo(name = "manipulation_flags")
+        val manipulationFlags: Long
 ): JsonSerializable {
     companion object {
         private const val ID = "id"
@@ -126,6 +128,7 @@ data class Device(
         private const val WAS_ACCESSIBILITY_SERVICE_ENABLED = "wase"
         private const val ENABLE_ACTIVITY_LEVEL_BLOCKING = "ealb"
         private const val Q_OR_LATER = "qol"
+        private const val MANIPULATION_FLAGS = "mf"
 
         fun parse(reader: JsonReader): Device {
             var id: String? = null
@@ -159,6 +162,7 @@ data class Device(
             var wasAccessibilityServiceEnabled = false
             var enableActivityLevelBlocking = false
             var qOrLater = false
+            var manipulationFlags = 0L
 
             reader.beginObject()
 
@@ -195,6 +199,7 @@ data class Device(
                     WAS_ACCESSIBILITY_SERVICE_ENABLED -> wasAccessibilityServiceEnabled = reader.nextBoolean()
                     ENABLE_ACTIVITY_LEVEL_BLOCKING -> enableActivityLevelBlocking = reader.nextBoolean()
                     Q_OR_LATER -> qOrLater = reader.nextBoolean()
+                    MANIPULATION_FLAGS -> manipulationFlags = reader.nextLong()
                     else -> reader.skipValue()
                 }
             }
@@ -232,7 +237,8 @@ data class Device(
                     accessibilityServiceEnabled = accessibilityServiceEnabled,
                     wasAccessibilityServiceEnabled = wasAccessibilityServiceEnabled,
                     enableActivityLevelBlocking = enableActivityLevelBlocking,
-                    qOrLater = qOrLater
+                    qOrLater = qOrLater,
+                    manipulationFlags = manipulationFlags
             )
         }
     }
@@ -303,6 +309,7 @@ data class Device(
         writer.name(WAS_ACCESSIBILITY_SERVICE_ENABLED).value(wasAccessibilityServiceEnabled)
         writer.name(ENABLE_ACTIVITY_LEVEL_BLOCKING).value(enableActivityLevelBlocking)
         writer.name(Q_OR_LATER).value(qOrLater)
+        writer.name(MANIPULATION_FLAGS).value(manipulationFlags)
 
         writer.endObject()
     }
@@ -331,7 +338,7 @@ data class Device(
             manipulationOfAccessibilityService
 
     @Transient
-    val hasAnyManipulation = hasActiveManipulationWarning || hadManipulation
+    val hasAnyManipulation = hasActiveManipulationWarning || hadManipulation || manipulationFlags != 0L
 
     @Transient
     val missingPermissionAtQOrLater = qOrLater &&
@@ -381,4 +388,8 @@ object HadManipulationFlag {
     const val APP_VERSION = 1L shl 3
     const val OVERLAY_PERMISSION = 1L shl 4
     const val ACCESSIBILITY_SERVICE = 1L shl 5
+}
+
+object ManipulationFlag {
+    const val USED_FGS_KILLER = 1L shl 0
 }

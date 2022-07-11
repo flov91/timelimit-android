@@ -1081,7 +1081,8 @@ data class UpdateDeviceStatusAction(
         val newAccessibilityServiceEnabled: Boolean?,
         val newAppVersion: Int?,
         val didReboot: Boolean,
-        val isQOrLaterNow: Boolean
+        val isQOrLaterNow: Boolean,
+        val addedManipulationFlags: Long
 ): AppLogicAction() {
     companion object {
         const val TYPE_VALUE = "UPDATE_DEVICE_STATUS"
@@ -1093,6 +1094,7 @@ data class UpdateDeviceStatusAction(
         private const val NEW_APP_VERSION = "appVersion"
         private const val DID_REBOOT = "didReboot"
         private const val IS_Q_OR_LATER_NOW = "isQOrLaterNow"
+        private const val ADDED_MANIPULATION_FLAGS = "addedManipulationFlags"
 
         val empty = UpdateDeviceStatusAction(
                 newProtectionLevel = null,
@@ -1102,7 +1104,8 @@ data class UpdateDeviceStatusAction(
                 newAccessibilityServiceEnabled = null,
                 newAppVersion = null,
                 didReboot = false,
-                isQOrLaterNow = false
+                isQOrLaterNow = false,
+                addedManipulationFlags = 0L
         )
     }
 
@@ -1159,6 +1162,10 @@ data class UpdateDeviceStatusAction(
             writer.name(IS_Q_OR_LATER_NOW).value(true)
         }
 
+        if (addedManipulationFlags != 0L) {
+            writer.name(ADDED_MANIPULATION_FLAGS).value(addedManipulationFlags)
+        }
+
         writer.endObject()
     }
 }
@@ -1174,7 +1181,8 @@ data class IgnoreManipulationAction(
         val ignoreAccessibilityServiceManipulation: Boolean,
         val ignoreReboot: Boolean,
         val ignoreHadManipulation: Boolean,
-        val ignoreHadManipulationFlags: Long
+        val ignoreHadManipulationFlags: Long,
+        val ignoreManipulationFlags: Long
 ): ParentAction() {
     companion object {
         const val TYPE_VALUE = "IGNORE_MANIPULATION"
@@ -1189,6 +1197,7 @@ data class IgnoreManipulationAction(
         private const val IGNORE_HAD_MANIPULATION = "hadManipulation"
         private const val IGNORE_REBOOT = "reboot"
         private const val IGNORE_HAD_MANIPULATION_FLAGS = "ignoreHadManipulationFlags"
+        private const val IGNORE_MANIPULATION_FLAGS = "ignoreManipulationFlags"
     }
 
     init {
@@ -1204,7 +1213,8 @@ data class IgnoreManipulationAction(
             (!ignoreAccessibilityServiceManipulation) &&
             (!ignoreReboot) &&
             (!ignoreHadManipulation) &&
-            (ignoreHadManipulationFlags == 0L)
+            (ignoreHadManipulationFlags == 0L) &&
+            (ignoreManipulationFlags == 0L)
 
     override fun serialize(writer: JsonWriter) {
         writer.beginObject()
@@ -1221,6 +1231,8 @@ data class IgnoreManipulationAction(
         writer.name(IGNORE_HAD_MANIPULATION).value(ignoreHadManipulation)
         writer.name(IGNORE_REBOOT).value(ignoreReboot)
         writer.name(IGNORE_HAD_MANIPULATION_FLAGS).value(ignoreHadManipulationFlags)
+
+        if (ignoreManipulationFlags != 0L) writer.name(IGNORE_MANIPULATION_FLAGS).value(ignoreManipulationFlags)
 
         writer.endObject()
     }

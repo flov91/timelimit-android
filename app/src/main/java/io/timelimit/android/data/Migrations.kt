@@ -293,6 +293,12 @@ object DatabaseMigrations {
         }
     }
 
+    private val MIGRATE_TO_V42 = object: Migration(41, 42) {
+        override fun migrate(database: SupportSQLiteDatabase) {
+            database.execSQL("ALTER TABLE device ADD COLUMN manipulation_flags INTEGER NOT NULL DEFAULT 0")
+        }
+    }
+
     val ALL = arrayOf(
         MIGRATE_TO_V2,
         MIGRATE_TO_V3,
@@ -333,6 +339,7 @@ object DatabaseMigrations {
         MIGRATE_TO_V38,
         MIGRATE_TO_V39,
         MIGRATE_TO_V40,
-        MIGRATE_TO_V41
+        MIGRATE_TO_V41,
+        MIGRATE_TO_V42
     )
 }
