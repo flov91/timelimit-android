@@ -120,7 +120,7 @@ class ManageChildCategoriesFragment : Fragment() {
                         SetCategorySpecialModeFragment.newInstance(
                                 childId = params.childId,
                                 categoryId = category.category.id,
-                                mode = SpecialModeDialogMode.Regular
+                                mode = if (auth.isParentAuthenticated()) SpecialModeDialogMode.Regular else SpecialModeDialogMode.SelfLimitAdd
                         ).show(parentFragmentManager)
 
                         false
