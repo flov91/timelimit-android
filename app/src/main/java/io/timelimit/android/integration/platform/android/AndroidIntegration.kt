@@ -243,7 +243,7 @@ class AndroidIntegration(context: Context): PlatformIntegration(maximumProtectio
     override fun setAppStatusMessage(message: AppStatusMessage?) {
         if (lastAppStatusMessage != message) {
             lastAppStatusMessage = message
-            appStatusMessageChannel.offer(message)
+            appStatusMessageChannel.trySend(message)
         }
     }
 
