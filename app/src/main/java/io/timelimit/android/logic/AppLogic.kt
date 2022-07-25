@@ -21,14 +21,13 @@ import androidx.lifecycle.MutableLiveData
 import androidx.lifecycle.Transformations
 import io.timelimit.android.data.Database
 import io.timelimit.android.data.model.Device
-import io.timelimit.android.data.model.ExperimentalFlags
 import io.timelimit.android.data.model.User
 import io.timelimit.android.integration.platform.PlatformIntegration
 import io.timelimit.android.integration.time.TimeApi
 import io.timelimit.android.livedata.*
+import io.timelimit.android.logic.applist.SyncInstalledAppsLogic
 import io.timelimit.android.sync.SyncUtil
 import io.timelimit.android.sync.network.api.ServerApi
-import io.timelimit.android.sync.websocket.NetworkStatus
 import io.timelimit.android.sync.websocket.NetworkStatusInterface
 import io.timelimit.android.sync.websocket.WebsocketClientCreator
 

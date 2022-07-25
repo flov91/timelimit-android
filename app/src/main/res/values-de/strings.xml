@@ -531,6 +531,7 @@
     <string name="diagnose_exf_esb">Overlay und Home-Button nicht zum Sperren verwenden</string>
     <string name="diagnose_exf_srn">Toasts zur Synchronisation anzeigen</string>
     <string name="diagnose_exf_soc">strengere Prüfung der Überlagerungs-Berechtigung aktivieren</string>
+    <string name="diagnose_exf_dls">deaktiviere Senden der App-Liste im alten Format</string>
 
     <string name="diagnose_bg_task_loop_ex">Hintergrundaufgabenschleifenfehler</string>
 
@@ -894,6 +895,7 @@
 
     <string name="manage_device_added_at">Hinzugefügt: %s</string>
     <string name="manage_device_is_this_device">Das ist das Gerät, das Sie gerade vor sich haben</string>
+    <string name="manage_device_signing_key">Signaturschlüssel: %s</string>
 
     <string name="manage_device_current_user_title">Benutzer des Geräts</string>
     <string name="manage_device_current_user_none">Keine Angabe - keine Begrenzungen</string>
@@ -1144,6 +1146,9 @@
     <string name="notification_channel_reset_title">Reset-Benachrichtigung</string>
     <string name="notification_channel_reset_text">Zeigt eine Benachrichtigung an, wenn TimeLimit an diesem Gerät zurückgesetzt wurde</string>
 
+    <string name="notification_channel_new_device_title">neue Geräte</string>
+    <string name="notification_channel_new_device_description">Zeigt eine Benachrichtigung an, wenn TimeLimit mit Vernetzung verwendet wird und ein neues Gerät verknüpft wurde</string>
+
     <string name="notification_filter_not_blocked_title">TimeLimit hat eine Benachrichtigung blockiert</string>
     <string name="notification_filter_blocking_failed_title">TimeLimit konnte eine Benachrichtigung nicht blockieren</string>
 
@@ -1156,6 +1161,8 @@
 
     <string name="notification_background_sync_title">TimeLimit ist aktiv</string>
     <string name="notification_background_sync_text">eine Synchronisation läuft</string>
+
+    <string name="notification_new_device_title">Gerät hinzugefügt</string>
 
     <string name="obsolete_message">Sie verwenden TimeLimit auf einer älteren Android-Version.
         Das kann funktionieren, aber es wird nicht empfohlen.

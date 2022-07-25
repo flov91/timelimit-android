@@ -27,6 +27,7 @@ import io.timelimit.android.coroutines.runAsync
 import io.timelimit.android.livedata.*
 import io.timelimit.android.logic.AppLogic
 import io.timelimit.android.logic.ServerLogic
+import io.timelimit.android.logic.crypto.CryptoSyncLogic
 import io.timelimit.android.sync.actions.apply.UploadActionsUtil
 import io.timelimit.android.sync.network.ClientDataStatus
 import io.timelimit.android.sync.network.api.UnauthorizedHttpError
@@ -246,9 +247,19 @@ class SyncUtil (private val logic: AppLogic) {
     }
 
     private suspend fun pullStatus(server: ServerLogic.ServerConfig) {
-        val currentStatus = ClientDataStatus.getClientDataStatusAsync(logic.database)
+        val currentStatus = Threads.database.executeAndWait { ClientDataStatus.getClientDataStatusSync(logic.database) }
         val serverResponse = server.api.pullChanges(server.deviceAuthToken, currentStatus)
-        ApplyServerDataStatus.applyServerDataStatusCoroutine(serverResponse, logic.database, logic.platformIntegration)
+        val applyResult = ApplyServerDataStatus.applyServerDataStatusCoroutine(serverResponse, logic.database, logic.platformIntegration)
+        ApplyServerDataStatus.postNotifications(applyResult, logic.platformIntegration)
+        val cryptoResult = CryptoSyncLogic.postPullHook(logic.database, serverResponse.pendingKeyRequests, serverResponse.keyResponses)
+
+        if (applyResult.didCreateNewActions or cryptoResult.didSendReplies) {
+            if (BuildConfig.DEBUG) {
+                Log.d(LOG_TAG, "request next sync by crypto handling")
+            }
+
+            requestImportantSync()
+        }
     }
 
     private suspend fun wipeCacheIfUpdated() {

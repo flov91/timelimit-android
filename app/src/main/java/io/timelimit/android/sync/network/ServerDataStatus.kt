@@ -23,6 +23,7 @@ import io.timelimit.android.data.customtypes.ImmutableBitmask
 import io.timelimit.android.data.customtypes.ImmutableBitmaskJson
 import io.timelimit.android.data.model.*
 import io.timelimit.android.extensions.MinuteOfDay
+import io.timelimit.android.extensions.parseBase64
 import io.timelimit.android.extensions.parseList
 import io.timelimit.android.integration.platform.*
 import io.timelimit.android.sync.actions.AppActivityItem
@@ -34,6 +35,7 @@ import kotlin.collections.ArrayList
 
 data class ServerDataStatus(
         val newDeviceList: ServerDeviceList?,
+        val updatedExtendedDeviceData: List<ServerExtendedDeviceData>,
         val newInstalledApps: List<ServerInstalledAppsData>,
         val removedCategories: List<String>,
         val newCategoryBaseData: List<ServerUpdatedCategoryBaseData>,
@@ -42,12 +44,15 @@ data class ServerDataStatus(
         val newCategoryTimeLimitRules: List<ServerUpdatedTimeLimitRules>,
         val newCategoryTasks: List<ServerUpdatedCategoryTasks>,
         val newUserList: ServerUserList?,
+        val pendingKeyRequests: List<ServerKeyRequest>,
+        val keyResponses: List<ServerKeyResponse>,
         val fullVersionUntil: Long,
         val message: String?,
         val apiLevel: Int
 ) {
     companion object {
         private const val NEW_DEVICE_LIST = "devices"
+        private const val UPDATED_EXTENDED_DEVICE_DATA = "devices2"
         private const val NEW_INSTALLED_APPS = "apps"
         private const val REMOVED_CATEGORIES = "rmCategories"
         private const val NEW_CATEGORIES_BASE_DATA = "categoryBase"
@@ -56,12 +61,15 @@ data class ServerDataStatus(
         private const val NEW_CATEGORY_TIME_LIMIT_RULES = "rules"
         private const val NEW_CATEGORY_TASKS = "tasks"
         private const val NEW_USER_LIST = "users"
+        private const val PENDING_KEY_REQUESTS = "krq"
+        private const val KEY_RESPONSES = "kr"
         private const val FULL_VERSION_UNTIL = "fullVersion"
         private const val MESSAGE = "message"
         private const val API_LEVEL = "apiLevel"
 
         fun parse(reader: JsonReader): ServerDataStatus {
             var newDeviceList: ServerDeviceList? = null
+            var updatedExtendedDeviceData: List<ServerExtendedDeviceData> = emptyList()
             var newInstalledApps: List<ServerInstalledAppsData> = Collections.emptyList()
             var removedCategories: List<String> = Collections.emptyList()
             var newCategoryBaseData: List<ServerUpdatedCategoryBaseData> = Collections.emptyList()
@@ -70,6 +78,8 @@ data class ServerDataStatus(
             var newCategoryTimeLimitRules: List<ServerUpdatedTimeLimitRules> = Collections.emptyList()
             var newCategoryTasks: List<ServerUpdatedCategoryTasks> = emptyList()
             var newUserList: ServerUserList? = null
+            var pendingKeyRequests = emptyList<ServerKeyRequest>()
+            var keyResponses = emptyList<ServerKeyResponse>()
             var fullVersionUntil: Long? = null
             var message: String? = null
             var apiLevel = 0
@@ -78,6 +88,7 @@ data class ServerDataStatus(
             while (reader.hasNext()) {
                 when(reader.nextName()) {
                     NEW_DEVICE_LIST -> newDeviceList = ServerDeviceList.parse(reader)
+                    UPDATED_EXTENDED_DEVICE_DATA -> updatedExtendedDeviceData = parseJsonArray(reader, { ServerExtendedDeviceData.parse(reader) })
                     NEW_INSTALLED_APPS -> newInstalledApps = ServerInstalledAppsData.parseList(reader)
                     REMOVED_CATEGORIES -> removedCategories = parseJsonStringArray(reader)
                     NEW_CATEGORIES_BASE_DATA -> newCategoryBaseData = ServerUpdatedCategoryBaseData.parseList(reader)
@@ -86,6 +97,8 @@ data class ServerDataStatus(
                     NEW_CATEGORY_TIME_LIMIT_RULES -> newCategoryTimeLimitRules = ServerUpdatedTimeLimitRules.parseList(reader)
                     NEW_CATEGORY_TASKS -> newCategoryTasks = ServerUpdatedCategoryTasks.parseList(reader)
                     NEW_USER_LIST -> newUserList = ServerUserList.parse(reader)
+                    PENDING_KEY_REQUESTS -> pendingKeyRequests = ServerKeyRequest.parseList(reader)
+                    KEY_RESPONSES -> keyResponses = ServerKeyResponse.parseList(reader)
                     FULL_VERSION_UNTIL -> fullVersionUntil = reader.nextLong()
                     MESSAGE -> message = reader.nextString()
                     API_LEVEL -> apiLevel = reader.nextInt()
@@ -95,18 +108,21 @@ data class ServerDataStatus(
             reader.endObject()
 
             return ServerDataStatus(
-                    newDeviceList = newDeviceList,
-                    newInstalledApps = newInstalledApps,
-                    removedCategories = removedCategories,
-                    newCategoryBaseData = newCategoryBaseData,
-                    newCategoryAssignedApps = newCategoryAssignedApps,
-                    newCategoryUsedTimes = newCategoryUsedTimes,
-                    newCategoryTimeLimitRules = newCategoryTimeLimitRules,
-                    newCategoryTasks = newCategoryTasks,
-                    newUserList = newUserList,
-                    fullVersionUntil = fullVersionUntil!!,
-                    message = message,
-                    apiLevel = apiLevel
+                newDeviceList = newDeviceList,
+                updatedExtendedDeviceData = updatedExtendedDeviceData,
+                newInstalledApps = newInstalledApps,
+                removedCategories = removedCategories,
+                newCategoryBaseData = newCategoryBaseData,
+                newCategoryAssignedApps = newCategoryAssignedApps,
+                newCategoryUsedTimes = newCategoryUsedTimes,
+                newCategoryTimeLimitRules = newCategoryTimeLimitRules,
+                newCategoryTasks = newCategoryTasks,
+                newUserList = newUserList,
+                pendingKeyRequests = pendingKeyRequests,
+                keyResponses = keyResponses,
+                fullVersionUntil = fullVersionUntil!!,
+                message = message,
+                apiLevel = apiLevel
             )
         }
     }
@@ -299,7 +315,8 @@ data class ServerDeviceData(
         val wasAccessibilityServiceEnabled: Boolean,
         val enableActivityLevelBlocking: Boolean,
         val qOrLater: Boolean,
-        val manipulationFlags: Long
+        val manipulationFlags: Long,
+        val publicKey: ByteArray?
 ) {
     companion object {
         private const val DEVICE_ID = "deviceId"
@@ -333,6 +350,7 @@ data class ServerDeviceData(
         private const val ENABLE_ACTIVITY_LEVEL_BLOCKING = "activityLevelBlocking"
         private const val Q_OR_LATER = "qOrLater"
         private const val MANIPULATION_FLAGS = "mFlags"
+        private const val PUBLIC_KEY = "pk"
 
         fun parse(reader: JsonReader): ServerDeviceData {
             var deviceId: String? = null
@@ -366,6 +384,7 @@ data class ServerDeviceData(
             var enableActivityLevelBlocking = false
             var qOrLater = false
             var manipulationFlags = 0L
+            var publicKey: ByteArray? = null
 
             reader.beginObject()
             while (reader.hasNext()) {
@@ -401,6 +420,7 @@ data class ServerDeviceData(
                     ENABLE_ACTIVITY_LEVEL_BLOCKING -> enableActivityLevelBlocking = reader.nextBoolean()
                     Q_OR_LATER -> qOrLater = reader.nextBoolean()
                     MANIPULATION_FLAGS -> manipulationFlags = reader.nextLong()
+                    PUBLIC_KEY -> publicKey = reader.nextString().parseBase64()
                     else -> reader.skipValue()
                 }
             }
@@ -437,7 +457,8 @@ data class ServerDeviceData(
                     wasAccessibilityServiceEnabled = wasAccessibilityServiceEnabled!!,
                     enableActivityLevelBlocking = enableActivityLevelBlocking,
                     qOrLater = qOrLater,
-                    manipulationFlags = manipulationFlags
+                    manipulationFlags = manipulationFlags,
+                    publicKey = publicKey
             )
         }
 
@@ -1059,6 +1080,185 @@ data class ServerInstalledAppsData(
                     version = version!!,
                     apps = apps!!,
                     activities = activities!!
+            )
+        }
+
+        fun parseList(reader: JsonReader) = parseJsonArray(reader) { parse(reader) }
+    }
+}
+
+data class ServerExtendedDeviceData(
+    val deviceId: String,
+    val appsBase: ServerCryptContainer?,
+    val appsDiff: ServerCryptContainer?
+) {
+    companion object {
+        private const val DEVICE_ID = "deviceId"
+        private const val APPS_BASE = "appsBase"
+        private const val APPS_DIFF = "appsDiff"
+
+        fun parse(reader: JsonReader): ServerExtendedDeviceData {
+            var deviceId: String? = null
+            var appsBase: ServerCryptContainer? = null
+            var appsDiff: ServerCryptContainer? = null
+
+            reader.beginObject()
+            while (reader.hasNext()) {
+                when (reader.nextName()) {
+                    DEVICE_ID -> deviceId = reader.nextString()
+                    APPS_BASE -> appsBase = ServerCryptContainer.parse(reader)
+                    APPS_DIFF -> appsDiff = ServerCryptContainer.parse(reader)
+                    else -> reader.skipValue()
+                }
+            }
+            reader.endObject()
+
+            return ServerExtendedDeviceData(
+                deviceId = deviceId!!,
+                appsBase = appsBase,
+                appsDiff = appsDiff
+            )
+        }
+    }
+}
+
+data class ServerCryptContainer(
+    val version: String,
+    val data: ByteArray
+) {
+    companion object {
+        private const val VERSION = "version"
+        private const val DATA = "data"
+
+        fun parse(reader: JsonReader): ServerCryptContainer {
+            var version: String? = null
+            var data: ByteArray? = null
+
+            reader.beginObject()
+            while (reader.hasNext()) {
+                when (reader.nextName()) {
+                    VERSION -> version = reader.nextString()
+                    DATA -> data = reader.nextString().parseBase64()
+                    else -> reader.skipValue()
+                }
+            }
+            reader.endObject()
+
+            return ServerCryptContainer(
+                version = version!!,
+                data = data!!
+            )
+        }
+    }
+}
+
+data class ServerKeyRequest(
+    val serverRequestSequenceNumber: Long,
+    val senderDeviceId: String,
+    val senderSequenceNumber: Long,
+    val tempKey: ByteArray,
+    val deviceId: String?,
+    val categoryId: String?,
+    val type: Int,
+    val signature: ByteArray
+) {
+    companion object {
+        private const val SERVER_REQUEST_SEQUENCE_NUMBER = "srvSeq"
+        private const val SENDER_DEVICE_ID = "senId"
+        private const val SENDER_SEQUENCE_NUMBER = "senSeq"
+        private const val DEVICE_ID = "deviceId"
+        private const val CATEGORY_ID = "categoryId"
+        private const val TYPE = "type"
+        private const val TEMP_KEY = "tempKey"
+        private const val SIGNATURE = "signature"
+
+        fun parse(reader: JsonReader): ServerKeyRequest {
+            var serverRequestSequenceNumber: Long? = null
+            var senderDeviceId: String? = null
+            var senderSequenceNumber: Long? = null
+            var tempKey: ByteArray? = null
+            var deviceId: String? = null
+            var categoryId: String? = null
+            var type: Int? = null
+            var signature: ByteArray? = null
+
+            reader.beginObject()
+            while (reader.hasNext()) {
+                when (reader.nextName()) {
+                    SERVER_REQUEST_SEQUENCE_NUMBER -> serverRequestSequenceNumber = reader.nextLong()
+                    SENDER_DEVICE_ID -> senderDeviceId = reader.nextString()
+                    SENDER_SEQUENCE_NUMBER -> senderSequenceNumber = reader.nextLong()
+                    TEMP_KEY -> tempKey = reader.nextString().parseBase64()
+                    DEVICE_ID -> deviceId = reader.nextString()
+                    CATEGORY_ID -> categoryId = reader.nextString()
+                    TYPE -> type = reader.nextInt()
+                    SIGNATURE -> signature = reader.nextString().parseBase64()
+                    else -> reader.skipValue()
+                }
+            }
+            reader.endObject()
+
+            return ServerKeyRequest(
+                serverRequestSequenceNumber = serverRequestSequenceNumber!!,
+                senderDeviceId = senderDeviceId!!,
+                senderSequenceNumber = senderSequenceNumber!!,
+                tempKey = tempKey!!,
+                deviceId = deviceId,
+                categoryId = categoryId,
+                type = type!!,
+                signature = signature!!
+            )
+        }
+
+        fun parseList(reader: JsonReader): List<ServerKeyRequest> = parseJsonArray(reader) { parse(reader) }
+    }
+}
+
+data class ServerKeyResponse(
+    val serverResponseSequenceNumber: Long,
+    val senderDeviceId: String,
+    val requestSequenceId: Long,
+    val tempKey: ByteArray,
+    val encryptedKey: ByteArray,
+    val signature: ByteArray
+) {
+    companion object {
+        private const val SERVER_RESPONSE_SEQUENCE = "srvSeq"
+        private const val SENDER_DEVICE_ID = "sender"
+        private const val REQUEST_SEQUENCE_ID = "rqSeq"
+        private const val TEMP_KEY = "tempKey"
+        private const val ENCRYPTED_KEY = "cryptKey"
+        private const val SIGNATURE = "signature"
+
+        fun parse(reader: JsonReader): ServerKeyResponse {
+            var serverResponseSequenceNumber: Long? = null
+            var senderDeviceId: String? = null
+            var requestSequenceId: Long? = null
+            var tempKey: ByteArray? = null
+            var encryptedKey: ByteArray? = null
+            var signature: ByteArray? = null
+
+            reader.beginObject()
+            while (reader.hasNext()) {
+                when (reader.nextName()) {
+                    SERVER_RESPONSE_SEQUENCE -> serverResponseSequenceNumber = reader.nextLong()
+                    SENDER_DEVICE_ID -> senderDeviceId = reader.nextString()
+                    REQUEST_SEQUENCE_ID -> requestSequenceId = reader.nextLong()
+                    TEMP_KEY -> tempKey = reader.nextString().parseBase64()
+                    ENCRYPTED_KEY -> encryptedKey = reader.nextString().parseBase64()
+                    SIGNATURE -> signature = reader.nextString().parseBase64()
+                    else -> reader.skipValue()
+                }
+            }
+            reader.endObject()
+
+            return ServerKeyResponse(
+                serverResponseSequenceNumber = serverResponseSequenceNumber!!,
+                senderDeviceId = senderDeviceId!!,
+                requestSequenceId = requestSequenceId!!,
+                tempKey = tempKey!!,
+                encryptedKey = encryptedKey!!,
+                signature = signature!!
             )
         }
 

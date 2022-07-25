@@ -33,6 +33,7 @@ object NotificationIds {
     const val LOCAL_UPDATE_NOTIFICATION = 7
     const val WORKER_REPORT_UNINSTALL = 8
     const val WORKER_SYNC_BACKGROUND = 9
+    const val NEW_DEVICE = 10
 }
 
 object NotificationChannels {
@@ -45,6 +46,7 @@ object NotificationChannels {
     const val BACKGROUND_SYNC_NOTIFICATION = "background sync"
     const val TEMP_ALLOWED_APP = "temporarily allowed App"
     const val APP_RESET = "app reset"
+    const val NEW_DEVICE = "new device"
 
     private fun createAppStatusChannel(notificationManager: NotificationManager, context: Context) {
         if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.O) {
@@ -193,6 +195,25 @@ object NotificationChannels {
         }
     }
 
+    private fun createNewDeviceChannel(notificationManager: NotificationManager, context: Context) {
+        if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.O) {
+            notificationManager.createNotificationChannel(
+                NotificationChannel(
+                    NEW_DEVICE,
+                    context.getString(R.string.notification_channel_new_device_title),
+                    NotificationManager.IMPORTANCE_LOW
+                ).apply {
+                    description = context.getString(R.string.notification_channel_new_device_description)
+                    enableLights(false)
+                    setSound(null, null)
+                    enableVibration(false)
+                    setShowBadge(true)
+                    lockscreenVisibility = NotificationCompat.VISIBILITY_SECRET
+                }
+            )
+        }
+    }
+
     fun createNotificationChannels(notificationManager: NotificationManager, context: Context) {
         createAppStatusChannel(notificationManager, context)
         createBlockedNotificationChannel(notificationManager, context)
@@ -203,6 +224,7 @@ object NotificationChannels {
         createBackgroundSyncChannel(notificationManager, context)
         createTempAllowedAppChannel(notificationManager, context)
         createAppResetChannel(notificationManager, context)
+        createNewDeviceChannel(notificationManager, context)
     }
 }
 

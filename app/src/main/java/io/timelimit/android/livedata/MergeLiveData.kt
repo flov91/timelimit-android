@@ -167,6 +167,8 @@ fun <T1, T2> mergeLiveDataWaitForValues(d1: LiveData<T1>, d2: LiveData<T2>): Liv
     return result
 }
 
+data class SevenTuple<A, B, C, D, E, F, G>(val first: A, val second: B, val third: C, val forth: D, val fifth: E, val sixth: F, val seventh: G)
+
 fun <T1, T2, T3> mergeLiveDataWaitForValues(d1: LiveData<T1>, d2: LiveData<T2>, d3: LiveData<T3>): LiveData<Triple<T1, T2, T3>> {
     val result = MediatorLiveData<Triple<T1, T2, T3>>()
     var state = Triple<Option<T1>, Option<T2>, Option<T3>>(Option.None(), Option.None(), Option.None())
@@ -277,6 +279,114 @@ fun <T1, T2, T3, T4, T5> mergeLiveDataWaitForValues(d1: LiveData<T1>, d2: LiveDa
 
     result.addSource(d5) {
         state = state.copy(fifth = Option.Some(it))
+
+        update()
+    }
+
+    return result
+}
+
+fun <T1, T2, T3, T4, T5, T6> mergeLiveDataWaitForValues(d1: LiveData<T1>, d2: LiveData<T2>, d3: LiveData<T3>, d4: LiveData<T4>, d5: LiveData<T5>, d6: LiveData<T6>): LiveData<SixTuple<T1, T2, T3, T4, T5, T6>> {
+    val result = MediatorLiveData<SixTuple<T1, T2, T3, T4, T5, T6>>()
+    var state = SixTuple<Option<T1>, Option<T2>, Option<T3>, Option<T4>, Option<T5>, Option<T6>>(Option.None(), Option.None(), Option.None(), Option.None(), Option.None(), Option.None())
+
+    fun update() {
+        val (a, b, c, d, e, f) = state
+
+        if (a is Option.Some && b is Option.Some && c is Option.Some && d is Option.Some && e is Option.Some && f is Option.Some) {
+            result.value = SixTuple(a.value, b.value, c.value, d.value, e.value, f.value)
+        }
+    }
+
+    result.addSource(d1) {
+        state = state.copy(first = Option.Some(it))
+
+        update()
+    }
+
+    result.addSource(d2) {
+        state = state.copy(second = Option.Some(it))
+
+        update()
+    }
+
+    result.addSource(d3) {
+        state = state.copy(third = Option.Some(it))
+
+        update()
+    }
+
+    result.addSource(d4) {
+        state = state.copy(forth = Option.Some(it))
+
+        update()
+    }
+
+    result.addSource(d5) {
+        state = state.copy(fifth = Option.Some(it))
+
+        update()
+    }
+
+    result.addSource(d6) {
+        state = state.copy(sixth = Option.Some(it))
+
+        update()
+    }
+
+    return result
+}
+
+fun <T1, T2, T3, T4, T5, T6, T7> mergeLiveDataWaitForValues(d1: LiveData<T1>, d2: LiveData<T2>, d3: LiveData<T3>, d4: LiveData<T4>, d5: LiveData<T5>, d6: LiveData<T6>, d7: LiveData<T7>): LiveData<SevenTuple<T1, T2, T3, T4, T5, T6, T7>> {
+    val result = MediatorLiveData<SevenTuple<T1, T2, T3, T4, T5, T6, T7>>()
+    var state = SevenTuple<Option<T1>, Option<T2>, Option<T3>, Option<T4>, Option<T5>, Option<T6>, Option<T7>>(Option.None(), Option.None(), Option.None(), Option.None(), Option.None(), Option.None(), Option.None())
+
+    fun update() {
+        val (a, b, c, d, e, f, g) = state
+
+        if (a is Option.Some && b is Option.Some && c is Option.Some && d is Option.Some && e is Option.Some && f is Option.Some && g is Option.Some) {
+            result.value = SevenTuple(a.value, b.value, c.value, d.value, e.value, f.value, g.value)
+        }
+    }
+
+    result.addSource(d1) {
+        state = state.copy(first = Option.Some(it))
+
+        update()
+    }
+
+    result.addSource(d2) {
+        state = state.copy(second = Option.Some(it))
+
+        update()
+    }
+
+    result.addSource(d3) {
+        state = state.copy(third = Option.Some(it))
+
+        update()
+    }
+
+    result.addSource(d4) {
+        state = state.copy(forth = Option.Some(it))
+
+        update()
+    }
+
+    result.addSource(d5) {
+        state = state.copy(fifth = Option.Some(it))
+
+        update()
+    }
+
+    result.addSource(d6) {
+        state = state.copy(sixth = Option.Some(it))
+
+        update()
+    }
+
+    result.addSource(d7) {
+        state = state.copy(seventh = Option.Some(it))
 
         update()
     }

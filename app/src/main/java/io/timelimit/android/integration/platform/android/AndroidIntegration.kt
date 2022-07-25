@@ -62,6 +62,7 @@ import kotlinx.coroutines.channels.consumeEach
 import kotlinx.coroutines.delay
 import kotlinx.coroutines.sync.Mutex
 import kotlinx.coroutines.sync.withLock
+import java.util.*
 import kotlin.system.exitProcess
 
 
@@ -820,5 +821,26 @@ class AndroidIntegration(context: Context): PlatformIntegration(maximumProtectio
             activityManager.getHistoricalProcessExitReasons(context.packageName, 0, length)
                 .map { ExitLogItem.fromApplicationExitInfo(it) }
         } else emptyList()
+    }
+
+    override fun showNewDeviceNotification(title: String) {
+        NotificationChannels.createNotificationChannels(notificationManager, context)
+
+        notificationManager.notify(
+            UUID.randomUUID().toString(),
+            NotificationIds.NEW_DEVICE,
+            NotificationCompat.Builder(context, NotificationChannels.NEW_DEVICE)
+                .setSmallIcon(R.drawable.ic_stat_timelapse)
+                .setContentTitle(context.getString(R.string.notification_new_device_title))
+                .setContentText(title)
+                .setContentIntent(BackgroundActionService.getOpenAppIntent(context))
+                .setWhen(System.currentTimeMillis())
+                .setShowWhen(true)
+                .setLocalOnly(true)
+                .setAutoCancel(false)
+                .setOngoing(false)
+                .setPriority(NotificationCompat.PRIORITY_LOW)
+                .build()
+        )
     }
 }

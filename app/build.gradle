@@ -19,6 +19,7 @@ apply plugin: 'kotlin-android'
 apply plugin: 'kotlin-parcelize'
 apply plugin: "androidx.navigation.safeargs.kotlin"
 apply plugin: 'kotlin-kapt'
+apply plugin: 'com.squareup.wire'
 
 android {
     compileSdkVersion 33
@@ -151,6 +152,10 @@ android {
     }
 }
 
+wire {
+    kotlin {}
+}
+
 dependencies {
     def nav_version = "2.5.0"
     def room_version = "2.4.2"
@@ -211,4 +216,6 @@ dependencies {
     implementation 'org.whispersystems:curve25519-java:0.5.0'
 
     implementation 'com.google.zxing:core:3.3.3'
+
+    api "com.squareup.wire:wire-runtime:4.4.0"
 }

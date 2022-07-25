@@ -22,6 +22,7 @@ import androidx.room.*
 import io.timelimit.android.crypto.Curve25519
 import io.timelimit.android.data.IdGenerator
 import io.timelimit.android.data.JsonSerializable
+import io.timelimit.android.extensions.parseBase64
 
 @Entity(
         tableName = "user_key",
@@ -64,7 +65,7 @@ data class UserKey(
             while (reader.hasNext()) {
                 when (reader.nextName()) {
                     USER_ID -> userId = reader.nextString()
-                    PUBLIC_KEY -> publicKey = Base64.decode(reader.nextString(), 0)
+                    PUBLIC_KEY -> publicKey = reader.nextString().parseBase64()
                     LAST_USE -> lastUse = reader.nextLong()
                     else -> reader.skipValue()
                 }

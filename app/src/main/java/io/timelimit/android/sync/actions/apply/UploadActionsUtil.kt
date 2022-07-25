@@ -26,12 +26,15 @@ class UploadActionsUtil(private val database: Database, private val syncConflict
     companion object {
         private const val BATCH_SIZE = 25
 
-        fun deleteAllVersionNumbersSync(database: Database) {
+        fun deleteAllVersionNumbersSync(database: Database, wipeCryptoRequests: Boolean = false) {
             database.runInTransaction {
                 database.config().setUserListVersionSync("")
                 database.config().setDeviceListVersionSync("")
                 database.device().deleteAllInstalledAppsVersions()
                 database.category().deleteAllCategoriesVersionNumbers()
+                database.cryptContainer().deleteAllServerVersionNumbers()
+
+                if (wipeCryptoRequests) { database.cryptContainerKeyRequest().deleteAll() }
             }
         }
     }

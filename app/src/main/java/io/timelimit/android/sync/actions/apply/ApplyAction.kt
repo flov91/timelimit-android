@@ -38,6 +38,19 @@ import java.io.StringWriter
 object ApplyActionUtil {
     private const val LOG_TAG = "ApplyActionUtil"
 
+    fun addAppLogicActionToDatabaseSync(action: AppLogicAction, database: Database) = database.runInUnobservedTransaction {
+        database.pendingSyncAction().addSyncActionSync(
+            PendingSyncAction(
+                sequenceNumber = database.config().getNextSyncActionSequenceActionAndIncrementIt(),
+                scheduledForUpload = false,
+                type = PendingSyncActionType.AppLogic,
+                userId = "",
+                integrity = "",
+                encodedAction = SerializationUtil.serializeAction(action)
+            )
+        )
+    }
+
     suspend fun applyAppLogicAction(
             action: AppLogicAction,
             appLogic: AppLogic,
@@ -163,20 +176,7 @@ object ApplyActionUtil {
                         }
                     }
 
-                    val serializedAction = StringWriter().apply {
-                        JsonWriter(this).apply {
-                            action.serialize(this)
-                        }
-                    }.toString()
-
-                    database.pendingSyncAction().addSyncActionSync(PendingSyncAction(
-                            sequenceNumber = database.config().getNextSyncActionSequenceActionAndIncrementIt(),
-                            encodedAction = serializedAction,
-                            integrity = "",
-                            scheduledForUpload = false,
-                            type = PendingSyncActionType.AppLogic,
-                            userId = ""
-                    ))
+                    addAppLogicActionToDatabaseSync(action, database)
 
                     if (action is AddUsedTimeActionVersion2) {
                         syncUtil.requestVeryUnimportantSync()

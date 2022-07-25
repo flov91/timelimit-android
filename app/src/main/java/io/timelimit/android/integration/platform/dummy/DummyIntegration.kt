@@ -191,4 +191,6 @@ class DummyIntegration(
     ): Boolean = false
 
     override fun getExitLog(length: Int): List<ExitLogItem> = emptyList()
+
+    override fun showNewDeviceNotification(title: String) = Unit
 }

@@ -53,6 +53,9 @@ object Curve25519 {
     fun sign(privateKey: ByteArray, message: ByteArray): ByteArray = instance.calculateSignature(privateKey, message)
 
     fun validateSignature(publicKey: ByteArray, message: ByteArray, signature: ByteArray) = instance.verifySignature(publicKey, message, signature)
+
+    // 32 bytes
+    fun sharedSecret(publicKey: ByteArray, privateKey: ByteArray) = instance.calculateAgreement(publicKey, privateKey)
 }
 
 fun Curve25519KeyPair.serialize(): ByteArray {

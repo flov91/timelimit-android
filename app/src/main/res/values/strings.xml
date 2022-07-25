@@ -105,6 +105,8 @@
         (<a href="https://github.com/signalapp/curve25519-java/blob/master/LICENSE">GNU General Public License v3.0</a>)
         \n<a href="https://github.com/zxing/zxing">ZXing</a>
         (<a href="https://github.com/zxing/zxing/blob/master/LICENSE">Apache License 2.0</a>)
+        \n<a href="https://github.com/square/wire/blob/master/README.md">Wire</a>
+        (<a href="https://github.com/square/wire/blob/master/LICENSE.txt">Apache License 2.0</a>)
     </string>
 
     <string name="about_diagnose_title">Error diagnose</string>
@@ -581,6 +583,7 @@
     <string name="diagnose_exf_esb">Do not use a overlay or the home button for blocking</string>
     <string name="diagnose_exf_srn">Show sync related toasts</string>
     <string name="diagnose_exf_soc">Enable strict overlay permission check</string>
+    <string name="diagnose_exf_dls">Disable sending the App List with the legacy encoding</string>
 
     <string name="diagnose_bg_task_loop_ex">Background task loop exception</string>
 
@@ -937,6 +940,7 @@
 
     <string name="manage_device_added_at">Added: %s</string>
     <string name="manage_device_is_this_device">This is the device which is in front of you</string>
+    <string name="manage_device_signing_key">Signing Key: %s</string>
 
     <string name="manage_device_current_user_title">User of the device</string>
     <string name="manage_device_current_user_none">No selection - no limits</string>
@@ -1186,6 +1190,9 @@
     <string name="notification_channel_reset_title">Reset Notification</string>
     <string name="notification_channel_reset_text">Shows a notification if TimeLimit was reset at this device</string>
 
+    <string name="notification_channel_new_device_title">New Device</string>
+    <string name="notification_channel_new_device_description">Shows a notification if the connected mode is used and a new device was linked</string>
+
     <string name="notification_filter_not_blocked_title">TimeLimit has blocked a notification</string>
     <string name="notification_filter_blocking_failed_title">TimeLimit could not block a notification</string>
 
@@ -1198,6 +1205,8 @@
 
     <string name="notification_background_sync_title">TimeLimit is running</string>
     <string name="notification_background_sync_text">a background synchronisation is in progress</string>
+
+    <string name="notification_new_device_title">Device added</string>
 
     <string name="obsolete_message">You are using TimeLimit at a obsolete Android version.
         Although this can work, it is not recommend.

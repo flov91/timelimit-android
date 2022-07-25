@@ -41,6 +41,10 @@ interface Database {
     fun categoryNetworkId(): CategoryNetworkIdDao
     fun childTasks(): ChildTaskDao
     fun timeWarning(): CategoryTimeWarningDao
+    fun cryptContainer(): CryptContainerDao
+    fun cryptContainerKeyRequest(): CryptContainerKeyRequestDao
+    fun cryptContainerKeyResult(): CryptContainerKeyResultDao
+    fun deviceKey(): DeviceKeyDao
 
     fun <T> runInTransaction(block: () -> T): T
     fun <T> runInUnobservedTransaction(block: () -> T): T

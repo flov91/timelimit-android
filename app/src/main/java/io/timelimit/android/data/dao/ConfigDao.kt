@@ -25,6 +25,8 @@ import io.timelimit.android.data.model.ConfigurationItem
 import io.timelimit.android.data.model.ConfigurationItemType
 import io.timelimit.android.data.model.ConfigurationItemTypeConverter
 import io.timelimit.android.data.model.ConfigurationItemTypeUtil
+import io.timelimit.android.extensions.base64
+import io.timelimit.android.extensions.parseBase64
 import io.timelimit.android.extensions.toJsonReader
 import io.timelimit.android.livedata.ignoreUnchanged
 import io.timelimit.android.livedata.map
@@ -86,28 +88,16 @@ abstract class ConfigDao {
         updateValueSync(ConfigurationItemType.OwnDeviceId, deviceId)
     }
 
-    fun getDeviceListVersion(): LiveData<String> {
-        return getValueOfKeyAsync(ConfigurationItemType.DeviceListVersion).map {
-            if (it == null) {
-                ""
-            } else {
-                it
-            }
-        }
+    fun getDeviceListVersionSync(): String {
+        return getValueOfKeySync(ConfigurationItemType.DeviceListVersion) ?: ""
     }
 
     fun setDeviceListVersionSync(deviceListVersion: String) {
         updateValueSync(ConfigurationItemType.DeviceListVersion, deviceListVersion)
     }
 
-    fun getUserListVersion(): LiveData<String> {
-        return getValueOfKeyAsync(ConfigurationItemType.UserListVersion).map {
-            if (it == null) {
-                ""
-            } else {
-                it
-            }
-        }
+    fun getUserListVersionSync(): String {
+        return getValueOfKeySync(ConfigurationItemType.UserListVersion) ?: ""
     }
 
     fun setUserListVersionSync(userListVersion: String) {
@@ -354,4 +344,23 @@ abstract class ConfigDao {
                 (getConsentFlagsSync() and (flags.inv())).toString(16)
         )
     }
+
+    fun getSigningKeySync() = getValueOfKeySync(ConfigurationItemType.SigningKey)?.parseBase64()
+    fun getSigningKeyAsync() = getValueOfKeyAsync(ConfigurationItemType.SigningKey).map { v -> v?.let { Base64.decode(it, 0) } }
+    fun setSigningKeySync(value: ByteArray) = updateValueSync(ConfigurationItemType.SigningKey, value.base64())
+
+    private fun getNextSigningSequenceNumberSync(): Long = getValueOfKeySync(ConfigurationItemType.SignSequenceNumber)?.toLong() ?: 0L
+    private fun setNextSigningSequenceNumberSync(value: Long) = updateValueSync(ConfigurationItemType.SignSequenceNumber, value.toString())
+    fun getNextSigningSequenceNumberAndIncrementIt(): Long {
+        val current = getNextSigningSequenceNumberSync()
+        setNextSigningSequenceNumberSync(current + 1)
+
+        return current
+    }
+
+    fun getLastServerKeyRequestSequenceSync(): Long? = getValueOfKeySync(ConfigurationItemType.LastServerKeyRequestSequence)?.toLong()
+    fun setLastServerKeyRequestSequenceSync(value: Long) = updateValueSync(ConfigurationItemType.LastServerKeyRequestSequence, value.toString())
+
+    fun getLastServerKeyResponseSequenceSync(): Long? = getValueOfKeySync(ConfigurationItemType.LastKeyResponseSequence)?.toLong()
+    fun setLastServerKeyResponseSequenceSync(value: Long) = updateValueSync(ConfigurationItemType.LastKeyResponseSequence, value.toString())
 }

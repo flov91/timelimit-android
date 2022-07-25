@@ -299,6 +299,25 @@ object DatabaseMigrations {
         }
     }
 
+    private val MIGRATE_TP_V43 = object: Migration(42, 43) {
+        override fun migrate(database: SupportSQLiteDatabase) {
+            database.execSQL("CREATE TABLE IF NOT EXISTS `crypt_container_metadata` (`crypt_container_id` INTEGER PRIMARY KEY AUTOINCREMENT NOT NULL, `device_id` TEXT, `category_id` TEXT, `type` INTEGER NOT NULL, `server_version` TEXT NOT NULL, `current_generation` INTEGER NOT NULL, `current_generation_first_timestamp` INTEGER NOT NULL, `next_counter` INTEGER NOT NULL, `current_generation_key` BLOB, `status` INTEGER NOT NULL, FOREIGN KEY(`device_id`) REFERENCES `device`(`id`) ON UPDATE CASCADE ON DELETE CASCADE , FOREIGN KEY(`category_id`) REFERENCES `category`(`id`) ON UPDATE CASCADE ON DELETE CASCADE )")
+            database.execSQL("CREATE INDEX IF NOT EXISTS `index_crypt_container_metadata_device_id` ON `crypt_container_metadata` (`device_id`)")
+            database.execSQL("CREATE INDEX IF NOT EXISTS `index_crypt_container_metadata_category_id` ON `crypt_container_metadata` (`category_id`)")
+
+            database.execSQL("CREATE TABLE IF NOT EXISTS `crypt_container_data` (`crypt_container_id` INTEGER NOT NULL, `encrypted_data` BLOB NOT NULL, PRIMARY KEY(`crypt_container_id`), FOREIGN KEY(`crypt_container_id`) REFERENCES `crypt_container_metadata`(`crypt_container_id`) ON UPDATE CASCADE ON DELETE CASCADE )")
+
+            database.execSQL("CREATE TABLE IF NOT EXISTS `crypt_container_pending_key_request` (`crypt_container_id` INTEGER NOT NULL, `request_time_crypt_container_generation` INTEGER NOT NULL, `request_sequence_id` INTEGER NOT NULL, `request_key` BLOB NOT NULL, PRIMARY KEY(`crypt_container_id`), FOREIGN KEY(`crypt_container_id`) REFERENCES `crypt_container_metadata`(`crypt_container_id`) ON UPDATE CASCADE ON DELETE CASCADE )")
+            database.execSQL("CREATE UNIQUE INDEX IF NOT EXISTS `index_crypt_container_pending_key_request_request_sequence_id` ON `crypt_container_pending_key_request` (`request_sequence_id`)")
+
+            database.execSQL("CREATE TABLE IF NOT EXISTS `crypt_container_key_result` (`request_sequence_id` INTEGER NOT NULL, `device_id` TEXT NOT NULL, `status` INTEGER NOT NULL, PRIMARY KEY(`request_sequence_id`, `device_id`), FOREIGN KEY(`request_sequence_id`) REFERENCES `crypt_container_pending_key_request`(`request_sequence_id`) ON UPDATE CASCADE ON DELETE CASCADE , FOREIGN KEY(`device_id`) REFERENCES `device`(`id`) ON UPDATE CASCADE ON DELETE CASCADE )")
+            database.execSQL("CREATE INDEX IF NOT EXISTS `index_crypt_container_key_result_request_sequence_id` ON `crypt_container_key_result` (`request_sequence_id`)")
+            database.execSQL("CREATE INDEX IF NOT EXISTS `index_crypt_container_key_result_device_id` ON `crypt_container_key_result` (`device_id`)")
+
+            database.execSQL("CREATE TABLE IF NOT EXISTS `device_public_key` (`device_id` TEXT NOT NULL, `public_key` BLOB NOT NULL, `next_sequence_number` INTEGER NOT NULL, PRIMARY KEY(`device_id`), FOREIGN KEY(`device_id`) REFERENCES `device`(`id`) ON UPDATE CASCADE ON DELETE CASCADE )")
+        }
+    }
+
     val ALL = arrayOf(
         MIGRATE_TO_V2,
         MIGRATE_TO_V3,
@@ -340,6 +359,7 @@ object DatabaseMigrations {
         MIGRATE_TO_V39,
         MIGRATE_TO_V40,
         MIGRATE_TO_V41,
-        MIGRATE_TO_V42
+        MIGRATE_TO_V42,
+        MIGRATE_TP_V43
     )
 }

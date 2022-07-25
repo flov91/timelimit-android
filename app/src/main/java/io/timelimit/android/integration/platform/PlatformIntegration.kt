@@ -91,6 +91,8 @@ abstract class PlatformIntegration(
 
     abstract fun getExitLog(length: Int): List<ExitLogItem>
 
+    abstract fun showNewDeviceNotification(title: String)
+
     var installedAppsChangeListener: Runnable? = null
     var systemClockChangeListener: Runnable? = null
 }

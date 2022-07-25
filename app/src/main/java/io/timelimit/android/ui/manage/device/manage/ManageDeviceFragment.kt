@@ -1,5 +1,5 @@
 /*
- * TimeLimit Copyright <C> 2019 - 2021 Jonas Lochmann
+ * TimeLimit Copyright <C> 2019 - 2022 Jonas Lochmann
  *
  * This program is free software: you can redistribute it and/or modify
  * it under the terms of the GNU General Public License as published by
@@ -24,15 +24,15 @@ import androidx.fragment.app.Fragment
 import androidx.lifecycle.LiveData
 import androidx.lifecycle.Observer
 import androidx.lifecycle.ViewModelProviders
+import androidx.lifecycle.switchMap
 import androidx.navigation.Navigation
 import io.timelimit.android.R
+import io.timelimit.android.crypto.Curve25519
+import io.timelimit.android.crypto.HexString
 import io.timelimit.android.data.model.Device
 import io.timelimit.android.databinding.FragmentManageDeviceBinding
 import io.timelimit.android.extensions.safeNavigate
-import io.timelimit.android.livedata.ignoreUnchanged
-import io.timelimit.android.livedata.liveDataFromNonNullValue
-import io.timelimit.android.livedata.map
-import io.timelimit.android.livedata.switchMap
+import io.timelimit.android.livedata.*
 import io.timelimit.android.logic.AppLogic
 import io.timelimit.android.logic.DefaultAppLogic
 import io.timelimit.android.logic.RealTime
@@ -150,6 +150,26 @@ class ManageDeviceFragment : Fragment(), FragmentWithCustomTitle {
             binding.isThisDevice = it
         })
 
+        val signingKey = isThisDevice.switchMap { isLocalDevice ->
+            if (isLocalDevice) {
+                logic.fullVersion.isLocalMode.switchMap { isLocalMode ->
+                    if (isLocalMode) liveDataFromNullableValue(null)
+                    else
+                        logic.database.config().getSigningKeyAsync().map {
+                            if (it != null) Curve25519.getPublicKey(it)
+                            else null
+                        }
+                }
+            } else {
+                logic.database.deviceKey().getLive(args.deviceId).map {
+                    it?.publicKey
+                }
+            }
+        }.map {
+            if (it == null) null
+            else HexString.toHex(it)
+        }
+
         ManageDeviceIntroduction.bind(
                 view = binding.introduction,
                 database = logic.database,
@@ -181,6 +201,8 @@ class ManageDeviceFragment : Fragment(), FragmentWithCustomTitle {
         userEntry.observe(this, Observer {
             binding.userCardText = it?.name ?: getString(R.string.manage_device_current_user_none)
         })
+
+        signingKey.observe(viewLifecycleOwner) { binding.devicePublicKey = it }
 
         return binding.root
     }

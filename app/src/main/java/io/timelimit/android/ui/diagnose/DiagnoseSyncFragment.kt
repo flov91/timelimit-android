@@ -55,7 +55,7 @@ class DiagnoseSyncFragment : Fragment(), FragmentWithCustomTitle {
 
         binding.clearCacheBtn.setOnClickListener {
             Threads.database.execute {
-                UploadActionsUtil.deleteAllVersionNumbersSync(logic.database)
+                UploadActionsUtil.deleteAllVersionNumbersSync(logic.database, wipeCryptoRequests = true)
             }
 
             Toast.makeText(requireContext(), R.string.diagnose_sync_btn_clear_cache_toast, Toast.LENGTH_SHORT).show()

@@ -1,5 +1,5 @@
 /*
- * TimeLimit Copyright <C> 2019 Jonas Lochmann
+ * TimeLimit Copyright <C> 2019 - 2022 Jonas Lochmann
  *
  * This program is free software: you can redistribute it and/or modify
  * it under the terms of the GNU General Public License as published by
@@ -17,16 +17,15 @@ package io.timelimit.android.sync.network
 
 import android.util.JsonWriter
 import io.timelimit.android.data.Database
-import io.timelimit.android.livedata.map
-import io.timelimit.android.livedata.waitForNonNullValue
-import java.util.*
-import kotlin.collections.HashMap
 
 data class ClientDataStatus(
         val deviceListVersion: String,
         val installedAppsVersionsByDeviceId: Map<String, String>,
+        val deviceDetailData: Map<String, DeviceDataStatus>,
         val categories: Map<String, CategoryDataStatus>,
-        val userListVersion: String
+        val userListVersion: String,
+        val lastKeyRequestServerSequence: Long?,
+        val lastKeyResponseServerSequence: Long?
 ) {
     companion object {
         private const val DEVICES = "devices"
@@ -34,44 +33,59 @@ data class ClientDataStatus(
         private const val CATEGORIES = "categories"
         private const val USERS = "users"
         private const val CLIENT_LEVEL = "clientLevel"
-        private const val CLIENT_LEVEL_VALUE = 3
+        private const val DEVICES_DETAIL = "devicesDetail"
+        private const val LAST_KEY_REQUEST_SEQUENCE = "kri"
+        private const val LAST_KEY_RESPONSE_SEQUENCE = "kr"
+        private const val CLIENT_LEVEL_VALUE = 4
 
         val empty = ClientDataStatus(
-                deviceListVersion = "",
-                installedAppsVersionsByDeviceId = Collections.emptyMap(),
-                categories = Collections.emptyMap(),
-                userListVersion = ""
+            deviceListVersion = "",
+            installedAppsVersionsByDeviceId = emptyMap(),
+            deviceDetailData = emptyMap(),
+            categories = emptyMap(),
+            userListVersion = "",
+            lastKeyRequestServerSequence = null,
+            lastKeyResponseServerSequence = null
         )
 
-        suspend fun getClientDataStatusAsync(database: Database): ClientDataStatus {
-            return ClientDataStatus(
-                    deviceListVersion = database.config().getDeviceListVersion().waitForNonNullValue(),
-                    installedAppsVersionsByDeviceId = database.device().getInstalledAppsVersions().map {
-                        val devicesWithAppVersions = it
-                        val result = HashMap<String, String>()
+        fun getClientDataStatusSync(database: Database): ClientDataStatus {
+            return database.runInUnobservedTransaction {
+                ClientDataStatus(
+                    deviceListVersion = database.config().getDeviceListVersionSync(),
+                    installedAppsVersionsByDeviceId = database.device()
+                        .getInstalledAppsVersionsSync()
+                        .associateBy { it.deviceId }
+                        .mapValues { it.value.installedAppsVersions },
+                    deviceDetailData = if (database.config().getServerApiLevelSync() >= 4)
+                        database.device().getDeviceDetailDataSync()
+                            .associateBy { it.deviceId }
+                            .mapValues {
+                                val item = it.value
 
-                        devicesWithAppVersions.forEach { result[it.deviceId] = it.installedAppsVersions }
+                                DeviceDataStatus(
+                                    appsBaseVersion = item.appBaseVersion,
+                                    appsDiffVersion = item.appDiffVersion
+                                )
+                            }
+                    else emptyMap(),
+                    categories = database.category().getCategoriesWithVersionNumbersSybc()
+                        .associateBy { it.categoryId }
+                        .mapValues {
+                            val item = it.value
 
-                        Collections.unmodifiableMap(result)
-                    }.waitForNonNullValue(),
-                    categories = database.category().getCategoriesWithVersionNumbers().map {
-                        val categoriesWithVersions = it
-                        val result = HashMap<String, CategoryDataStatus>()
-
-                        categoriesWithVersions.forEach {
-                            result[it.categoryId] = CategoryDataStatus(
-                                baseVersion = it.baseVersion,
-                                    assignedAppsVersion = it.assignedAppsVersion,
-                                    timeLimitRulesVersion = it.timeLimitRulesVersion,
-                                    usedTimeItemsVersion = it.usedTimeItemsVersion,
-                                    taskListVersion = it.taskListVersion
+                            CategoryDataStatus(
+                                baseVersion = item.baseVersion,
+                                assignedAppsVersion = item.assignedAppsVersion,
+                                timeLimitRulesVersion = item.timeLimitRulesVersion,
+                                usedTimeItemsVersion = item.usedTimeItemsVersion,
+                                taskListVersion = item.taskListVersion
                             )
-                        }
-
-                        Collections.unmodifiableMap(result)
-                    }.waitForNonNullValue(),
-                    userListVersion = database.config().getUserListVersion().waitForNonNullValue()
-            )
+                        },
+                    userListVersion = database.config().getUserListVersionSync(),
+                    lastKeyRequestServerSequence = database.config().getLastServerKeyRequestSequenceSync(),
+                    lastKeyResponseServerSequence = database.config().getLastServerKeyResponseSequenceSync()
+                )
+            }
         }
     }
 
@@ -89,6 +103,16 @@ data class ClientDataStatus(
         }
         writer.endObject()
 
+        if (deviceDetailData.isNotEmpty()) {
+            writer.name(DEVICES_DETAIL)
+            writer.beginObject()
+            deviceDetailData.entries.forEach {
+                writer.name(it.key)
+                it.value.serialize(writer)
+            }
+            writer.endObject()
+        }
+
         writer.name(CATEGORIES)
         writer.beginObject()
         categories.entries.forEach {
@@ -96,6 +120,9 @@ data class ClientDataStatus(
             it.value.serialize(writer)
         }
         writer.endObject()
+
+        lastKeyRequestServerSequence?.let { writer.name(LAST_KEY_REQUEST_SEQUENCE).value(it) }
+        lastKeyResponseServerSequence?.let { writer.name(LAST_KEY_RESPONSE_SEQUENCE).value(it) }
 
         writer.endObject()
     }
@@ -125,6 +152,25 @@ data class CategoryDataStatus(
         writer.name(USED_TIME_ITEMS_VERSION).value(usedTimeItemsVersion)
 
         if (taskListVersion.isNotEmpty()) writer.name(TASK_LIST_VERSION).value(taskListVersion)
+
+        writer.endObject()
+    }
+}
+
+data class DeviceDataStatus (
+    val appsBaseVersion: String?,
+    val appsDiffVersion: String?
+) {
+    companion object {
+        private const val APPS_BASE_VERSION = "appsB"
+        private const val APPS_DIFF_VERSION = "appsD"
+    }
+
+    fun serialize(writer: JsonWriter) {
+        writer.beginObject()
+
+        appsBaseVersion?.let { writer.name(APPS_BASE_VERSION).value(it) }
+        appsDiffVersion?.let { writer.name(APPS_DIFF_VERSION).value(it) }
 
         writer.endObject()
     }

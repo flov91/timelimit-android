@@ -23,6 +23,7 @@ import io.timelimit.android.data.customtypes.ImmutableBitmask
 import io.timelimit.android.data.customtypes.ImmutableBitmaskJson
 import io.timelimit.android.data.model.*
 import io.timelimit.android.extensions.MinuteOfDay
+import io.timelimit.android.extensions.base64
 import io.timelimit.android.integration.platform.*
 import io.timelimit.android.sync.network.ParentPassword
 import io.timelimit.android.sync.validation.ListValidation
@@ -464,6 +465,144 @@ data class UpdateAppActivitiesAction(
         writer.name(UPDATED_OR_ADDED).beginArray()
         updatedOrAddedActivities.forEach { it.serialize(writer) }
         writer.endArray()
+
+        writer.endObject()
+    }
+}
+data class UpdateInstalledAppsAction (
+    val base: ByteArray?,
+    val diff: ByteArray?,
+    val wipe: Boolean
+): AppLogicAction() {
+    companion object {
+        private const val TYPE_VALUE = "UPDATE_INSTALLED_APPS"
+        private const val BASE = "b"
+        private const val DIFF = "d"
+        private const val WIPE = "w"
+    }
+
+    override fun serialize(writer: JsonWriter) {
+        writer.beginObject()
+
+        writer.name(TYPE).value(TYPE_VALUE)
+
+        base?.let { writer.name(BASE).value(it.base64()) }
+        diff?.let { writer.name(DIFF).value(it.base64()) }
+
+        writer.name(WIPE).value(wipe)
+
+        writer.endObject()
+    }
+}
+data class UploadDevicePublicKeyAction (val publicKey: ByteArray): AppLogicAction() {
+    companion object {
+        private const val TYPE_VALUE = "UPLOAD_DEVICE_PUBLIC_KEY"
+        private const val KEY = "key"
+    }
+
+    init {
+        if (publicKey.size != 32) throw IllegalArgumentException()
+    }
+
+    override fun serialize(writer: JsonWriter) {
+        writer.beginObject()
+        writer.name(TYPE).value(TYPE_VALUE)
+        writer.name(KEY).value(publicKey.base64())
+        writer.endObject()
+    }
+}
+data class SendKeyRequestAction(
+    val deviceSequenceNumber: Long,
+    val deviceId: String?,
+    val categoryId: String?,
+    val type: Int,
+    val tempKey: ByteArray,
+    val signature: ByteArray
+): AppLogicAction() {
+    companion object {
+        private const val TYPE_VALUE = "SEND_KEY_REQUEST"
+        private const val SEQ_NUM = "dsn"
+        private const val DEVICE_ID = "deviceId"
+        private const val CATEGORY_ID = "categoryId"
+        private const val DATA_TYPE = "dataType"
+        private const val TEMP_KEY = "tempKey"
+        private const val SIGNATURE = "signature"
+    }
+
+    init {
+        if (tempKey.size != 32 || signature.size != 64) {
+            throw IllegalArgumentException()
+        }
+
+        if (deviceId != null && categoryId != null) {
+            throw IllegalArgumentException()
+        }
+
+        deviceId?.also { IdGenerator.assertIdValid(it) }
+        categoryId?.also { IdGenerator.assertIdValid(it) }
+
+        if (!CryptContainerMetadata.isTypeValid(type)) {
+            throw IllegalArgumentException()
+        }
+    }
+
+    override fun serialize(writer: JsonWriter) {
+        writer.beginObject()
+
+        writer.name(TYPE).value(TYPE_VALUE)
+        writer.name(SEQ_NUM).value(deviceSequenceNumber)
+        deviceId?.let { writer.name(DEVICE_ID).value(it) }
+        categoryId?.let { writer.name(CATEGORY_ID).value(it) }
+        writer.name(DATA_TYPE).value(type)
+        writer.name(TEMP_KEY).value(tempKey.base64())
+        writer.name(SIGNATURE).value(signature.base64())
+
+        writer.endObject()
+    }
+}
+data class FinishKeyRequestAction(val deviceSequenceNumber: Long): AppLogicAction() {
+    companion object {
+        private const val TYPE_VALUE = "FINISH_KEY_REQUEST"
+        private const val SEQ_NUM = "dsn"
+    }
+
+    override fun serialize(writer: JsonWriter) {
+        writer.beginObject()
+
+        writer.name(TYPE).value(TYPE_VALUE)
+        writer.name(SEQ_NUM).value(deviceSequenceNumber)
+
+        writer.endObject()
+    }
+}
+data class ReplyToKeyRequestAction(
+    val requestServerSequenceNumber: Long,
+    val tempKey: ByteArray,
+    val encryptedKey: ByteArray,
+    val signature: ByteArray
+): AppLogicAction() {
+    companion object {
+        private const val TYPE_VALUE = "REPLY_TO_KEY_REQUEST"
+        private const val REQUEST_SEQUENCE_NUMBER = "rsn"
+        private const val TEMP_KEY = "tempKey"
+        private const val ENCRYPTED_KEY = "encryptedKey"
+        private const val SIGNATURE = "signature"
+    }
+
+    init {
+        if (tempKey.size != 32 || encryptedKey.size != 16 || signature.size != 64) {
+            throw IllegalArgumentException()
+        }
+    }
+
+    override fun serialize(writer: JsonWriter) {
+        writer.beginObject()
+
+        writer.name(TYPE).value(TYPE_VALUE)
+        writer.name(REQUEST_SEQUENCE_NUMBER).value(requestServerSequenceNumber)
+        writer.name(TEMP_KEY).value(tempKey.base64())
+        writer.name(ENCRYPTED_KEY).value(encryptedKey.base64())
+        writer.name(SIGNATURE).value(signature.base64())
 
         writer.endObject()
     }

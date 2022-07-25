@@ -15,16 +15,26 @@
  */
 package io.timelimit.android.logic
 
+import io.timelimit.android.data.Database
 import io.timelimit.android.livedata.liveDataFromNonNullValue
 import io.timelimit.android.livedata.map
 import io.timelimit.android.livedata.switchMap
 
 class ServerApiLevelLogic(logic: AppLogic) {
-    val infoLive = logic.database.config().getDeviceAuthTokenAsync().switchMap { authToken ->
+    companion object {
+        fun getSync(database: Database): ServerApiLevelInfo = if (database.config().getDeviceAuthTokenSync().isEmpty())
+            ServerApiLevelInfo.Offline
+        else
+            ServerApiLevelInfo.Online(serverLevel = database.config().getServerApiLevelSync())
+    }
+
+    private val database = logic.database
+
+    val infoLive = database.config().getDeviceAuthTokenAsync().switchMap { authToken ->
         if (authToken.isEmpty())
             liveDataFromNonNullValue(ServerApiLevelInfo.Offline)
         else
-            logic.database.config().getServerApiLevelLive().map { apiLevel ->
+            database.config().getServerApiLevelLive().map { apiLevel ->
                 ServerApiLevelInfo.Online(serverLevel = apiLevel)
             }
     }

@@ -66,7 +66,7 @@ abstract class CategoryDao {
     abstract fun updateCategoryTemporarilyBlocked(categoryId: String, blocked: Boolean, endTime: Long)
 
     @Query("SELECT id, base_version, apps_version, rules_version, usedtimes_version, tasks_version FROM category")
-    abstract fun getCategoriesWithVersionNumbers(): LiveData<List<CategoryWithVersionNumbers>>
+    abstract fun getCategoriesWithVersionNumbersSybc(): List<CategoryWithVersionNumbers>
 
     @Query("UPDATE category SET apps_version = :assignedAppsVersion WHERE id = :categoryId")
     abstract fun updateCategoryAssignedAppsVersion(categoryId: String, assignedAppsVersion: String)

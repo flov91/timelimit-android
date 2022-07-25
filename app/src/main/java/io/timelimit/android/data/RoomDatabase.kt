@@ -52,8 +52,13 @@ import java.util.concurrent.TimeUnit
     UserLimitLoginCategory::class,
     CategoryNetworkId::class,
     ChildTask::class,
-    CategoryTimeWarning::class
-], version = 42)
+    CategoryTimeWarning::class,
+    CryptContainerMetadata::class,
+    CryptContainerData::class,
+    CryptContainerPendingKeyRequest::class,
+    CryptContainerKeyResult::class,
+    DevicePublicKey::class
+], version = 43)
 abstract class RoomDatabase: RoomDatabase(), io.timelimit.android.data.Database {
     companion object {
         private val lock = Object()

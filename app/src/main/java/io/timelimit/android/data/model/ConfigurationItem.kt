@@ -74,8 +74,6 @@ data class ConfigurationItem(
     }
 }
 
-// TODO: validate config item values
-
 enum class ConfigurationItemType {
     OwnDeviceId,
     UserListVersion,
@@ -102,6 +100,10 @@ enum class ConfigurationItemType {
     ServerApiLevel,
     AnnoyManualUnblockCounter,
     ConsentFlags,
+    SigningKey,
+    SignSequenceNumber,
+    LastServerKeyRequestSequence,
+    LastKeyResponseSequence
 }
 
 object ConfigurationItemTypeUtil {
@@ -130,6 +132,10 @@ object ConfigurationItemTypeUtil {
     private const val SERVER_API_LEVEL = 24
     private const val ANNOY_MANUAL_UNBLOCK_COUNTER = 25
     private const val CONSENT_FLAGS = 26
+    private const val SIGNING_KEY = 27
+    private const val SIGN_SEQUENCE_NUMBER = 28
+    private const val LAST_SERVER_KEY_REQUEST_SEQUENCE = 29
+    private const val LAST_SERVER_KEY_RESPONSE_SEQUENCE = 30
 
     val TYPES = listOf(
             ConfigurationItemType.OwnDeviceId,
@@ -156,7 +162,11 @@ object ConfigurationItemTypeUtil {
             ConfigurationItemType.CustomOrganizationName,
             ConfigurationItemType.ServerApiLevel,
             ConfigurationItemType.AnnoyManualUnblockCounter,
-            ConfigurationItemType.ConsentFlags
+            ConfigurationItemType.ConsentFlags,
+            ConfigurationItemType.SigningKey,
+            ConfigurationItemType.SignSequenceNumber,
+            ConfigurationItemType.LastServerKeyRequestSequence,
+            ConfigurationItemType.LastKeyResponseSequence
     )
 
     fun serialize(value: ConfigurationItemType) = when(value) {
@@ -185,6 +195,10 @@ object ConfigurationItemTypeUtil {
         ConfigurationItemType.ServerApiLevel -> SERVER_API_LEVEL
         ConfigurationItemType.AnnoyManualUnblockCounter -> ANNOY_MANUAL_UNBLOCK_COUNTER
         ConfigurationItemType.ConsentFlags -> CONSENT_FLAGS
+        ConfigurationItemType.SigningKey -> SIGNING_KEY
+        ConfigurationItemType.SignSequenceNumber -> SIGN_SEQUENCE_NUMBER
+        ConfigurationItemType.LastServerKeyRequestSequence -> LAST_SERVER_KEY_REQUEST_SEQUENCE
+        ConfigurationItemType.LastKeyResponseSequence -> LAST_SERVER_KEY_RESPONSE_SEQUENCE
     }
 
     fun parse(value: Int) = when(value) {
@@ -213,6 +227,10 @@ object ConfigurationItemTypeUtil {
         SERVER_API_LEVEL -> ConfigurationItemType.ServerApiLevel
         ANNOY_MANUAL_UNBLOCK_COUNTER -> ConfigurationItemType.AnnoyManualUnblockCounter
         CONSENT_FLAGS -> ConfigurationItemType.ConsentFlags
+        SIGNING_KEY -> ConfigurationItemType.SigningKey
+        SIGN_SEQUENCE_NUMBER -> ConfigurationItemType.SignSequenceNumber
+        LAST_SERVER_KEY_REQUEST_SEQUENCE -> ConfigurationItemType.LastServerKeyRequestSequence
+        LAST_SERVER_KEY_RESPONSE_SEQUENCE -> ConfigurationItemType.LastKeyResponseSequence
         else -> throw IllegalArgumentException()
     }
 }
@@ -256,6 +274,7 @@ object ExperimentalFlags {
     // const val INSTANCE_ID_FG_APP_DETECTION = 65536L
     // private const val OBSOLETE_DISABLE_FG_APP_DETECTION_FALLBACK = 131072L
     const val STRICT_OVERLAY_CHECKING = 0x40000L
+    const val DISABLE_LEGACY_APP_SENDING = 0x80000L
 }
 
 object ConsentFlags {

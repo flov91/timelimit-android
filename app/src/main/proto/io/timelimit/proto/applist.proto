@@ -1,0 +1,59 @@
+/*
+ * TimeLimit Copyright <C> 2019 - 2022 Jonas Lochmann
+ *
+ * This program is free software: you can redistribute it and/or modify
+ * it under the terms of the GNU General Public License as published by
+ * the Free Software Foundation version 3 of the License.
+ *
+ * This program is distributed in the hope that it will be useful,
+ * but WITHOUT ANY WARRANTY; without even the implied warranty of
+ * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+ * GNU General Public License for more details.
+ *
+ * You should have received a copy of the GNU General Public License
+ * along with this program. If not, see <https://www.gnu.org/licenses/>.
+ */
+syntax = "proto3";
+
+package io.timelimit.proto.applist;
+
+message InstalledAppProto {
+  string package_name = 1;
+  string title = 2;
+  bool is_launchable = 3;
+  Recommendation recommendation = 4;
+
+  enum Recommendation {
+    NONE = 0;
+    WHITELIST = 1;
+    BLACKLIST = 2;
+  }
+}
+
+message InstalledAppActivityProto {
+  string package_name = 1;
+  string class_name = 2;
+  string title = 3;
+}
+
+message RemovedAppActivityProto {
+  string package_name = 1;
+  string class_name = 2;
+}
+
+message InstalledAppsProto {
+  repeated InstalledAppProto apps = 1;
+  repeated InstalledAppActivityProto activities = 2;
+}
+
+message InstalledAppsDifferenceProto {
+  InstalledAppsProto added = 1;
+  repeated string removed_packages = 2;
+  repeated RemovedAppActivityProto removed_activities = 3;
+}
+
+message SavedAppsDifferenceProto {
+  InstalledAppsDifferenceProto apps = 1;
+  int64 base_generation = 2;
+  int64 base_counter = 3;
+}

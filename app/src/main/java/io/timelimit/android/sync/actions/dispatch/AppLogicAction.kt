@@ -388,6 +388,11 @@ object LocalDatabaseAppLogicActionDispatcher {
 
                     database.childTasks().updateItemSync(task.copy(pendingRequest = true))
                 }
+                is UpdateInstalledAppsAction -> {/* nothing to do, this is only for the server */}
+                is UploadDevicePublicKeyAction -> {/* nothing to do, this is only for the server */}
+                is SendKeyRequestAction -> {/* nothing to do, this is only for the server */}
+                is FinishKeyRequestAction -> {/* nothing to do, this is only for the server */}
+                is ReplyToKeyRequestAction -> {/* nothing to do, this is only for the server */}
             }.let {  }
         }
     }

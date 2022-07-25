@@ -55,7 +55,7 @@ abstract class DeviceDao {
     abstract fun updateDeviceDefaultUser(deviceId: String, defaultUserId: String)
 
     @Query("SELECT id, apps_version FROM device")
-    abstract fun getInstalledAppsVersions(): LiveData<List<DeviceWithAppVersion>>
+    abstract fun getInstalledAppsVersionsSync(): List<DeviceWithAppVersion>
 
     @Query("DELETE FROM device WHERE id IN (:deviceIds)")
     abstract fun removeDevicesById(deviceIds: List<String>)
@@ -92,6 +92,14 @@ abstract class DeviceDao {
 
     @Query("SELECT COUNT(*) FROM device JOIN user ON (device.current_user_id = user.id) WHERE user.type = \"child\"")
     abstract fun countDevicesWithChildUser(): LiveData<Long>
+
+    fun getDeviceDetailDataSync() = getDeviceDetailDataSyncInternal(
+        CryptContainerMetadata.TYPE_APP_LIST_BASE,
+        CryptContainerMetadata.TYPE_APP_LIST_DIFF
+    )
+
+    @Query("SELECT d.id AS device_id, c1.server_version AS app_base_version, c2.server_version AS app_diff_version FROM device d LEFT JOIN crypt_container_metadata c1 ON (c1.device_id = d.id AND c1.type = :baseType) LEFT JOIN crypt_container_metadata c2 ON (c2.device_id = d.id AND c2.type = :diffType)")
+    protected abstract fun getDeviceDetailDataSyncInternal(baseType: Int, diffType: Int): List<DeviceDetailDataBase>
 }
 
 data class DeviceWithAppVersion(
@@ -99,4 +107,13 @@ data class DeviceWithAppVersion(
         val deviceId: String,
         @ColumnInfo(name = "apps_version")
         val installedAppsVersions: String
+)
+
+data class DeviceDetailDataBase(
+    @ColumnInfo(name = "device_id")
+    val deviceId: String,
+    @ColumnInfo(name = "app_base_version")
+    val appBaseVersion: String?,
+    @ColumnInfo(name = "app_diff_version")
+    val appDiffVersion: String?
 )

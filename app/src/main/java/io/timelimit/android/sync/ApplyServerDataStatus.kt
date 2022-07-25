@@ -21,21 +21,21 @@ import io.timelimit.android.coroutines.runAsync
 import io.timelimit.android.data.Database
 import io.timelimit.android.data.model.*
 import io.timelimit.android.integration.platform.PlatformIntegration
-import io.timelimit.android.sync.actions.DatabaseValidation
-import io.timelimit.android.sync.actions.DeleteCategoryAction
-import io.timelimit.android.sync.actions.RemoveUserAction
+import io.timelimit.android.logic.crypto.CryptDataHandler
+import io.timelimit.android.sync.actions.*
 import io.timelimit.android.sync.actions.dispatch.LocalDatabaseParentActionDispatcher
+import io.timelimit.android.sync.network.ServerCryptContainer
 import io.timelimit.android.sync.network.ServerDataStatus
 
 object ApplyServerDataStatus {
-    suspend fun applyServerDataStatusCoroutine(status: ServerDataStatus, database: Database, platformIntegration: PlatformIntegration) {
-        Threads.database.executeAndWait {
+    suspend fun applyServerDataStatusCoroutine(status: ServerDataStatus, database: Database, platformIntegration: PlatformIntegration): Result {
+        return Threads.database.executeAndWait {
             applyServerDataStatusSync(status, database, platformIntegration)
         }
     }
 
-    fun applyServerDataStatusSync(status: ServerDataStatus, database: Database, platformIntegration: PlatformIntegration) {
-        database.runInTransaction {
+    fun applyServerDataStatusSync(status: ServerDataStatus, database: Database, platformIntegration: PlatformIntegration): Result {
+        return database.runInTransaction {
             // this would override some local data which was not sent yet
             // so it's better to cancel in this case (or, more complicated,
             // apply the delta which was not sent locally)
@@ -52,6 +52,8 @@ object ApplyServerDataStatus {
                 database.config().setServerMessage(status.message)
                 database.config().setServerApiLevelSync(status.apiLevel)
             }
+
+            var didCreateNewActions = false
 
             run {
                 val newUserList = status.newUserList
@@ -123,9 +125,10 @@ object ApplyServerDataStatus {
                 }
             }
 
-            run {
+            val newDeviceTitles = run {
                 // apply new device list
                 val newDeviceList = status.newDeviceList
+                val newDeviceTitles = mutableListOf<String>()
 
                 if (newDeviceList != null) {
                     val oldDeviceList = database.device().getAllDevicesSync()
@@ -191,6 +194,8 @@ object ApplyServerDataStatus {
                                         qOrLater = newDevice.qOrLater,
                                         manipulationFlags = newDevice.manipulationFlags
                                 ))
+
+                                newDeviceTitles.add(newDevice.name)
                             } else {
                                 // eventually update old entry
 
@@ -239,44 +244,85 @@ object ApplyServerDataStatus {
                                     }
                                 }
                             }
+
+                            if (newDevice.publicKey != null) {
+                                val entry = database.deviceKey().getSync(newDevice.deviceId)
+
+                                if (entry == null) {
+                                    database.deviceKey().insert(DevicePublicKey(
+                                        deviceId = newDevice.deviceId,
+                                        publicKey = newDevice.publicKey,
+                                        nextSequenceNumber = 0
+                                    ))
+                                }
+                            }
                         }
                     }
 
                     database.config().setDeviceListVersionSync(newDeviceList.version)
                 }
+
+                newDeviceTitles.toList()
             }
 
             run {
-                status.newInstalledApps.forEach {
-                    item ->
+                status.updatedExtendedDeviceData.forEach { item ->
+                    fun handle(data: ServerCryptContainer, type: Int) {
+                        val result = CryptDataHandler.process(
+                            database = database,
+                            data = data,
+                            type = type,
+                            categoryId = null,
+                            deviceId = item.deviceId
+                        )
 
+                        if (result.didCreateKeyRequests) {
+                            didCreateNewActions = true
+                        }
+                    }
+
+                    item.appsBase?.let { handle(it, CryptContainerMetadata.TYPE_APP_LIST_BASE) }
+                    item.appsDiff?.let { handle(it, CryptContainerMetadata.TYPE_APP_LIST_DIFF) }
+                }
+            }
+
+            run {
+                val disableLegacySync = database.config().isExperimentalFlagsSetSync(ExperimentalFlags.DISABLE_LEGACY_APP_SENDING)
+
+                for (item in status.newInstalledApps) {
                     DatabaseValidation.assertDeviceExists(database, item.deviceId)
 
-                    run {
-                        // apply apps
-                        database.app().deleteAllAppsByDeviceId(item.deviceId)
-                        database.app().addAppsSync(item.apps.map {
-                            App(
+                    if (
+                        database.cryptContainer().getCryptoMetadataSyncByDeviceId(item.deviceId, CryptContainerMetadata.TYPE_APP_LIST_BASE) == null ||
+                        (item.deviceId == database.config().getOwnDeviceIdSync() && !disableLegacySync)
+                    ) {
+                        run {
+                            // apply apps
+                            database.app().deleteAllAppsByDeviceId(item.deviceId)
+                            database.app().addAppsSync(item.apps.map {
+                                App(
                                     deviceId = item.deviceId,
                                     packageName = it.packageName,
                                     title = it.title,
                                     isLaunchable = it.isLaunchable,
                                     recommendation = it.recommendation
-                            )
-                        })
-                    }
+                                )
+                            })
+                        }
 
-                    run {
-                        // apply activities
-                        database.appActivity().deleteAppActivitiesByDeviceIds(listOf(item.deviceId))
-                        database.appActivity().addAppActivitiesSync(item.activities.map {
-                            AppActivity(
+                        run {
+                            // apply activities
+                            database.appActivity()
+                                .deleteAppActivitiesByDeviceIds(listOf(item.deviceId))
+                            database.appActivity().addAppActivitiesSync(item.activities.map {
+                                AppActivity(
                                     deviceId = item.deviceId,
                                     appPackageName = it.packageName,
                                     activityClassName = it.className,
                                     title = it.title
-                            )
-                        })
+                                )
+                            })
+                        }
                     }
 
                     run {
@@ -565,8 +611,24 @@ object ApplyServerDataStatus {
                     }
                 }
             }
+
+            Result(
+                newDeviceTitles = newDeviceTitles,
+                didCreateNewActions = didCreateNewActions
+            )
+        }
+    }
+
+    fun postNotifications(result: Result, platformIntegration: PlatformIntegration) {
+        result.newDeviceTitles.forEach { deviceTitle ->
+            platformIntegration.showNewDeviceNotification(deviceTitle)
         }
     }
 
     class PendingSyncActionException: RuntimeException()
+
+    data class Result (
+        val newDeviceTitles: List<String>,
+        val didCreateNewActions: Boolean
+    )
 }
