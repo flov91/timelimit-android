@@ -165,6 +165,16 @@ class ManageParentFragment : Fragment(), FragmentWithCustomTitle {
                     )
                 }
             }
+
+            override fun onManageU2FClicked() {
+                navigation.safeNavigate(
+                    ManageParentFragmentDirections.
+                    actionManageParentFragmentToManageParentU2FKeyFragment(
+                        params.parentId
+                    ),
+                    R.id.manageParentFragment
+                )
+            }
         }
 
         return binding.root
@@ -177,4 +187,5 @@ interface ManageParentFragmentHandlers {
     fun onChangePasswordClicked()
     fun onRestorePasswordClicked()
     fun onLinkMailClicked()
+    fun onManageU2FClicked()
 }

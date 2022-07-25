@@ -30,7 +30,10 @@ import io.timelimit.android.extensions.showSafe
 import io.timelimit.android.logic.BlockingReason
 import io.timelimit.android.logic.DefaultAppLogic
 import io.timelimit.android.sync.network.UpdatePrimaryDeviceRequestType
+import io.timelimit.android.u2f.U2fManager
+import io.timelimit.android.u2f.protocol.U2FDevice
 import io.timelimit.android.ui.IsAppInForeground
+import io.timelimit.android.ui.login.AuthTokenLoginProcessor
 import io.timelimit.android.ui.login.NewLoginFragment
 import io.timelimit.android.ui.main.ActivityViewModel
 import io.timelimit.android.ui.main.ActivityViewModelHolder
@@ -38,7 +41,7 @@ import io.timelimit.android.ui.main.AuthenticationFab
 import io.timelimit.android.ui.manage.child.primarydevice.UpdatePrimaryDeviceDialogFragment
 import io.timelimit.android.ui.util.SyncStatusModel
 
-class LockActivity : AppCompatActivity(), ActivityViewModelHolder {
+class LockActivity : AppCompatActivity(), ActivityViewModelHolder, U2fManager.DeviceFoundListener {
     companion object {
         private const val EXTRA_PACKAGE_NAME = "pkg"
         private const val EXTRA_ACTIVITY_NAME = "an"
@@ -85,6 +88,8 @@ class LockActivity : AppCompatActivity(), ActivityViewModelHolder {
 
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
+
+        U2fManager.setupActivity(this)
 
         val adapter = LockActivityAdapter(supportFragmentManager, this)
 
@@ -152,6 +157,7 @@ class LockActivity : AppCompatActivity(), ActivityViewModelHolder {
         super.onResume()
 
         lockTaskModeWorkaround()
+        U2fManager.with(this).registerListener(this)
         isResumed = true
     }
 
@@ -159,6 +165,7 @@ class LockActivity : AppCompatActivity(), ActivityViewModelHolder {
         super.onPause()
 
         lockTaskModeWorkaround()
+        U2fManager.with(this).unregisterListener(this)
         isResumed = false
     }
 
@@ -199,4 +206,6 @@ class LockActivity : AppCompatActivity(), ActivityViewModelHolder {
         // do nothing because going back would open the blocked app again
         // super.onBackPressed()
     }
+
+    override fun onDeviceFound(device: U2FDevice) = AuthTokenLoginProcessor.process(device, getActivityViewModel())
 }

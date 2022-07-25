@@ -318,6 +318,14 @@ object DatabaseMigrations {
         }
     }
 
+    private val MIGRATE_TO_V44 = object: Migration(43, 44) {
+        override fun migrate(database: SupportSQLiteDatabase) {
+            database.execSQL("CREATE TABLE IF NOT EXISTS `user_u2f_key` (`key_id` INTEGER PRIMARY KEY AUTOINCREMENT NOT NULL, `user_id` TEXT NOT NULL, `added_at` INTEGER NOT NULL, `key_handle` BLOB NOT NULL, `public_key` BLOB NOT NULL, `next_counter` INTEGER NOT NULL, FOREIGN KEY(`user_id`) REFERENCES `user`(`id`) ON UPDATE CASCADE ON DELETE CASCADE )")
+            database.execSQL("CREATE INDEX IF NOT EXISTS `index_user_u2f_key_user_id` ON `user_u2f_key` (`user_id`)")
+            database.execSQL("CREATE UNIQUE INDEX IF NOT EXISTS `index_user_u2f_key_key_handle_public_key` ON `user_u2f_key` (`key_handle`, `public_key`)")
+        }
+    }
+
     val ALL = arrayOf(
         MIGRATE_TO_V2,
         MIGRATE_TO_V3,
@@ -360,6 +368,7 @@ object DatabaseMigrations {
         MIGRATE_TO_V40,
         MIGRATE_TO_V41,
         MIGRATE_TO_V42,
-        MIGRATE_TP_V43
+        MIGRATE_TP_V43,
+        MIGRATE_TO_V44
     )
 }

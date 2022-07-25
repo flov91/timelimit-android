@@ -2086,6 +2086,42 @@ data class UpdateUserLimitLoginPreBlockDuration(val userId: String, val preBlock
     }
 }
 
+data class AddParentU2FKey(val keyHandle: ByteArray, val publicKey: ByteArray): ParentAction() {
+    companion object {
+        private const val TYPE_VALUE = "ADD_PARENT_U2F"
+        private const val KEY_HANDLE = "keyHandle"
+        private const val PUBLIC_KEY = "publicKey"
+    }
+
+    override fun serialize(writer: JsonWriter) {
+        writer.beginObject()
+
+        writer.name(TYPE).value(TYPE_VALUE)
+        writer.name(KEY_HANDLE).value(keyHandle.base64())
+        writer.name(PUBLIC_KEY).value(publicKey.base64())
+
+        writer.endObject()
+    }
+}
+
+data class RemoveParentU2FKey(val publicKey: ByteArray, val keyHandle: ByteArray): ParentAction() {
+    companion object {
+        private const val TYPE_VALUE = "REMOVE_PARENT_U2F"
+        private const val KEY_HANDLE = "keyHandle"
+        private const val PUBLIC_KEY = "publicKey"
+    }
+
+    override fun serialize(writer: JsonWriter) {
+        writer.beginObject()
+
+        writer.name(TYPE).value(TYPE_VALUE)
+        writer.name(KEY_HANDLE).value(keyHandle.base64())
+        writer.name(PUBLIC_KEY).value(publicKey.base64())
+
+        writer.endObject()
+    }
+}
+
 // child actions
 object ChildSignInAction: ChildAction() {
     private const val TYPE_VALUE = "CHILD_SIGN_IN"

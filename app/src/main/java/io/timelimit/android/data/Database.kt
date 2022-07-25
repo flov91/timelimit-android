@@ -45,6 +45,7 @@ interface Database {
     fun cryptContainerKeyRequest(): CryptContainerKeyRequestDao
     fun cryptContainerKeyResult(): CryptContainerKeyResultDao
     fun deviceKey(): DeviceKeyDao
+    fun u2f(): U2FDao
 
     fun <T> runInTransaction(block: () -> T): T
     fun <T> runInUnobservedTransaction(block: () -> T): T

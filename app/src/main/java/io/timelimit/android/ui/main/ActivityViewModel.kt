@@ -1,5 +1,5 @@
 /*
- * TimeLimit Copyright <C> 2019 - 2021 Jonas Lochmann
+ * TimeLimit Copyright <C> 2019 - 2022 Jonas Lochmann
  *
  * This program is free software: you can redistribute it and/or modify
  * it under the terms of the GNU General Public License as published by
@@ -188,6 +188,7 @@ class ActivityViewModel(application: Application): AndroidViewModel(application)
 
     fun setAuthenticatedUser(user: AuthenticatedUser) {
         authenticatedUserMetadata.value = user
+        shouldHighlightAuthenticationButton.value = false
     }
 
     fun getAuthenticatedUser() = authenticatedUserMetadata.value
@@ -200,5 +201,10 @@ class ActivityViewModel(application: Application): AndroidViewModel(application)
 data class AuthenticatedUser (
         val userId: String,
         val firstPasswordHash: String,
-        val secondPasswordHash: String
+        val secondPasswordHash: String,
+        val authenticatedBy: AuthenticationMethod
 )
+
+enum class AuthenticationMethod {
+    Password, KeyCode
+}
