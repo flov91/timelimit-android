@@ -16,6 +16,7 @@
 package io.timelimit.android.ui.setup.device
 
 import android.Manifest
+import android.os.Build
 import android.os.Bundle
 import android.text.Editable
 import android.text.TextWatcher
@@ -92,7 +93,10 @@ class SetupDeviceFragment : Fragment(), FragmentWithCustomTitle {
 
             allowedAppsCategory = savedInstanceState.getString(STATUS_ALLOWED_APPS_CATEGORY)!!
 
-            notifyPermission.value = savedInstanceState.getSerializable(STATUS_NOTIFY_PERMISSION, NotifyPermissionCard.Status::class.java)!!
+            notifyPermission.value = if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.TIRAMISU)
+                savedInstanceState.getSerializable(STATUS_NOTIFY_PERMISSION, NotifyPermissionCard.Status::class.java)!!
+            else
+                savedInstanceState.getSerializable(STATUS_NOTIFY_PERMISSION)!! as NotifyPermissionCard.Status
         }
 
         notifyPermission.value = NotifyPermissionCard.updateStatus(notifyPermission.value ?: NotifyPermissionCard.Status.Unknown, requireContext())
