@@ -222,7 +222,7 @@ class NewLoginFragment: DialogFragment() {
 
                     val users = status.usersToShow.map { LoginUserAdapterUser(it) }
 
-                    adapter.data =  if (status.isLocalMode)
+                    adapter.data =  if (status.showScanOption)
                         users + LoginUserAdapterScan
                     else
                         users
