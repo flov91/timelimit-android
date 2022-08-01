@@ -27,6 +27,7 @@ import io.timelimit.android.livedata.*
 import io.timelimit.android.logic.AppLogic
 import io.timelimit.android.sync.actions.apply.ApplyActionUtil
 import io.timelimit.android.sync.actions.dispatch.LocalDatabaseAppLogicActionDispatcher
+import io.timelimit.android.util.SizeTextUtil
 import kotlinx.coroutines.sync.Mutex
 import kotlinx.coroutines.sync.withLock
 
@@ -66,6 +67,18 @@ class SyncInstalledAppsLogic(val appLogic: AppLogic) {
 
                 // maximal 1 time per 5 seconds
                 appLogic.timeApi.sleep(5 * 1000)
+            } catch (ex: CryptoAppListSync.TooLargeException) {
+                if (BuildConfig.DEBUG) {
+                    Log.w(LOG_TAG, "list is too large", ex)
+                }
+
+                val baseMsg = appLogic.context.getString(R.string.background_logic_toast_sync_apps)
+
+                val msg = "$baseMsg (${SizeTextUtil.formatSize(ex.size.toLong())})"
+
+                Toast.makeText(appLogic.context, msg, Toast.LENGTH_SHORT).show()
+
+                // do not retry in this case
             } catch (ex: Exception) {
                 if (BuildConfig.DEBUG) {
                     Log.w(LOG_TAG, "could not sync installed app list", ex)

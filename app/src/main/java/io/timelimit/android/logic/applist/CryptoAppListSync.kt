@@ -34,7 +34,7 @@ import io.timelimit.proto.applist.SavedAppsDifferenceProto
 object CryptoAppListSync {
     private const val SIZE_LIMIT_COMPRESSED = 1024 * 256
 
-    class TooLargeException: RuntimeException()
+    class TooLargeException(val size: Int): RuntimeException("app list is too big: $size")
 
     suspend fun sync(
         deviceState: DeviceState,
@@ -60,7 +60,7 @@ object CryptoAppListSync {
             val baseEncrypted = CryptContainer.encrypt(installed.encodeDeflated(), baseKey)
             val diffEncrypted = CryptContainer.encrypt(SavedAppsDifferenceProto.build(baseEncrypted, InstalledAppsDifferenceProto()).encodeDeflated(), diffKey)
 
-            if (baseEncrypted.size > SIZE_LIMIT_COMPRESSED) throw TooLargeException()
+            if (baseEncrypted.size > SIZE_LIMIT_COMPRESSED) throw TooLargeException(baseEncrypted.size)
 
             Threads.database.executeAndWait {
                 database.cryptContainer().removeDeviceCryptoMetadata(
@@ -133,7 +133,7 @@ object CryptoAppListSync {
                         diffCryptParams.params
                     )
 
-                    if (baseEncrypted.size > SIZE_LIMIT_COMPRESSED) throw TooLargeException()
+                    if (baseEncrypted.size > SIZE_LIMIT_COMPRESSED) throw TooLargeException(baseEncrypted.size)
 
                     Threads.database.executeAndWait {
                         database.cryptContainer().updateMetadata(listOf(
@@ -166,7 +166,7 @@ object CryptoAppListSync {
                         diffCryptParams.params
                     )
 
-                    if (diffEncrypted.size > SIZE_LIMIT_COMPRESSED) throw TooLargeException()
+                    if (diffEncrypted.size > SIZE_LIMIT_COMPRESSED) throw TooLargeException(diffEncrypted.size)
 
                     Threads.database.executeAndWait {
                         database.cryptContainer().updateMetadata(diffCryptParams.newMetadata)
