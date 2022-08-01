@@ -1,5 +1,5 @@
 /*
- * TimeLimit Copyright <C> 2019 - 2020 Jonas Lochmann
+ * TimeLimit Copyright <C> 2019 - 2022 Jonas Lochmann
  *
  * This program is free software: you can redistribute it and/or modify
  * it under the terms of the GNU General Public License as published by
@@ -46,16 +46,24 @@ object ManageUserKeyView {
 
         view.addKeyButton.setOnClickListener {
             if (auth.requestAuthenticationOrReturnTrue()) {
-                AddUserKeyDialogFragment.newInstance(userId).show(fragmentManager)
+                if (auth.authenticatedUser.value?.second?.id == userId) {
+                    AddUserKeyDialogFragment.newInstance(userId).show(fragmentManager)
+                } else {
+                    ParentKeyWrongUserDialogFragment.newInstance().show(fragmentManager)
+                }
             }
         }
 
         view.removeKeyButton.setOnClickListener {
             if (auth.requestAuthenticationOrReturnTrue()) {
-                val database = auth.database
+                if (auth.authenticatedUser.value?.second?.id == userId) {
+                    val database = auth.database
 
-                Threads.database.execute {
-                    database.userKey().deleteUserKeySync(userId)
+                    Threads.database.execute {
+                        database.userKey().deleteUserKeySync(userId)
+                    }
+                } else {
+                    ParentKeyWrongUserDialogFragment.newInstance().show(fragmentManager)
                 }
             }
         }
