@@ -21,6 +21,7 @@ import io.timelimit.android.crypto.CryptContainer
 import io.timelimit.android.data.Database
 import io.timelimit.android.data.model.CryptContainerData
 import io.timelimit.android.data.model.CryptContainerMetadata
+import io.timelimit.android.logic.ServerApiLevelInfo
 import io.timelimit.android.proto.build
 import io.timelimit.android.proto.encodeDeflated
 import io.timelimit.android.sync.SyncUtil
@@ -32,8 +33,6 @@ import io.timelimit.proto.applist.InstalledAppsProto
 import io.timelimit.proto.applist.SavedAppsDifferenceProto
 
 object CryptoAppListSync {
-    private const val SIZE_LIMIT_COMPRESSED = 1024 * 256
-
     class TooLargeException(val size: Int): RuntimeException("app list is too big: $size")
 
     suspend fun sync(
@@ -41,13 +40,18 @@ object CryptoAppListSync {
         database: Database,
         installed: InstalledAppsProto,
         syncUtil: SyncUtil,
-        disableLegacySync: Boolean
+        disableLegacySync: Boolean,
+        serverApiLevelInfo: ServerApiLevelInfo
     ) {
         fun dispatch(action: AppLogicAction) {
             if (deviceState.isConnectedMode) {
                 ApplyActionUtil.addAppLogicActionToDatabaseSync(action, database)
             }
         }
+
+        val compressedDataSizeLimit =
+            if (serverApiLevelInfo.hasLevelOrIsOffline(5)) 1024 * 512
+            else 1024 * 256
 
         val savedCrypt = Threads.database.executeAndWait {
             InstalledAppsUtil.getEncryptedInstalledAppsFromDatabaseSync(database, deviceState.id)
@@ -60,7 +64,7 @@ object CryptoAppListSync {
             val baseEncrypted = CryptContainer.encrypt(installed.encodeDeflated(), baseKey)
             val diffEncrypted = CryptContainer.encrypt(SavedAppsDifferenceProto.build(baseEncrypted, InstalledAppsDifferenceProto()).encodeDeflated(), diffKey)
 
-            if (baseEncrypted.size > SIZE_LIMIT_COMPRESSED) throw TooLargeException(baseEncrypted.size)
+            if (baseEncrypted.size > compressedDataSizeLimit) throw TooLargeException(baseEncrypted.size)
 
             Threads.database.executeAndWait {
                 database.cryptContainer().removeDeviceCryptoMetadata(
@@ -133,7 +137,7 @@ object CryptoAppListSync {
                         diffCryptParams.params
                     )
 
-                    if (baseEncrypted.size > SIZE_LIMIT_COMPRESSED) throw TooLargeException(baseEncrypted.size)
+                    if (baseEncrypted.size > compressedDataSizeLimit) throw TooLargeException(baseEncrypted.size)
 
                     Threads.database.executeAndWait {
                         database.cryptContainer().updateMetadata(listOf(
@@ -166,7 +170,7 @@ object CryptoAppListSync {
                         diffCryptParams.params
                     )
 
-                    if (diffEncrypted.size > SIZE_LIMIT_COMPRESSED) throw TooLargeException(diffEncrypted.size)
+                    if (diffEncrypted.size > compressedDataSizeLimit) throw TooLargeException(diffEncrypted.size)
 
                     Threads.database.executeAndWait {
                         database.cryptContainer().updateMetadata(diffCryptParams.newMetadata)

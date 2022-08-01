@@ -137,7 +137,8 @@ class SyncInstalledAppsLogic(val appLogic: AppLogic) {
                     database = appLogic.database,
                     installed = installed,
                     syncUtil = appLogic.syncUtil,
-                    disableLegacySync = deviceState.disableLegacySync
+                    disableLegacySync = deviceState.disableLegacySync,
+                    serverApiLevelInfo = deviceState.serverApiLevel
                 )
             }
         }
