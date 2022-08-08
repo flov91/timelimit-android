@@ -86,7 +86,8 @@ class Actions {
                     newAppVersion = 10,
                     newNotificationAccessPermission = NewPermissionStatus.Granted,
                     newOverlayPermission = RuntimePermissionStatus.NotRequired,
-                    newUsageStatsPermissionStatus = RuntimePermissionStatus.NotGranted
+                    newUsageStatsPermissionStatus = RuntimePermissionStatus.NotGranted,
+                    addedManipulationFlags = 0L
             ),
             TriedDisablingDeviceAdminAction
     )
