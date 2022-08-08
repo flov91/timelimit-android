@@ -59,7 +59,15 @@ object CryptDataHandler {
         } else oldItem.copy(serverVersion = data.version)
 
         if (deviceId == database.config().getOwnDeviceIdSync()) {
-            database.cryptContainer().updateMetadata(currentItem)
+            val updatedItem = if (isUnmodified)
+                currentItem
+            else
+                // this tells the sync logic to not use the existing encrypted data and start a new generation
+                // there is no need to actually save the data from the server because it is not used at all
+                // the DecryptProcessor ignores data for the device itself
+                currentItem.copy(status = CryptContainerMetadata.ProcessingStatus.Unprocessed)
+
+            database.cryptContainer().updateMetadata(updatedItem)
 
             return Result(didCreateKeyRequests = false)
         }

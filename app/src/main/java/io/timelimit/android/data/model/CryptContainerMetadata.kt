@@ -117,7 +117,10 @@ data class CryptContainerMetadata (
                     nextCounter = 1,
                     currentGenerationFirstTimestamp = System.currentTimeMillis(),
                     currentGenerationKey = newKey
-                )
+                ),
+                type =
+                if (currentGenerationKey == null) PrepareEncryptionResult.Type.NewContainer
+                else PrepareEncryptionResult.Type.IncrementedGeneration
             )
         } else {
             PrepareEncryptionResult(
@@ -128,15 +131,23 @@ data class CryptContainerMetadata (
                 ),
                 newMetadata = copy(
                     nextCounter = nextCounter + 1
-                )
+                ),
+                type = PrepareEncryptionResult.Type.IncrementedCounter
             )
         }
     }
 
     data class PrepareEncryptionResult (
         val params: CryptContainer.EncryptParameters,
-        val newMetadata: CryptContainerMetadata
-    )
+        val newMetadata: CryptContainerMetadata,
+        val type: Type
+    ) {
+        enum class Type {
+            NewContainer,
+            IncrementedGeneration,
+            IncrementedCounter
+        }
+    }
 }
 
 class CryptContainerMetadataProcessingStatusConverter {

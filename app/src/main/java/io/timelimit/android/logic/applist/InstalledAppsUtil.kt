@@ -45,89 +45,113 @@ object InstalledAppsUtil {
         )
     }
 
-    fun getEncryptedInstalledAppsFromDatabaseSync(database: Database, deviceId: String): DecryptedInstalledApps? {
+    suspend fun getEncryptedInstalledAppsFromDatabase(database: Database, deviceId: String): EncryptedInstalledApps {
         if (BuildConfig.DEBUG) {
-            Log.d(LOG_TAG, "getEncryptedInstalledAppsFromDatabaseSync()")
+            Log.d(LOG_TAG, "getEncryptedInstalledAppsFromDatabase()")
         }
 
-        val baseValue = database.cryptContainer().getCryptoFullDataSyncByDeviceId(
-            deviceId = deviceId,
-            type = CryptContainerMetadata.TYPE_APP_LIST_BASE
-        )
+        val (baseValue, diffValue) = Threads.database.executeAndWait {
+            database.runInTransaction {
+                val baseValue = database.cryptContainer().getCryptoFullDataSyncByDeviceId(
+                    deviceId = deviceId,
+                    type = CryptContainerMetadata.TYPE_APP_LIST_BASE
+                )
 
-        val diffValue = database.cryptContainer().getCryptoFullDataSyncByDeviceId(
-            deviceId = deviceId,
-            type = CryptContainerMetadata.TYPE_APP_LIST_DIFF
-        )
+                val diffValue = database.cryptContainer().getCryptoFullDataSyncByDeviceId(
+                    deviceId = deviceId,
+                    type = CryptContainerMetadata.TYPE_APP_LIST_DIFF
+                )
 
-        if (
-            baseValue == null ||
-            baseValue.metadata.currentGenerationKey == null ||
-            baseValue.metadata.status != CryptContainerMetadata.ProcessingStatus.Finished ||
-            diffValue == null ||
-            diffValue.metadata.currentGenerationKey == null ||
-            diffValue.metadata.status != CryptContainerMetadata.ProcessingStatus.Finished
-        ) {
-            if (BuildConfig.DEBUG) {
-                Log.d(LOG_TAG, "incomplete data")
+                Pair(baseValue, diffValue)
+            }
+        }
+
+        return Threads.crypto.executeAndWait {
+            val baseDecrypted = try {
+                if (
+                    baseValue != null &&
+                    baseValue.metadata.currentGenerationKey != null &&
+                    baseValue.metadata.status == CryptContainerMetadata.ProcessingStatus.Finished
+                ) {
+                    val baseHeader = CryptContainer.Header.read(baseValue.encryptedData)
+
+                    val baseDecrypted = CryptContainer.decrypt(
+                        baseValue.metadata.currentGenerationKey,
+                        baseValue.encryptedData
+                    )
+
+                    val baseData = InstalledAppsProto.ADAPTER.decodeInflated(baseDecrypted)
+
+                    Decrypted(
+                        data = baseData,
+                        header = baseHeader
+                    )
+                } else null
+            } catch (ex: CryptException) {
+                if (BuildConfig.DEBUG) {
+                    Log.d(LOG_TAG, "could not decrypt previous base data", ex)
+                }
+
+                null
+            } catch (ex: IOException) {
+                if (BuildConfig.DEBUG) {
+                    Log.d(LOG_TAG, "could not decode previous base data", ex)
+                }
+
+                null
             }
 
-            return null
-        }
+            val diffDecrypted = try {
+                if (
+                    diffValue != null &&
+                    diffValue.metadata.currentGenerationKey != null &&
+                    diffValue.metadata.status == CryptContainerMetadata.ProcessingStatus.Finished
+                ) {
+                    val diffHeader = CryptContainer.Header.read(diffValue.encryptedData)
 
-        val (baseHeader, baseDecrypted, diffDecrypted) = try {
-            val baseHeader = CryptContainer.Header.read(baseValue.encryptedData)
+                    val diffDecrypted = CryptContainer.decrypt(
+                        diffValue.metadata.currentGenerationKey,
+                        diffValue.encryptedData
+                    )
 
-            val baseDecrypted = CryptContainer.decrypt(
-                baseValue.metadata.currentGenerationKey,
-                baseValue.encryptedData
+                    val diffData =
+                        SavedAppsDifferenceProto.ADAPTER.decodeInflated(diffDecrypted).apps
+                            ?: InstalledAppsDifferenceProto()
+
+                    Decrypted(
+                        data = diffData,
+                        header = diffHeader
+                    )
+                } else null
+            } catch (ex: CryptException) {
+                if (BuildConfig.DEBUG) {
+                    Log.d(LOG_TAG, "could not decrypt previous diff data", ex)
+                }
+
+                null
+            } catch (ex: IOException) {
+                if (BuildConfig.DEBUG) {
+                    Log.d(LOG_TAG, "could not decode previous diff data", ex)
+                }
+
+                null
+            }
+
+            EncryptedInstalledApps(
+                base = baseValue?.let { Encrypted(it.metadata, baseDecrypted) },
+                diff = diffValue?.let { Encrypted(it.metadata, diffDecrypted) }
             )
-
-            val diffDecrypted = CryptContainer.decrypt(
-                diffValue.metadata.currentGenerationKey,
-                diffValue.encryptedData
-            )
-
-            Triple(baseHeader, baseDecrypted, diffDecrypted)
-        } catch (ex: CryptException) {
-            if (BuildConfig.DEBUG) {
-                Log.d(LOG_TAG, "could not decrypt previous data", ex)
-            }
-
-            return null
         }
-
-        val (base, diff) = try {
-            val base = InstalledAppsProto.ADAPTER.decodeInflated(baseDecrypted)
-
-            val diff = SavedAppsDifferenceProto.ADAPTER.decodeInflated(diffDecrypted).apps
-                ?: InstalledAppsDifferenceProto()
-
-            Pair(base, diff)
-        } catch (ex: IOException) {
-            if (BuildConfig.DEBUG) {
-                Log.d(LOG_TAG, "could not decode data", ex)
-            }
-
-            return null
-        }
-
-        return DecryptedInstalledApps(
-            base = base,
-            baseMeta = baseValue.metadata,
-            baseHeader = baseHeader,
-            diff = diff,
-            diffMeta = diffValue.metadata
-        )
     }
 
-    data class DecryptedInstalledApps(
-        val base: InstalledAppsProto,
-        val baseHeader: CryptContainer.Header,
-        val baseMeta: CryptContainerMetadata,
-        val diff: InstalledAppsDifferenceProto,
-        val diffMeta: CryptContainerMetadata
+    data class EncryptedInstalledApps(
+        val base: Encrypted<InstalledAppsProto>?,
+        val diff: Encrypted<InstalledAppsDifferenceProto>?
     )
+
+    data class Encrypted<T>(val meta: CryptContainerMetadata, val decrypted: Decrypted<T>?)
+
+    data class Decrypted<T>(val data: T, val header: CryptContainer.Header)
 
     suspend fun getInstalledAppsFromOs(appLogic: AppLogic, deviceState: DeviceState): InstalledAppsProto {
         val apps = kotlin.run {

@@ -38,9 +38,6 @@ interface CryptContainerDao {
     @Query("SELECT * FROM crypt_container_metadata WHERE category_id = :categoryId AND device_id IS NULL AND type = :type")
     fun getCryptoMetadataSyncByCategoryId(categoryId: String, type: Int): CryptContainerMetadata?
 
-    @Query("DELETE FROM crypt_container_metadata WHERE category_id IS NULL AND device_id = :deviceId AND type in (:types)")
-    fun removeDeviceCryptoMetadata(deviceId: String, types: List<Int>)
-
     @Query("SELECT * FROM crypt_container_metadata WHERE status = :processingStatus")
     fun getMetadataByProcessingStatus(processingStatus: CryptContainerMetadata.ProcessingStatus): List<CryptContainerMetadata>
 

@@ -21,6 +21,7 @@ import io.timelimit.android.crypto.CryptContainer
 import io.timelimit.android.data.Database
 import io.timelimit.android.data.model.CryptContainerData
 import io.timelimit.android.data.model.CryptContainerMetadata
+import io.timelimit.android.extensions.encodedSize
 import io.timelimit.android.logic.ServerApiLevelInfo
 import io.timelimit.android.proto.build
 import io.timelimit.android.proto.encodeDeflated
@@ -43,154 +44,165 @@ object CryptoAppListSync {
         disableLegacySync: Boolean,
         serverApiLevelInfo: ServerApiLevelInfo
     ) {
-        fun dispatch(action: AppLogicAction) {
+        val compressedDataSizeLimit =
+            if (serverApiLevelInfo.hasLevelOrIsOffline(5)) 1024 * 512
+            else 1024 * 256
+
+        fun dispatchSync(action: AppLogicAction) {
             if (deviceState.isConnectedMode) {
                 ApplyActionUtil.addAppLogicActionToDatabaseSync(action, database)
             }
         }
 
-        val compressedDataSizeLimit =
-            if (serverApiLevelInfo.hasLevelOrIsOffline(5)) 1024 * 512
-            else 1024 * 256
+        fun <T> prepareEncryption(encrypted: InstalledAppsUtil.Encrypted<T>?, type: Int, forceNewGeneration: Boolean = false) = if (encrypted == null) {
+            val key = CryptContainer.EncryptParameters.generate()
 
-        val savedCrypt = Threads.database.executeAndWait {
-            InstalledAppsUtil.getEncryptedInstalledAppsFromDatabaseSync(database, deviceState.id)
+            val metadata = CryptContainerMetadata.buildFor(
+                deviceId = deviceState.id,
+                categoryId = null,
+                type = type,
+                params = key
+            )
+
+            CryptContainerMetadata.PrepareEncryptionResult(key, metadata, CryptContainerMetadata.PrepareEncryptionResult.Type.NewContainer)
+        } else {
+            if (encrypted.meta.type != type) throw IllegalStateException()
+
+            encrypted.meta.copy(
+                status = CryptContainerMetadata.ProcessingStatus.Finished
+            ).prepareEncryption(forceNewGeneration)
         }
 
-        if (savedCrypt == null) {
-            val baseKey = CryptContainer.EncryptParameters.generate()
-            val diffKey = CryptContainer.EncryptParameters.generate()
-
-            val baseEncrypted = CryptContainer.encrypt(installed.encodeDeflated(), baseKey)
-            val diffEncrypted = CryptContainer.encrypt(SavedAppsDifferenceProto.build(baseEncrypted, InstalledAppsDifferenceProto()).encodeDeflated(), diffKey)
-
-            if (baseEncrypted.size > compressedDataSizeLimit) throw TooLargeException(baseEncrypted.size)
-
-            Threads.database.executeAndWait {
-                database.cryptContainer().removeDeviceCryptoMetadata(
-                    deviceId = deviceState.id,
-                    types = listOf(
-                        CryptContainerMetadata.TYPE_APP_LIST_BASE,
-                        CryptContainerMetadata.TYPE_APP_LIST_DIFF
-                    )
-                )
-
-                val baseId = database.cryptContainer().insertMetadata(
-                    CryptContainerMetadata.buildFor(
-                        deviceId = deviceState.id,
-                        categoryId = null,
-                        type = CryptContainerMetadata.TYPE_APP_LIST_BASE,
-                        params = baseKey
-                    )
-                )
-
-                val diffId = database.cryptContainer().insertMetadata(
-                    CryptContainerMetadata.buildFor(
-                        deviceId = deviceState.id,
-                        categoryId = null,
-                        type = CryptContainerMetadata.TYPE_APP_LIST_DIFF,
-                        params = diffKey
-                    )
-                )
-
-                database.cryptContainer().insertData(
-                    CryptContainerData(
-                        cryptContainerId = baseId,
-                        encryptedData = baseEncrypted
-                    )
-                )
-
-                database.cryptContainer().insertData(
-                    CryptContainerData(
-                        cryptContainerId = diffId,
-                        encryptedData = diffEncrypted
-                    )
-                )
-
-                dispatch(UpdateInstalledAppsAction(
-                    base = baseEncrypted,
-                    diff = diffEncrypted,
-                    wipe = disableLegacySync
-                ))
+        fun throwIfTooLarge(data: ByteArray) {
+            data.size.let {
+                if (it > compressedDataSizeLimit) throw TooLargeException(it)
             }
+        }
 
-            syncUtil.requestImportantSync()
-        } else {
-            val diffCrypto = AppsDifferenceUtil.calculateAppsDifference(savedCrypt.base, installed)
+        val savedCrypt = InstalledAppsUtil.getEncryptedInstalledAppsFromDatabase(database, deviceState.id)
 
-            if (diffCrypto != savedCrypt.diff) {
-                val baseSize = savedCrypt.base.adapter.encodedSize(savedCrypt.base)
-                val diffSize = diffCrypto.adapter.encodedSize(diffCrypto)
-                val needsNewBySize = diffSize >= baseSize / 10
-                val baseNeedsNewGeneration = savedCrypt.baseMeta.needsNewGeneration()
-                val diffNeedsNewGeneration = savedCrypt.diffMeta.needsNewGeneration() or baseNeedsNewGeneration
+        val baseCryptConfig = prepareEncryption(
+            encrypted = savedCrypt.base,
+            type = CryptContainerMetadata.TYPE_APP_LIST_BASE
+        )
 
-                val diffCryptParams = savedCrypt.diffMeta.prepareEncryption(diffNeedsNewGeneration)
+        val diffCryptConfig = prepareEncryption(
+            encrypted = savedCrypt.diff,
+            type = CryptContainerMetadata.TYPE_APP_LIST_DIFF,
+            forceNewGeneration = baseCryptConfig.type != CryptContainerMetadata.PrepareEncryptionResult.Type.IncrementedCounter || savedCrypt.base?.decrypted == null
+        )
 
-                if (needsNewBySize or baseNeedsNewGeneration) {
-                    val baseCryptParams = savedCrypt.baseMeta.prepareEncryption(baseNeedsNewGeneration)
+        val diffCrypto: InstalledAppsDifferenceProto? = if (savedCrypt.base?.decrypted == null) null
+        else AppsDifferenceUtil.calculateAppsDifference(savedCrypt.base.decrypted.data, installed)
 
-                    val baseEncrypted = CryptContainer.encrypt(installed.encodeDeflated(), baseCryptParams.params)
+        if (
+            savedCrypt.base?.decrypted == null ||
+            savedCrypt.diff?.decrypted == null ||
+            diffCrypto != savedCrypt.diff.decrypted.data
+        ) {
+            if (
+                savedCrypt.base?.decrypted == null ||
+                savedCrypt.diff?.decrypted == null ||
+                diffCrypto == null ||
+                baseCryptConfig.type != CryptContainerMetadata.PrepareEncryptionResult.Type.IncrementedCounter ||
+                diffCrypto.encodedSize() >= savedCrypt.base.decrypted.data.encodedSize() / 10
+            ) {
+                val (baseEncrypted, diffEncrypted) = Threads.crypto.executeAndWait {
+                    val baseEncrypted = CryptContainer.encrypt(
+                        installed.encodeDeflated(),
+                        baseCryptConfig.params
+                    )
 
                     val diffEncrypted = CryptContainer.encrypt(
-                        SavedAppsDifferenceProto.build(baseEncrypted, InstalledAppsDifferenceProto()).encodeDeflated(),
-                        diffCryptParams.params
+                        SavedAppsDifferenceProto.build(
+                            baseEncrypted,
+                            InstalledAppsDifferenceProto()
+                        ).encodeDeflated(),
+                        diffCryptConfig.params
                     )
 
-                    if (baseEncrypted.size > compressedDataSizeLimit) throw TooLargeException(baseEncrypted.size)
+                    Pair(baseEncrypted, diffEncrypted)
+                }
 
-                    Threads.database.executeAndWait {
-                        database.cryptContainer().updateMetadata(listOf(
-                            baseCryptParams.newMetadata,
-                            diffCryptParams.newMetadata
-                        ))
+                throwIfTooLarge(baseEncrypted)
+                throwIfTooLarge(diffEncrypted)
 
-                        database.cryptContainer().updateData(listOf(
+                Threads.database.executeAndWait {
+                    if (savedCrypt.base == null) {
+                        val baseId = database.cryptContainer().insertMetadata(baseCryptConfig.newMetadata)
+
+                        database.cryptContainer().insertData(
                             CryptContainerData(
-                                cryptContainerId = savedCrypt.baseMeta.cryptContainerId,
+                                cryptContainerId = baseId,
                                 encryptedData = baseEncrypted
-                            ),
-                            CryptContainerData(
-                                cryptContainerId = savedCrypt.diffMeta.cryptContainerId,
-                                encryptedData = diffEncrypted
                             )
-                        ))
+                        )
+                    } else {
+                        database.cryptContainer().updateMetadata(baseCryptConfig.newMetadata)
 
-                        dispatch(UpdateInstalledAppsAction(
-                            base = baseEncrypted,
-                            diff = diffEncrypted,
-                            wipe = disableLegacySync
+                        database.cryptContainer().updateData(CryptContainerData(
+                            cryptContainerId = savedCrypt.base.meta.cryptContainerId,
+                            encryptedData = baseEncrypted
                         ))
                     }
 
-                    syncUtil.requestImportantSync()
-                } else {
-                    val diffEncrypted = CryptContainer.encrypt(
-                        SavedAppsDifferenceProto.build(savedCrypt.baseHeader, diffCrypto).encodeDeflated(),
-                        diffCryptParams.params
-                    )
+                    if (savedCrypt.diff == null) {
+                        val diffId = database.cryptContainer().insertMetadata(diffCryptConfig.newMetadata)
 
-                    if (diffEncrypted.size > compressedDataSizeLimit) throw TooLargeException(diffEncrypted.size)
-
-                    Threads.database.executeAndWait {
-                        database.cryptContainer().updateMetadata(diffCryptParams.newMetadata)
-
-                        database.cryptContainer().updateData(
+                        database.cryptContainer().insertData(
                             CryptContainerData(
-                                cryptContainerId = savedCrypt.diffMeta.cryptContainerId,
+                                cryptContainerId = diffId,
                                 encryptedData = diffEncrypted
                             )
                         )
+                    } else {
+                        database.cryptContainer().updateMetadata(diffCryptConfig.newMetadata)
 
-                        dispatch(UpdateInstalledAppsAction(
-                            base = null,
-                            diff = diffEncrypted,
-                            wipe = disableLegacySync
+                        database.cryptContainer().updateData(CryptContainerData(
+                            cryptContainerId = savedCrypt.diff.meta.cryptContainerId,
+                            encryptedData = diffEncrypted
                         ))
                     }
 
-                    syncUtil.requestImportantSync()
+                    dispatchSync(UpdateInstalledAppsAction(
+                        base = baseEncrypted,
+                        diff = diffEncrypted,
+                        wipe = disableLegacySync
+                    ))
                 }
+
+                syncUtil.requestImportantSync()
+            } else {
+                val diffEncrypted = Threads.crypto.executeAndWait {
+                    CryptContainer.encrypt(
+                        SavedAppsDifferenceProto.build(
+                            savedCrypt.base.decrypted.header,
+                            diffCrypto
+                        ).encodeDeflated(),
+                        diffCryptConfig.params
+                    )
+                }
+
+                throwIfTooLarge(diffEncrypted)
+
+                Threads.database.executeAndWait {
+                    database.cryptContainer().updateMetadata(diffCryptConfig.newMetadata)
+
+                    database.cryptContainer().updateData(
+                        CryptContainerData(
+                            cryptContainerId = savedCrypt.diff.meta.cryptContainerId,
+                            encryptedData = diffEncrypted
+                        )
+                    )
+
+                    dispatchSync(UpdateInstalledAppsAction(
+                        base = null,
+                        diff = diffEncrypted,
+                        wipe = disableLegacySync
+                    ))
+                }
+
+                syncUtil.requestImportantSync()
             }
         }
     }
