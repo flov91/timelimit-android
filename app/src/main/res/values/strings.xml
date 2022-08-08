@@ -107,10 +107,6 @@
         (<a href="https://github.com/zxing/zxing/blob/master/LICENSE">Apache License 2.0</a>)
         \n<a href="https://github.com/square/wire/blob/master/README.md">Wire</a>
         (<a href="https://github.com/square/wire/blob/master/LICENSE.txt">Apache License 2.0</a>)
-        \n<a href="https://www.bouncycastle.org/">Bouncy Castle</a>
-        (<a href="https://www.bouncycastle.org/licence.html">MIT License</a>)
-        \n<a href="https://github.com/Yubico/java-u2flib-server">java-u2flib-server</a>
-        (<a href="https://github.com/Yubico/java-u2flib-server/blob/master/COPYING">BSD License</a>)
     </string>
 
     <string name="about_diagnose_title">Error diagnose</string>
