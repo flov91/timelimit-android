@@ -1,2 +1,1 @@
-- Unterstützung von U2F-Schlüsseln zur Anmeldung als Elternteil (nur mittels NFC und nur im lokalen Modus)
-- neues Übertragungsformat für die Synchronisation der Liste der installierten Apps
+- Unterstützung von USB-U2F-Schlüssel hinzugefügt (weiterhin nur im lokalen Modus verwendbar)
