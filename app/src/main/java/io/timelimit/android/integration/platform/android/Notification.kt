@@ -236,6 +236,7 @@ object PendingIntentIds {
     const val UPDATE_STATUS = 5
     const val OPEN_UPDATER = 6
     const val U2F_NFC_DISCOVERY = 7
+    const val U2F_USB_RESPONSE = 8
     val DYNAMIC_NOTIFICATION_RANGE = 100..10000
 
     val PENDING_INTENT_FLAGS = if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.M) {
