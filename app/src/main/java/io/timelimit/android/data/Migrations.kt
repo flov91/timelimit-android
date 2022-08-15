@@ -326,6 +326,13 @@ object DatabaseMigrations {
         }
     }
 
+    val MIGRATE_TO_V45 = object: Migration(44, 45) {
+        override fun migrate(database: SupportSQLiteDatabase) {
+            database.execSQL("CREATE TABLE IF NOT EXISTS `widget_category` (`widget_id` INTEGER NOT NULL, `category_id` TEXT NOT NULL, PRIMARY KEY(`widget_id`, `category_id`), FOREIGN KEY(`category_id`) REFERENCES `category`(`id`) ON UPDATE CASCADE ON DELETE CASCADE )")
+            database.execSQL("CREATE INDEX IF NOT EXISTS `index_widget_category_category_id` ON `widget_category` (`category_id`)")
+        }
+    }
+
     val ALL = arrayOf(
         MIGRATE_TO_V2,
         MIGRATE_TO_V3,
@@ -369,6 +376,7 @@ object DatabaseMigrations {
         MIGRATE_TO_V41,
         MIGRATE_TO_V42,
         MIGRATE_TP_V43,
-        MIGRATE_TO_V44
+        MIGRATE_TO_V44,
+        MIGRATE_TO_V45
     )
 }

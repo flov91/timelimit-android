@@ -1,5 +1,5 @@
 /*
- * TimeLimit Copyright <C> 2019 Jonas Lochmann
+ * TimeLimit Copyright <C> 2019 - 2022 Jonas Lochmann
  *
  * This program is free software: you can redistribute it and/or modify
  * it under the terms of the GNU General Public License as published by
@@ -44,8 +44,13 @@ class BackgroundActionService: Service() {
         fun prepareRevokeTemporarilyAllowed(context: Context) = Intent(context, BackgroundActionService::class.java)
                 .putExtra(ACTION, ACTION_REVOKE_TEMPORARILY_ALLOWED_APPS)
 
-        fun prepareSwitchToDefaultUser(context: Context) = Intent(context, BackgroundActionService::class.java)
-                .putExtra(ACTION, ACTION_SWITCH_TO_DEFAULT_USER)
+        fun getSwitchToDefaultUserIntent(context: Context) = PendingIntent.getService(
+            context,
+            PendingIntentIds.SWITCH_TO_DEFAULT_USER,
+            Intent(context, BackgroundActionService::class.java)
+                .putExtra(ACTION, ACTION_SWITCH_TO_DEFAULT_USER),
+            PendingIntentIds.PENDING_INTENT_FLAGS
+        )
 
         fun prepareDismissNotification(context: Context, type: Int, id: String) = Intent(context, BackgroundActionService::class.java)
                 .putExtra(ACTION, ACTION_DISMISS_NOTIFICATION)

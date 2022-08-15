@@ -30,6 +30,7 @@ import io.timelimit.android.sync.SyncUtil
 import io.timelimit.android.sync.network.api.ServerApi
 import io.timelimit.android.sync.websocket.NetworkStatusInterface
 import io.timelimit.android.sync.websocket.WebsocketClientCreator
+import io.timelimit.android.ui.widget.TimesWidgetProvider
 
 class AppLogic(
         val platformIntegration: PlatformIntegration,
@@ -98,6 +99,7 @@ class AppLogic(
 
     init {
         WatchdogLogic(this)
+        TimesWidgetProvider.triggerUpdates(context)
     }
 
     val suspendAppsLogic = SuspendAppsLogic(this)
