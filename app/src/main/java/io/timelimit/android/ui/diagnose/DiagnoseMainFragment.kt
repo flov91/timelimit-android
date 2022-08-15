@@ -34,7 +34,7 @@ import io.timelimit.android.ui.main.AuthenticationFab
 import io.timelimit.android.ui.main.FragmentWithCustomTitle
 
 class DiagnoseMainFragment : Fragment(), FragmentWithCustomTitle {
-    override fun onCreateView(inflater: LayoutInflater, container: ViewGroup?, savedInstanceState: Bundle?): View? {
+    override fun onCreateView(inflater: LayoutInflater, container: ViewGroup?, savedInstanceState: Bundle?): View {
         val binding = FragmentDiagnoseMainBinding.inflate(inflater, container, false)
         val navigation = Navigation.findNavController(container!!)
         val logic = DefaultAppLogic.with(requireContext())
@@ -59,6 +59,13 @@ class DiagnoseMainFragment : Fragment(), FragmentWithCustomTitle {
             navigation.safeNavigate(
                     DiagnoseMainFragmentDirections.actionDiagnoseMainFragmentToDiagnoseSyncFragment(),
                     R.id.diagnoseMainFragment
+            )
+        }
+
+        binding.diagnoseCryButton.setOnClickListener {
+            navigation.safeNavigate(
+                DiagnoseMainFragmentDirections.actionDiagnoseMainFragmentToDiagnoseCryptoFragment(),
+                R.id.diagnoseMainFragment
             )
         }
 

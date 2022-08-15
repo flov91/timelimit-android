@@ -548,6 +548,8 @@
     <string name="diagnose_er_title">Gründe für die Beendung</string>
     <string name="diagnose_er_empty">es liegen keine Daten vor; diese Daten sind nur bei Android 11 und neuer verfügbar</string>
 
+    <string name="diagnose_cry_title">Verschlüsselung</string>
+
     <string name="dont_ask_password_on_device_title">Passwortabfrage</string>
     <string name="dont_ask_password_on_device_text_enabled">
         Die Passwortabfrage ist an diesem Gerät aktiviert.

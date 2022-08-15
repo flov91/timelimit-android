@@ -53,6 +53,13 @@
 
                 <Button
                     style="?materialButtonOutlinedStyle"
+                    android:id="@+id/diagnose_cry_button"
+                    android:text="@string/diagnose_cry_title"
+                    android:layout_width="match_parent"
+                    android:layout_height="wrap_content" />
+
+                <Button
+                    style="?materialButtonOutlinedStyle"
                     android:id="@+id/diagnose_battery_button"
                     android:text="@string/diagnose_bat_title"
                     android:layout_width="match_parent"

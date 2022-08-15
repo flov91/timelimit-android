@@ -600,6 +600,8 @@
     <string name="diagnose_er_title">Exit Reasons</string>
     <string name="diagnose_er_empty">there is no data; this data is only available at Android 11 and newer</string>
 
+    <string name="diagnose_cry_title">Cryptography</string>
+
     <string name="dont_ask_password_on_device_title">Password prompts</string>
     <string name="dont_ask_password_on_device_text_enabled">
         Password prompts are enabled at the device.

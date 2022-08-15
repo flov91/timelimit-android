@@ -15,6 +15,7 @@
  */
 package io.timelimit.android.data.dao
 
+import androidx.paging.DataSource
 import androidx.room.*
 import io.timelimit.android.data.model.CryptContainerData
 import io.timelimit.android.data.model.CryptContainerMetadata
@@ -64,6 +65,9 @@ interface CryptContainerDao {
 
     @Query("UPDATE crypt_container_metadata SET server_version = ''")
     fun deleteAllServerVersionNumbers()
+
+    @Query("SELECT * FROM crypt_container_metadata")
+    fun getDiagnoseData(): DataSource.Factory<Int, CryptContainerMetadata>
 
     @Entity
     data class MetadataAndContent(
