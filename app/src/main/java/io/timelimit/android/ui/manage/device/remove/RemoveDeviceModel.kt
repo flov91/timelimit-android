@@ -1,5 +1,5 @@
 /*
- * TimeLimit Copyright <C> 2019 Jonas Lochmann
+ * TimeLimit Copyright <C> 2019 - 2022 Jonas Lochmann
  *
  * This program is free software: you can redistribute it and/or modify
  * it under the terms of the GNU General Public License as published by
@@ -25,6 +25,7 @@ import io.timelimit.android.R
 import io.timelimit.android.coroutines.runAsync
 import io.timelimit.android.livedata.castDown
 import io.timelimit.android.logic.DefaultAppLogic
+import io.timelimit.android.sync.actions.apply.ApplyActionChildAddLimitAuthentication
 import io.timelimit.android.sync.actions.apply.ApplyActionParentDeviceAuthentication
 import io.timelimit.android.sync.actions.apply.ApplyActionParentPasswordAuthentication
 import io.timelimit.android.ui.main.ActivityViewModel
@@ -70,6 +71,10 @@ class RemoveDeviceModel(application: Application): AndroidViewModel(application)
                                         parentPasswordSecondHash = parent.secondPasswordHash,
                                         deviceId = deviceId
                                 )
+                                is ApplyActionChildAddLimitAuthentication -> {
+                                    // caught below
+                                    throw IllegalStateException()
+                                }
                             }
                         } catch (ex: Exception) {
                             if (BuildConfig.DEBUG) {
