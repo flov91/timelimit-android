@@ -1,5 +1,5 @@
 /*
- * TimeLimit Copyright <C> 2019 - 2021 Jonas Lochmann
+ * TimeLimit Copyright <C> 2019 - 2022 Jonas Lochmann
  *
  * This program is free software: you can redistribute it and/or modify
  * it under the terms of the GNU General Public License as published by
@@ -20,6 +20,7 @@ import android.content.Context
 import android.content.Intent
 import android.os.Build
 import android.os.Bundle
+import androidx.activity.OnBackPressedCallback
 import androidx.activity.viewModels
 import androidx.appcompat.app.AppCompatActivity
 import androidx.lifecycle.MutableLiveData
@@ -139,6 +140,10 @@ class LockActivity : AppCompatActivity(), ActivityViewModelHolder, U2fManager.De
 
             adapter.showTasksFragment = isTimeOver
         }
+
+        onBackPressedDispatcher.addCallback(object: OnBackPressedCallback(true) {
+            override fun handleOnBackPressed() {/* nothing to do */}
+        })
     }
 
     override fun onDestroy() {
@@ -200,11 +205,6 @@ class LockActivity : AppCompatActivity(), ActivityViewModelHolder, U2fManager.De
                 platformIntegration.setSuspendedApps(listOf(blockedPackageName), false)
             }
         }
-    }
-
-    override fun onBackPressed() {
-        // do nothing because going back would open the blocked app again
-        // super.onBackPressed()
     }
 
     override fun onDeviceFound(device: U2FDevice) = AuthTokenLoginProcessor.process(device, getActivityViewModel())
