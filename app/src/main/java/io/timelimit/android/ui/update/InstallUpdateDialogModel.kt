@@ -1,5 +1,5 @@
 /*
- * TimeLimit Copyright <C> 2019 - 2020 Jonas Lochmann
+ * TimeLimit Copyright <C> 2019 - 2022 Jonas Lochmann
  *
  * This program is free software: you can redistribute it and/or modify
  * it under the terms of the GNU General Public License as published by
@@ -80,6 +80,10 @@ class InstallUpdateDialogModel(application: Application): AndroidViewModel(appli
                 val sessionId = installer.createSession(
                         PackageInstaller.SessionParams(PackageInstaller.SessionParams.MODE_FULL_INSTALL).apply {
                             setAppPackageName(BuildConfig.APPLICATION_ID)
+
+                            if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.S_V2) {
+                                setRequireUserAction(PackageInstaller.SessionParams.USER_ACTION_NOT_REQUIRED)
+                            }
                         }
                 )
                 val session = installer.openSession(sessionId)

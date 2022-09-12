@@ -1,6 +1,6 @@
 <?xml version="1.0" encoding="utf-8"?>
 <!--
-  TimeLimit Copyright <C> 2019 - 2020 Jonas Lochmann
+  TimeLimit Copyright <C> 2019 - 2022 Jonas Lochmann
   This program is free software: you can redistribute it and/or modify
   it under the terms of the GNU General Public License as published by
   the Free Software Foundation version 3 of the License.
@@ -16,4 +16,5 @@
 <manifest xmlns:android="http://schemas.android.com/apk/res/android">
     <!-- for the updater -->
     <uses-permission android:name="android.permission.REQUEST_INSTALL_PACKAGES" />
+    <uses-permission android:name="android.permission.UPDATE_PACKAGES_WITHOUT_USER_ACTION" />
 </manifest>
