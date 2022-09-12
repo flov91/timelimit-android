@@ -1,5 +1,5 @@
 /*
- * TimeLimit Copyright <C> 2019 Jonas Lochmann
+ * TimeLimit Copyright <C> 2019 - 2022 Jonas Lochmann
  *
  * This program is free software: you can redistribute it and/or modify
  * it under the terms of the GNU General Public License as published by
@@ -99,7 +99,7 @@ class ChangeParentPasswordViewModel(application: Application): AndroidViewModel(
                     PasswordHashing.hashSyncWithSalt(oldPassword, userEntry.secondPasswordSalt)
                 }
 
-                val newPasswordHash = ParentPassword.createCoroutine(newPassword)
+                val newPasswordHash = ParentPassword.createCoroutine(newPassword, null)
 
                 if (BuildConfig.DEBUG) {
                     Log.d(LOG_TAG, "created hashs")

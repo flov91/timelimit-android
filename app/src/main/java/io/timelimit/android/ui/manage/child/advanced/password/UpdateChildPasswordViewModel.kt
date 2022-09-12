@@ -1,5 +1,5 @@
 /*
- * TimeLimit Copyright <C> 2019 Jonas Lochmann
+ * TimeLimit Copyright <C> 2019 - 2022 Jonas Lochmann
  *
  * This program is free software: you can redistribute it and/or modify
  * it under the terms of the GNU General Public License as published by
@@ -83,8 +83,10 @@ class UpdateChildPasswordViewModel(application: Application): AndroidViewModel(a
                     PasswordHashing.hashSyncWithSalt(oldPassword, userEntry.secondPasswordSalt)
                 }
 
+                val dhKey = Threads.database.executeAndWait { logic.database.config().getLastDhKeySync() }
+
                 val action = ChildChangePasswordAction(
-                        password = ParentPassword.createCoroutine(newPassword)
+                        password = ParentPassword.createCoroutine(newPassword, dhKey)
                 )
 
                 ApplyActionUtil.applyChildAction(

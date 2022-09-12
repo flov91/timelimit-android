@@ -72,6 +72,7 @@ class SetupDeviceModel(application: Application): AndroidViewModel(application) 
                 var realUserId = userId
                 var realAllowedAppsCategory = allowedAppsCategory
                 val defaultCategories = DefaultCategories.with(getApplication())
+                val dhKey = Threads.database.executeAndWait { logic.database.config().getLastDhKeySync() }
 
                 val isUserAnChild = when (userId) {
                     SetupDeviceFragment.NEW_PARENT -> {
@@ -85,7 +86,7 @@ class SetupDeviceModel(application: Application): AndroidViewModel(application) 
                                 name = username,
                                 timeZone = logic.timeApi.getSystemTimeZone().id,
                                 userType = UserType.Parent,
-                                password = ParentPassword.createCoroutine(password)
+                                password = ParentPassword.createCoroutine(password, dhKey)
                             )
                         )
 
@@ -103,7 +104,7 @@ class SetupDeviceModel(application: Application): AndroidViewModel(application) 
                                 timeZone = logic.timeApi.getSystemTimeZone().id,
                                 userType = UserType.Child,
                                 password = if (password.isEmpty()) null else ParentPassword.createCoroutine(
-                                    password
+                                    password, dhKey
                                 )
                             )
                         )

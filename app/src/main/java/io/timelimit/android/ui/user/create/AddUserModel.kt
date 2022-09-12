@@ -1,5 +1,5 @@
 /*
- * TimeLimit Copyright <C> 2019 Jonas Lochmann
+ * TimeLimit Copyright <C> 2019 - 2022 Jonas Lochmann
  *
  * This program is free software: you can redistribute it and/or modify
  * it under the terms of the GNU General Public License as published by
@@ -18,6 +18,8 @@ package io.timelimit.android.ui.user.create
 import android.app.Application
 import androidx.lifecycle.AndroidViewModel
 import androidx.lifecycle.MutableLiveData
+import io.timelimit.android.async.Threads
+import io.timelimit.android.coroutines.executeAndWait
 import io.timelimit.android.coroutines.runAsync
 import io.timelimit.android.data.IdGenerator
 import io.timelimit.android.data.model.AppRecommendation
@@ -45,13 +47,15 @@ class AddUserModel(application: Application): AndroidViewModel(application) {
             createUserLock.withLock {
                 statusInternal.value = AddUserModelStatus.Working
 
+                val dhKey = Threads.database.executeAndWait { logic.database.config().getLastDhKeySync() }
+
                 when (type) {
                     UserType.Parent -> {
                         if(
                                 model.tryDispatchParentAction(
                                         AddUserAction(
                                                 name = name,
-                                                password = ParentPassword.createCoroutine(password),
+                                                password = ParentPassword.createCoroutine(password, dhKey),
                                                 userType = UserType.Parent,
                                                 userId = IdGenerator.generateId(),
                                                 timeZone = logic.timeApi.getSystemTimeZone().id
@@ -74,7 +78,7 @@ class AddUserModel(application: Application): AndroidViewModel(application) {
                         val actions = ArrayList<ParentAction>(listOf(
                                 AddUserAction(
                                         name = name,
-                                        password = if (password.isEmpty()) null else ParentPassword.createCoroutine(password),
+                                        password = if (password.isEmpty()) null else ParentPassword.createCoroutine(password, dhKey),
                                         userType = UserType.Child,
                                         userId = childId,
                                         timeZone = logic.timeApi.getSystemTimeZone().id

@@ -103,7 +103,9 @@ enum class ConfigurationItemType {
     SigningKey,
     SignSequenceNumber,
     LastServerKeyRequestSequence,
-    LastKeyResponseSequence
+    LastKeyResponseSequence,
+    DhKey,
+    DhKeyVersion
 }
 
 object ConfigurationItemTypeUtil {
@@ -136,6 +138,8 @@ object ConfigurationItemTypeUtil {
     private const val SIGN_SEQUENCE_NUMBER = 28
     private const val LAST_SERVER_KEY_REQUEST_SEQUENCE = 29
     private const val LAST_SERVER_KEY_RESPONSE_SEQUENCE = 30
+    private const val DH_KEY = 31
+    private const val DH_KEY_VERSION = 32
 
     val TYPES = listOf(
             ConfigurationItemType.OwnDeviceId,
@@ -166,7 +170,9 @@ object ConfigurationItemTypeUtil {
             ConfigurationItemType.SigningKey,
             ConfigurationItemType.SignSequenceNumber,
             ConfigurationItemType.LastServerKeyRequestSequence,
-            ConfigurationItemType.LastKeyResponseSequence
+            ConfigurationItemType.LastKeyResponseSequence,
+            ConfigurationItemType.DhKey,
+            ConfigurationItemType.DhKeyVersion
     )
 
     fun serialize(value: ConfigurationItemType) = when(value) {
@@ -199,6 +205,8 @@ object ConfigurationItemTypeUtil {
         ConfigurationItemType.SignSequenceNumber -> SIGN_SEQUENCE_NUMBER
         ConfigurationItemType.LastServerKeyRequestSequence -> LAST_SERVER_KEY_REQUEST_SEQUENCE
         ConfigurationItemType.LastKeyResponseSequence -> LAST_SERVER_KEY_RESPONSE_SEQUENCE
+        ConfigurationItemType.DhKey -> DH_KEY
+        ConfigurationItemType.DhKeyVersion -> DH_KEY_VERSION
     }
 
     fun parse(value: Int) = when(value) {
@@ -231,6 +239,8 @@ object ConfigurationItemTypeUtil {
         SIGN_SEQUENCE_NUMBER -> ConfigurationItemType.SignSequenceNumber
         LAST_SERVER_KEY_REQUEST_SEQUENCE -> ConfigurationItemType.LastServerKeyRequestSequence
         LAST_SERVER_KEY_RESPONSE_SEQUENCE -> ConfigurationItemType.LastKeyResponseSequence
+        DH_KEY -> ConfigurationItemType.DhKey
+        DH_KEY_VERSION -> ConfigurationItemType.DhKeyVersion
         else -> throw IllegalArgumentException()
     }
 }

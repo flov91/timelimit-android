@@ -1,5 +1,5 @@
 /*
- * TimeLimit Copyright <C> 2019 - 2020 Jonas Lochmann
+ * TimeLimit Copyright <C> 2019 - 2022 Jonas Lochmann
  *
  * This program is free software: you can redistribute it and/or modify
  * it under the terms of the GNU General Public License as published by
@@ -22,6 +22,8 @@ import android.view.ViewGroup
 import androidx.fragment.app.FragmentManager
 import androidx.lifecycle.Observer
 import com.google.android.material.bottomsheet.BottomSheetDialogFragment
+import io.timelimit.android.async.Threads
+import io.timelimit.android.coroutines.executeAndWait
 import io.timelimit.android.coroutines.runAsync
 import io.timelimit.android.data.model.UserType
 import io.timelimit.android.databinding.SetChildPasswordDialogFragmentBinding
@@ -77,10 +79,12 @@ class SetChildPasswordDialogFragment: BottomSheetDialogFragment() {
             dismissAllowingStateLoss()
 
             runAsync {
+                val dhKey = Threads.database.executeAndWait { auth.logic.database.config().getLastDhKeySync() }
+
                 auth.tryDispatchParentAction(
                         SetChildPasswordAction(
                                 childId = childId,
-                                newPassword = ParentPassword.createCoroutine(password)
+                                newPassword = ParentPassword.createCoroutine(password, dhKey)
                         )
                 )
             }

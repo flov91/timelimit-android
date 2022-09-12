@@ -1,5 +1,5 @@
 /*
- * TimeLimit Copyright <C> 2019 Jonas Lochmann
+ * TimeLimit Copyright <C> 2019 - 2022 Jonas Lochmann
  *
  * This program is free software: you can redistribute it and/or modify
  * it under the terms of the GNU General Public License as published by
@@ -18,38 +18,53 @@ package io.timelimit.android.sync.network
 import android.util.JsonWriter
 import io.timelimit.android.async.Threads
 import io.timelimit.android.coroutines.executeAndWait
+import io.timelimit.android.crypto.DHHandshake
 import io.timelimit.android.crypto.PasswordHashing
 import org.json.JSONObject
 
 data class ParentPassword (
         val parentPasswordHash: String,
         val parentPasswordSecondHash: String,
-        val parentPasswordSecondSalt: String
+        val parentPasswordSecondSalt: String,
+        val encrypted: Boolean
 ) {
     companion object {
         private const val HASH = "hash"
         private const val SECOND_HASH = "secondHash"
         private const val SECOND_SALT = "secondSalt"
+        private const val ENCRYPTED = "encrypted"
 
-        fun createSync(password: String): ParentPassword {
+        fun createSync(password: String, dhKey: ServerDhKey?): ParentPassword {
+            val hash = PasswordHashing.hashSync(password)
             val secondSalt = PasswordHashing.generateSalt()
+            val secondHash = PasswordHashing.hashSyncWithSalt(password, secondSalt)
 
-            return ParentPassword(
-                    parentPasswordHash = PasswordHashing.hashSync(password),
+            if (dhKey == null) {
+                return ParentPassword(
+                    parentPasswordHash = hash,
                     parentPasswordSecondSalt = secondSalt,
-                    parentPasswordSecondHash = PasswordHashing.hashSyncWithSalt(password, secondSalt)
-            )
+                    parentPasswordSecondHash = secondHash,
+                    encrypted = false
+                )
+            } else {
+                val handshake = DHHandshake.fromServerKey(dhKey)
+                val secondHashEncrypted = handshake.encrypt(
+                    cryptData = secondHash.toByteArray(Charsets.US_ASCII),
+                    authData = "ParentPassword:$hash:$secondSalt".toByteArray(Charsets.US_ASCII)
+                )
+
+                return ParentPassword(
+                    parentPasswordHash = hash,
+                    parentPasswordSecondSalt = secondSalt,
+                    parentPasswordSecondHash = secondHashEncrypted,
+                    encrypted = true
+                )
+            }
         }
 
-        suspend fun createCoroutine(password: String) = Threads.crypto.executeAndWait {
-            createSync(password)
+        suspend fun createCoroutine(password: String, dhKey: ServerDhKey?) = Threads.crypto.executeAndWait {
+            createSync(password, dhKey)
         }
-
-        fun parse(obj: JSONObject) = ParentPassword(
-                parentPasswordHash = obj.getString(HASH),
-                parentPasswordSecondHash = obj.getString(SECOND_HASH),
-                parentPasswordSecondSalt = obj.getString(SECOND_SALT)
-        )
     }
 
     fun serialize(writer: JsonWriter) {
@@ -58,6 +73,8 @@ data class ParentPassword (
         writer.name(HASH).value(parentPasswordHash)
         writer.name(SECOND_HASH).value(parentPasswordSecondHash)
         writer.name(SECOND_SALT).value(parentPasswordSecondSalt)
+
+        if (encrypted) writer.name(ENCRYPTED).value(true)
 
         writer.endObject()
     }

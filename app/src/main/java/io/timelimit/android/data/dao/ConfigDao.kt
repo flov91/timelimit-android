@@ -30,6 +30,7 @@ import io.timelimit.android.extensions.parseBase64
 import io.timelimit.android.extensions.toJsonReader
 import io.timelimit.android.livedata.ignoreUnchanged
 import io.timelimit.android.livedata.map
+import io.timelimit.android.sync.network.ServerDhKey
 import io.timelimit.android.update.UpdateStatus
 import java.io.StringWriter
 
@@ -363,4 +364,19 @@ abstract class ConfigDao {
 
     fun getLastServerKeyResponseSequenceSync(): Long? = getValueOfKeySync(ConfigurationItemType.LastKeyResponseSequence)?.toLong()
     fun setLastServerKeyResponseSequenceSync(value: Long) = updateValueSync(ConfigurationItemType.LastKeyResponseSequence, value.toString())
+
+    @Transaction
+    open fun getLastDhKeySync(): ServerDhKey? {
+        val version = getValueOfKeySync(ConfigurationItemType.DhKeyVersion)
+        val key = getValueOfKeySync(ConfigurationItemType.DhKey)
+
+        return if (version != null && key != null) ServerDhKey(version = version, key = key.parseBase64())
+        else null
+    }
+
+    @Transaction
+    open fun setLastDhKeySync(key: ServerDhKey) {
+        updateValueSync(ConfigurationItemType.DhKeyVersion, key.version)
+        updateValueSync(ConfigurationItemType.DhKey, key.key.base64())
+    }
 }

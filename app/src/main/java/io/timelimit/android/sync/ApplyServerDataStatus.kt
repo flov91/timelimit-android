@@ -53,6 +53,8 @@ object ApplyServerDataStatus {
                 database.config().setServerApiLevelSync(status.apiLevel)
             }
 
+            status.dh?.also { database.config().setLastDhKeySync(it) }
+
             var didCreateNewActions = false
 
             run {

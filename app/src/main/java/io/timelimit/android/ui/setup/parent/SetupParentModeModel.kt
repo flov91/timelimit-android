@@ -93,7 +93,7 @@ class SetupParentModeModel(application: Application): AndroidViewModel(applicati
 
                 val registerResponse = api.createFamilyByMailToken(
                         mailToken = mailAuthToken.value!!,
-                        parentPassword = ParentPassword.createCoroutine(parentPassword),
+                        parentPassword = ParentPassword.createCoroutine(parentPassword, null),
                         parentDevice = NewDeviceInfo(
                                 model = deviceModelName
                         ),

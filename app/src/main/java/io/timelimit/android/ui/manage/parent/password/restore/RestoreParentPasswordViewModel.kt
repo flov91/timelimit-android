@@ -1,5 +1,5 @@
 /*
- * TimeLimit Copyright <C> 2019 - 2020 Jonas Lochmann
+ * TimeLimit Copyright <C> 2019 - 2022 Jonas Lochmann
  *
  * This program is free software: you can redistribute it and/or modify
  * it under the terms of the GNU General Public License as published by
@@ -78,7 +78,7 @@ class RestoreParentPasswordViewModel(application: Application): AndroidViewModel
 
         runAsync {
             try {
-                val parentPassword = ParentPassword.createCoroutine(newPassword)
+                val parentPassword = ParentPassword.createCoroutine(newPassword, null)
                 val api = logic.serverLogic.getServerConfigCoroutine().api
 
                 api.recoverPasswordByMailToken(mailAuthToken!!, parentPassword)

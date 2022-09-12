@@ -46,6 +46,7 @@ data class ServerDataStatus(
         val newUserList: ServerUserList?,
         val pendingKeyRequests: List<ServerKeyRequest>,
         val keyResponses: List<ServerKeyResponse>,
+        val dh: ServerDhKey?,
         val fullVersionUntil: Long,
         val message: String?,
         val apiLevel: Int
@@ -63,6 +64,7 @@ data class ServerDataStatus(
         private const val NEW_USER_LIST = "users"
         private const val PENDING_KEY_REQUESTS = "krq"
         private const val KEY_RESPONSES = "kr"
+        private const val DH = "dh"
         private const val FULL_VERSION_UNTIL = "fullVersion"
         private const val MESSAGE = "message"
         private const val API_LEVEL = "apiLevel"
@@ -80,6 +82,7 @@ data class ServerDataStatus(
             var newUserList: ServerUserList? = null
             var pendingKeyRequests = emptyList<ServerKeyRequest>()
             var keyResponses = emptyList<ServerKeyResponse>()
+            var dh: ServerDhKey? = null
             var fullVersionUntil: Long? = null
             var message: String? = null
             var apiLevel = 0
@@ -99,6 +102,7 @@ data class ServerDataStatus(
                     NEW_USER_LIST -> newUserList = ServerUserList.parse(reader)
                     PENDING_KEY_REQUESTS -> pendingKeyRequests = ServerKeyRequest.parseList(reader)
                     KEY_RESPONSES -> keyResponses = ServerKeyResponse.parseList(reader)
+                    DH -> dh = ServerDhKey.parse(reader)
                     FULL_VERSION_UNTIL -> fullVersionUntil = reader.nextLong()
                     MESSAGE -> message = reader.nextString()
                     API_LEVEL -> apiLevel = reader.nextInt()
@@ -120,6 +124,7 @@ data class ServerDataStatus(
                 newUserList = newUserList,
                 pendingKeyRequests = pendingKeyRequests,
                 keyResponses = keyResponses,
+                dh = dh,
                 fullVersionUntil = fullVersionUntil!!,
                 message = message,
                 apiLevel = apiLevel
@@ -1263,5 +1268,32 @@ data class ServerKeyResponse(
         }
 
         fun parseList(reader: JsonReader) = parseJsonArray(reader) { parse(reader) }
+    }
+}
+
+data class ServerDhKey(val version: String, val key: ByteArray) {
+    companion object {
+        private const val VERSION = "v"
+        private const val KEY = "k"
+
+        fun parse(reader: JsonReader): ServerDhKey {
+            var version: String? = null
+            var key: ByteArray? = null
+
+            reader.beginObject()
+            while (reader.hasNext()) {
+                when (reader.nextName()) {
+                    VERSION -> version = reader.nextString()
+                    KEY -> key = reader.nextString().parseBase64()
+                    else -> reader.skipValue()
+                }
+            }
+            reader.endObject()
+
+            return ServerDhKey(
+                version = version!!,
+                key = key!!
+            )
+        }
     }
 }

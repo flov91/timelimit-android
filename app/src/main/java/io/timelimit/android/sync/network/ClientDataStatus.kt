@@ -25,7 +25,8 @@ data class ClientDataStatus(
         val categories: Map<String, CategoryDataStatus>,
         val userListVersion: String,
         val lastKeyRequestServerSequence: Long?,
-        val lastKeyResponseServerSequence: Long?
+        val lastKeyResponseServerSequence: Long?,
+        val dhKeyVersion: String?
 ) {
     companion object {
         private const val DEVICES = "devices"
@@ -36,7 +37,8 @@ data class ClientDataStatus(
         private const val DEVICES_DETAIL = "devicesDetail"
         private const val LAST_KEY_REQUEST_SEQUENCE = "kri"
         private const val LAST_KEY_RESPONSE_SEQUENCE = "kr"
-        private const val CLIENT_LEVEL_VALUE = 4
+        private const val DH = "dh"
+        private const val CLIENT_LEVEL_VALUE = 5
 
         val empty = ClientDataStatus(
             deviceListVersion = "",
@@ -45,7 +47,8 @@ data class ClientDataStatus(
             categories = emptyMap(),
             userListVersion = "",
             lastKeyRequestServerSequence = null,
-            lastKeyResponseServerSequence = null
+            lastKeyResponseServerSequence = null,
+            dhKeyVersion = null
         )
 
         fun getClientDataStatusSync(database: Database): ClientDataStatus {
@@ -83,7 +86,8 @@ data class ClientDataStatus(
                         },
                     userListVersion = database.config().getUserListVersionSync(),
                     lastKeyRequestServerSequence = database.config().getLastServerKeyRequestSequenceSync(),
-                    lastKeyResponseServerSequence = database.config().getLastServerKeyResponseSequenceSync()
+                    lastKeyResponseServerSequence = database.config().getLastServerKeyResponseSequenceSync(),
+                    dhKeyVersion = database.config().getLastDhKeySync()?.version
                 )
             }
         }
@@ -123,6 +127,7 @@ data class ClientDataStatus(
 
         lastKeyRequestServerSequence?.let { writer.name(LAST_KEY_REQUEST_SEQUENCE).value(it) }
         lastKeyResponseServerSequence?.let { writer.name(LAST_KEY_RESPONSE_SEQUENCE).value(it) }
+        dhKeyVersion?.let { writer.name(DH).value(it) }
 
         writer.endObject()
     }
