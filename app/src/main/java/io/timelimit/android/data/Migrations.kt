@@ -333,6 +333,12 @@ object DatabaseMigrations {
         }
     }
 
+    val MIGRATE_TO_V46 = object: Migration(45, 46) {
+        override fun migrate(database: SupportSQLiteDatabase) {
+            database.execSQL("CREATE TABLE IF NOT EXISTS `widget_config` (`widget_id` INTEGER NOT NULL, `translucent` INTEGER NOT NULL, PRIMARY KEY(`widget_id`))")
+        }
+    }
+
     val ALL = arrayOf(
         MIGRATE_TO_V2,
         MIGRATE_TO_V3,
@@ -377,6 +383,7 @@ object DatabaseMigrations {
         MIGRATE_TO_V42,
         MIGRATE_TP_V43,
         MIGRATE_TO_V44,
-        MIGRATE_TO_V45
+        MIGRATE_TO_V45,
+        MIGRATE_TO_V46
     )
 }

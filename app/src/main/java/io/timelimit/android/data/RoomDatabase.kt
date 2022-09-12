@@ -59,8 +59,9 @@ import java.util.concurrent.TimeUnit
     CryptContainerKeyResult::class,
     DevicePublicKey::class,
     UserU2FKey::class,
-    WidgetCategory::class
-], version = 45)
+    WidgetCategory::class,
+    WidgetConfig::class
+], version = 46)
 abstract class RoomDatabase: RoomDatabase(), io.timelimit.android.data.Database {
     companion object {
         private val lock = Object()
