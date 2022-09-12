@@ -81,7 +81,6 @@ class SetupLocalModeFragment : Fragment() {
 
     override fun onCreateView(inflater: LayoutInflater, container: ViewGroup?, savedInstanceState: Bundle?): View {
         val binding = FragmentSetupLocalModeBinding.inflate(inflater, container, false)
-        val navigation = Navigation.findNavController(container!!)
 
         binding.setPasswordView.allowNoPassword.value = true
 
@@ -97,8 +96,6 @@ class SetupLocalModeFragment : Fragment() {
         model.status.observe(viewLifecycleOwner) {
             if (it == SetupLocalModeModel.Status.Done) {
                 MustReadFragment.newInstance(R.string.must_read_child_manipulation).show(fragmentManager!!)
-
-                navigation.popBackStack(R.id.overviewFragment, false)
             }
         }
 

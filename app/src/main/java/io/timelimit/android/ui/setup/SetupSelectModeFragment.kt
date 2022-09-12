@@ -140,8 +140,6 @@ class SetupSelectModeFragment : Fragment() {
                         SetupSelectModeFragmentDirections.actionSetupSelectModeFragmentToSetupParentModeFragment(),
                         R.id.setupSelectModeFragment
                 )
-            } else if (requestCode == REQUEST_SETUP_PARENT_MODE && resultCode == Activity.RESULT_OK) {
-                navigation.popBackStack(R.id.overviewFragment, false)
             }
         }
     }

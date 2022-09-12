@@ -31,6 +31,7 @@ import androidx.lifecycle.Observer
 import androidx.lifecycle.Transformations
 import androidx.lifecycle.ViewModelProviders
 import androidx.navigation.NavController
+import androidx.navigation.NavDestination
 import androidx.navigation.fragment.NavHostFragment
 import io.timelimit.android.Application
 import io.timelimit.android.R
@@ -51,13 +52,7 @@ import io.timelimit.android.ui.main.ActivityViewModelHolder
 import io.timelimit.android.ui.main.AuthenticatedUser
 import io.timelimit.android.ui.main.FragmentWithCustomTitle
 import io.timelimit.android.ui.manage.parent.ManageParentFragmentArgs
-import io.timelimit.android.ui.manage.parent.link.LinkParentMailFragment
-import io.timelimit.android.ui.manage.parent.password.restore.RestoreParentPasswordFragment
-import io.timelimit.android.ui.overview.main.MainFragment
-import io.timelimit.android.ui.parentmode.ParentModeFragment
 import io.timelimit.android.ui.payment.ActivityPurchaseModel
-import io.timelimit.android.ui.setup.SetupTermsFragment
-import io.timelimit.android.ui.setup.parent.SetupParentModeFragment
 import io.timelimit.android.ui.util.SyncStatusModel
 import java.security.SecureRandom
 
@@ -101,7 +96,6 @@ class MainActivity : AppCompatActivity(), ActivityViewModelHolder, U2fManager.De
     }
 
     private val currentNavigatorFragment = MutableLiveData<Fragment?>()
-    private val application: Application by lazy { getApplication() as Application }
     private val syncModel: SyncStatusModel by lazy {
         ViewModelProviders.of(this).get(SyncStatusModel::class.java)
     }
@@ -147,13 +141,11 @@ class MainActivity : AppCompatActivity(), ActivityViewModelHolder, U2fManager.De
         }
 
         // up button
-        val shouldShowBackButtonForNavigatorFragment = currentNavigatorFragment.map { fragment ->
-            (!(fragment is MainFragment)) && (!(fragment is SetupTermsFragment)) && (!(fragment is ParentModeFragment))
-        }
-
-        val shouldShowUpButton = shouldShowBackButtonForNavigatorFragment
-
-        shouldShowUpButton.observe(this, Observer { supportActionBar!!.setDisplayHomeAsUpEnabled(it) })
+        getNavController().addOnDestinationChangedListener(object: NavController.OnDestinationChangedListener {
+            override fun onDestinationChanged(controller: NavController, destination: NavDestination, arguments: Bundle?) {
+                supportActionBar!!.setDisplayHomeAsUpEnabled(controller.previousBackStackEntry != null)
+            }
+        })
 
         // init if not yet done
         DefaultAppLogic.with(this)
@@ -183,6 +175,33 @@ class MainActivity : AppCompatActivity(), ActivityViewModelHolder, U2fManager.De
         syncModel.statusText.observe(this, Observer { supportActionBar!!.subtitle = it })
 
         handleParameters(intent)
+
+        val hasDeviceId = getActivityViewModel().logic.deviceId.map { it != null }.ignoreUnchanged()
+        val hasParentKey = getActivityViewModel().logic.database.config().getParentModeKeyLive().map { it != null }.ignoreUnchanged()
+
+        hasDeviceId.observe(this) {
+            val rootDestination = getNavController().backQueue.getOrNull(1)?.destination?.id
+
+            if (!it) getActivityViewModel().logOut()
+
+            if (
+                it && rootDestination != R.id.overviewFragment ||
+                !it && rootDestination == R.id.overviewFragment
+            ) {
+                restartContent()
+            }
+        }
+
+        hasParentKey.observe(this) {
+            val rootDestination = getNavController().backQueue.getOrNull(1)?.destination?.id
+
+            if (
+                it && rootDestination != R.id.parentModeFragment ||
+                !it && rootDestination == R.id.parentModeFragment
+            ) {
+                restartContent()
+            }
+        }
     }
 
     override fun onOptionsItemSelected(item: MenuItem) = when {
@@ -259,29 +278,26 @@ class MainActivity : AppCompatActivity(), ActivityViewModelHolder, U2fManager.De
 
         if (handleParameters(intent)) return
 
-        val currentFragment = currentNavigatorFragment.value
-
         // at these screens, some users restart the App
         // if they want to continue after opening the mail
         // because they don't understand how to use the list of running Apps ...
         // Due to that, on the relevant screens, the App does not
         // go back to the start when opening it again
-        if (
-                currentFragment is SetupParentModeFragment ||
-                currentFragment is RestoreParentPasswordFragment ||
-                currentFragment is LinkParentMailFragment
-        ) {
-            return
+        val isImportantScreen = when (getNavController().currentDestination?.id) {
+            R.id.setupParentModeFragment -> true
+            R.id.restoreParentPasswordFragment -> true
+            R.id.linkParentMailFragment -> true
+            else -> false
         }
 
-        getNavController().popBackStack(R.id.overviewFragment, true)
-        getNavController().handleDeepLink(
-                getNavController().createDeepLink()
-                        .setDestination(R.id.overviewFragment)
-                        .createTaskStackBuilder()
-                        .intents
-                        .first()
-        )
+        if (!isImportantScreen) restartContent()
+    }
+
+    private fun restartContent() {
+        while (getNavController().popBackStack()) {/* do nothing */}
+
+        getNavController().clearBackStack(R.id.launchFragment)
+        getNavController().navigate(R.id.launchFragment)
     }
 
     override fun getActivityViewModel(): ActivityViewModel {
@@ -294,15 +310,6 @@ class MainActivity : AppCompatActivity(), ActivityViewModelHolder, U2fManager.De
 
     private fun getNavController(): NavController {
         return getNavHostFragment().navController
-    }
-
-    override fun onBackPressed() {
-        if (currentNavigatorFragment.value is SetupTermsFragment || currentNavigatorFragment.value is ParentModeFragment) {
-            // hack to prevent the user from going to the launch screen of the App if it is not set up
-            finish()
-        } else {
-            super.onBackPressed()
-        }
     }
 
     override fun showAuthenticationScreen() {

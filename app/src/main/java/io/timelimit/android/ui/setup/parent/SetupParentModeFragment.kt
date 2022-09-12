@@ -28,7 +28,6 @@ import androidx.lifecycle.MutableLiveData
 import androidx.lifecycle.Observer
 import androidx.lifecycle.ViewModelProviders
 import androidx.lifecycle.observe
-import androidx.navigation.Navigation
 import io.timelimit.android.R
 import io.timelimit.android.async.Threads
 import io.timelimit.android.coroutines.executeAndWait
@@ -194,12 +193,6 @@ class SetupParentModeFragment : Fragment(), AuthenticateByMailFragmentListener {
                 }
             }
         }
-
-        model.isSetupDone.observe(this, Observer {
-            if (it!!) {
-                Navigation.findNavController(binding.root).popBackStack(R.id.overviewFragment, false)
-            }
-        })
 
         UpdateConsentCard.bind(
                 view = binding.update,

@@ -16,7 +16,7 @@
 <navigation xmlns:android="http://schemas.android.com/apk/res/android"
     xmlns:app="http://schemas.android.com/apk/res-auto"
     xmlns:tools="http://schemas.android.com/tools"
-    app:startDestination="@id/overviewFragment">
+    app:startDestination="@id/launchFragment">
 
     <fragment
         android:id="@+id/overviewFragment"
@@ -37,13 +37,6 @@
             app:popExitAnim="@anim/nav_default_pop_exit_anim"
             android:id="@+id/action_overviewFragment_to_addUserFragment"
             app:destination="@id/addUserFragment" />
-        <action
-            app:enterAnim="@anim/nav_default_enter_anim"
-            app:exitAnim="@anim/nav_default_exit_anim"
-            app:popEnterAnim="@anim/nav_default_pop_enter_anim"
-            app:popExitAnim="@anim/nav_default_pop_exit_anim"
-            android:id="@+id/action_overviewFragment_to_setupTermsFragment"
-            app:destination="@id/setupTermsFragment" />
         <action
             app:enterAnim="@anim/nav_default_enter_anim"
             app:exitAnim="@anim/nav_default_exit_anim"
@@ -86,9 +79,6 @@
             app:exitAnim="@anim/nav_default_exit_anim"
             app:popEnterAnim="@anim/nav_default_pop_enter_anim"
             app:popExitAnim="@anim/nav_default_pop_exit_anim" />
-        <action
-            android:id="@+id/action_overviewFragment_to_parentModeFragment"
-            app:destination="@id/parentModeFragment" />
         <action
             android:id="@+id/action_overviewFragment_to_aboutFragmentWrapped"
             app:destination="@id/aboutFragmentWrapped"
@@ -622,4 +612,24 @@
         android:id="@+id/diagnoseCryptoFragment"
         android:name="io.timelimit.android.ui.diagnose.DiagnoseCryptoFragment"
         android:label="DiagnoseCryptoFragment" />
+    <fragment
+        android:id="@+id/launchFragment"
+        android:name="io.timelimit.android.ui.launch.LaunchFragment"
+        android:label="LaunchFragment">
+        <action
+            android:id="@+id/action_launchFragment_to_overviewFragment"
+            app:destination="@id/overviewFragment"
+            app:popUpTo="@id/launchFragment"
+            app:popUpToInclusive="true" />
+        <action
+            android:id="@+id/action_launchFragment_to_setupTermsFragment"
+            app:destination="@id/setupTermsFragment"
+            app:popUpTo="@id/launchFragment"
+            app:popUpToInclusive="true" />
+        <action
+            android:id="@+id/action_launchFragment_to_parentModeFragment"
+            app:destination="@id/parentModeFragment"
+            app:popUpTo="@id/launchFragment"
+            app:popUpToInclusive="true" />
+    </fragment>
 </navigation>

@@ -1,5 +1,5 @@
 /*
- * TimeLimit Copyright <C> 2019 - 2020 Jonas Lochmann
+ * TimeLimit Copyright <C> 2019 - 2022 Jonas Lochmann
  *
  * This program is free software: you can redistribute it and/or modify
  * it under the terms of the GNU General Public License as published by
@@ -22,13 +22,10 @@ import android.view.ViewGroup
 import androidx.fragment.app.Fragment
 import androidx.lifecycle.Observer
 import androidx.lifecycle.ViewModelProviders
-import androidx.navigation.Navigation
 import com.google.android.material.snackbar.Snackbar
 import io.timelimit.android.R
 import io.timelimit.android.databinding.SetupRemoteChildFragmentBinding
-import io.timelimit.android.extensions.safeNavigate
 import io.timelimit.android.extensions.setOnEnterListenr
-import io.timelimit.android.ui.overview.main.MainFragmentDirections
 
 class SetupRemoteChildFragment : Fragment() {
     private val model: SetupRemoteChildViewModel by lazy {
@@ -63,18 +60,6 @@ class SetupRemoteChildFragment : Fragment() {
                 }
                 null -> {/* nothing to do */}
             }.let {  }
-        })
-
-        model.isSetupDone.observe(this, Observer {
-            if (it!!) {
-                val navigation = Navigation.findNavController(binding.root)
-
-                navigation.popBackStack(R.id.overviewFragment, false)
-                navigation.safeNavigate(
-                        MainFragmentDirections.actionOverviewFragmentToSetupDeviceFragment(),
-                        R.id.overviewFragment
-                )
-            }
         })
 
         return binding.root
