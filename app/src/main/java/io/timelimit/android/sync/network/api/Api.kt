@@ -1,5 +1,5 @@
 /*
- * TimeLimit Copyright <C> 2019 - 2021 Jonas Lochmann
+ * TimeLimit Copyright <C> 2019 - 2022 Jonas Lochmann
  *
  * This program is free software: you can redistribute it and/or modify
  * it under the terms of the GNU General Public License as published by
@@ -55,6 +55,7 @@ interface ServerApi {
     suspend fun reportDeviceRemoved(deviceAuthToken: String)
     suspend fun removeDevice(deviceAuthToken: String, parentUserId: String, parentPasswordSecondHash: String, deviceId: String)
     suspend fun isDeviceRemoved(deviceAuthToken: String): Boolean
+    suspend fun createIdentityToken(deviceAuthToken: String, parentUserId: String, parentPasswordSecondHash: String): String
 }
 
 class MailServerBlacklistedException: RuntimeException()

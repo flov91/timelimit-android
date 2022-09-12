@@ -1335,10 +1335,15 @@
         You can only extend the premium version if it expired or shortly before that.
     </string>
     <string name="purchase_error_server_rejected">The server does not accept payments currently</string>
-    <string name="purchase_error_server_different_key">The server does support payments, but not using this app build</string>
+    <string name="purchase_error_server_different_key">The server maybe does support payments, but not using this app build</string>
 
     <string name="purchase_done_title">Purchase succeeded</string>
     <string name="purchase_done_text">Press back to go back to the App</string>
+
+    <string name="purchase_requires_auth_text">You have to authenticate for the purchase</string>
+    <string name="purchase_token_explain">See https://timelimit.io/en/#how-to-purchase for details on the purchase.
+        Your purchase token is:
+    </string>
 
     <string name="purchase_required_dialog_title">Premium version required</string>
     <string name="purchase_required_dialog_text">

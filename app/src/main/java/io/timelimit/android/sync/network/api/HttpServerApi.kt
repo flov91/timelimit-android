@@ -1,5 +1,5 @@
 /*
- * TimeLimit Copyright <C> 2019 - 2021 Jonas Lochmann
+ * TimeLimit Copyright <C> 2019 - 2022 Jonas Lochmann
  *
  * This program is free software: you can redistribute it and/or modify
  * it under the terms of the GNU General Public License as published by
@@ -623,6 +623,45 @@ class HttpServerApi(private val endpointWithoutSlashAtEnd: String): ServerApi {
                 reader.endObject()
 
                 result!!
+            }
+        }
+    }
+
+    override suspend fun createIdentityToken(
+        deviceAuthToken: String,
+        parentUserId: String,
+        parentPasswordSecondHash: String
+    ): String {
+        httpClient.newCall(
+            Request.Builder()
+                .url("$endpointWithoutSlashAtEnd/parent/create-identity-token")
+                .post(createJsonRequestBody { writer ->
+                    writer.beginObject()
+                    writer.name(DEVICE_AUTH_TOKEN).value(deviceAuthToken)
+                    writer.name(PARENT_USER_ID).value(parentUserId)
+                    writer.name(PARENT_PASSWORD_SECOND_HASH).value(parentPasswordSecondHash)
+                    writer.name("purpose").value("purchase")
+                    writer.endObject()
+                })
+                .header("Content-Encoding", "gzip")
+                .build()
+        ).waitForResponse().use { response ->
+            response.assertSuccess()
+
+            return Threads.network.executeAndWait {
+                val reader = JsonReader(response.body!!.charStream())
+                var token: String? = null
+
+                reader.beginObject()
+                while (reader.hasNext()) {
+                    when (reader.nextName()) {
+                        "token" -> token = reader.nextString()
+                        else -> reader.skipValue()
+                    }
+                }
+                reader.endObject()
+
+                token!!
             }
         }
     }

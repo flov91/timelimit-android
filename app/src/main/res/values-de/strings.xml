@@ -1293,10 +1293,16 @@
         Sie haben bereits bezahlt. Sie können die Vollversion erst kurz vor dem Ablaufen (oder danach) verlängern
     </string>
     <string name="purchase_error_server_rejected">Der Server akzeptiert momentan keine Bezahlungen</string>
-    <string name="purchase_error_server_different_key">Der Server unterstützt Bezahlungen, aber nicht über diesen App-Build</string>
+    <string name="purchase_error_server_different_key">Der Server unterstützt möglicherweise Bezahlungen, aber nicht über diesen App-Build</string>
 
     <string name="purchase_done_title">Bezahlung abgeschlossen</string>
     <string name="purchase_done_text">Betätigen Sie die Zurück-Taste, um zur App zurückzukehren</string>
+
+    <string name="purchase_requires_auth_text">Sie müssen sich für den Kauf anmelden</string>
+    <string name="purchase_token_explain">Unter https://timelimit.io/de/#how-to-purchase erfahren Sie,
+        wie Sie den Kauf durchführen können.
+        Ihr Kauftoken lautet:
+    </string>
 
     <string name="purchase_required_dialog_title">Vollversion erforderlich</string>
     <string name="purchase_required_dialog_text">

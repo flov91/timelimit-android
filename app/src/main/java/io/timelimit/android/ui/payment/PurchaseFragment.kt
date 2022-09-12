@@ -28,7 +28,10 @@ import io.timelimit.android.livedata.liveDataFromNullableValue
 import io.timelimit.android.livedata.mergeLiveData
 import io.timelimit.android.ui.MainActivity
 import io.timelimit.android.ui.diagnose.DiagnoseExceptionDialogFragment
+import io.timelimit.android.ui.main.ActivityViewModelHolder
 import io.timelimit.android.ui.main.FragmentWithCustomTitle
+import io.timelimit.android.ui.main.getActivityViewModel
+import io.timelimit.android.util.Clipboard
 import java.lang.RuntimeException
 
 class PurchaseFragment : Fragment(), FragmentWithCustomTitle {
@@ -40,6 +43,8 @@ class PurchaseFragment : Fragment(), FragmentWithCustomTitle {
         private const val PAGE_ERROR = 1
         private const val PAGE_WAIT = 2
         private const val PAGE_DONE = 3
+        private const val PAGE_AUTH = 4
+        private const val PAGE_TOKEN = 5
     }
 
     override fun onCreate(savedInstanceState: Bundle?) {
@@ -49,22 +54,18 @@ class PurchaseFragment : Fragment(), FragmentWithCustomTitle {
             activityModel.resetProcessPurchaseSuccess()
         }
 
-        model.retry(activityModel)
+        model.init(activityModel, getActivityViewModel(requireActivity()))
     }
 
-    override fun onCreateView(inflater: LayoutInflater, container: ViewGroup?, savedInstanceState: Bundle?): View? {
+    override fun onCreateView(inflater: LayoutInflater, container: ViewGroup?, savedInstanceState: Bundle?): View {
         val binding = FragmentPurchaseBinding.inflate(inflater, container, false)
         var processingPurchaseError = false
 
-        mergeLiveData(activityModel.status, model.status).observe(viewLifecycleOwner, {
-            status ->
-
-            val (activityStatus, fragmentStatus) = status!!
-
+        mergeLiveData(activityModel.status, model.status).observe(viewLifecycleOwner) { (activityStatus, fragmentStatus) ->
             if (fragmentStatus != null) {
                 when (fragmentStatus) {
-                    PurchaseFragmentPreparing -> binding.flipper.displayedChild = PAGE_WAIT
-                    is PurchaseFragmentReady -> {
+                    PurchaseModel.Status.Preparing -> binding.flipper.displayedChild = PAGE_WAIT
+                    is PurchaseModel.Status.ReadyRegular -> {
                         when (activityStatus) {
                             null -> binding.flipper.displayedChild = PAGE_WAIT
                             ActivityPurchaseModelStatus.Working -> binding.flipper.displayedChild = PAGE_WAIT
@@ -82,42 +83,55 @@ class PurchaseFragment : Fragment(), FragmentWithCustomTitle {
                             ActivityPurchaseModelStatus.Done -> binding.flipper.displayedChild = PAGE_DONE
                         }.let {  }
                     }
-                    is PurchaseFragmentError -> {
+                    is PurchaseModel.Status.Error -> {
                         binding.flipper.displayedChild = PAGE_ERROR
 
                         binding.errorReason = when (fragmentStatus) {
-                            PurchaseFragmentErrorBillingNotSupportedByDevice -> getString(R.string.purchase_error_not_supported_by_device)
-                            PurchaseFragmentErrorBillingNotSupportedByAppVariant -> getString(R.string.purchase_error_not_supported_by_app_variant)
-                            is PurchaseFragmentNetworkError -> getString(R.string.error_network)
-                            PurchaseFragmentExistingPaymentError -> getString(R.string.purchase_error_existing_payment)
-                            PurchaseFragmentServerRejectedError -> getString(R.string.purchase_error_server_rejected)
-                            PurchaseFragmentServerHasDifferentPublicKey -> getString(R.string.purchase_error_server_different_key)
+                            PurchaseModel.Status.Error.Unrecoverable.BillingNotSupportedByDevice -> getString(R.string.purchase_error_not_supported_by_device)
+                            is PurchaseModel.Status.Error.Recoverable.NetworkError -> getString(R.string.error_network)
+                            PurchaseModel.Status.Error.Unrecoverable.ExistingPaymentError -> getString(R.string.purchase_error_existing_payment)
+                            PurchaseModel.Status.Error.Unrecoverable.ServerRejectedError -> getString(R.string.purchase_error_server_rejected)
+                            PurchaseModel.Status.Error.Unrecoverable.ServerClientCombinationUnsupported -> getString(R.string.purchase_error_server_different_key)
                         }
 
                         binding.showRetryButton = when (fragmentStatus) {
-                            is PurchaseFragmentRecoverableError -> true
-                            is PurchaseFragmentUnrecoverableError -> false
+                            is PurchaseModel.Status.Error.Recoverable -> true
+                            is PurchaseModel.Status.Error.Unrecoverable -> false
                         }
 
                         binding.showErrorDetailsButton = when (fragmentStatus) {
-                            is PurchaseFragmentNetworkError -> true
+                            is PurchaseModel.Status.Error.Recoverable.NetworkError -> true
                             else -> false
                         }
 
                         processingPurchaseError = false
                     }
+                    PurchaseModel.Status.WaitingForAuth -> {
+                        binding.flipper.displayedChild = PAGE_AUTH
+                    }
+                    is PurchaseModel.Status.ReadyToken -> {
+                       binding.flipper.displayedChild = PAGE_TOKEN
+
+                       binding.purchaseToken = fragmentStatus.token
+                    }
                 }.let { }
             } else {
                 binding.flipper.displayedChild = PAGE_WAIT
             }
-        })
+        }
+
+        getActivityViewModel(requireActivity()).authenticatedUser.observe(viewLifecycleOwner) { user ->
+            if (user != null && model.status.value is PurchaseModel.Status.WaitingForAuth) {
+                model.retry()
+            }
+        }
 
         binding.handlers = object: PurchaseFragmentHandlers {
             override fun retryAtErrorScreenClicked() {
                 if (processingPurchaseError) {
                     activityModel.queryAndProcessPurchasesAsync()
                 } else {
-                    model.retry(activityModel)
+                    model.retry()
                 }
             }
 
@@ -125,7 +139,7 @@ class PurchaseFragment : Fragment(), FragmentWithCustomTitle {
                 val status = model.status.value
 
                 val exception = when (status) {
-                    is PurchaseFragmentNetworkError -> status.exception
+                    is PurchaseModel.Status.Error.Recoverable.NetworkError -> status.exception
                     else -> RuntimeException("other error")
                 }
 
@@ -138,6 +152,18 @@ class PurchaseFragment : Fragment(), FragmentWithCustomTitle {
 
             override fun buyForOneYear() {
                 activityModel.startPurchase(PurchaseIds.SKU_YEAR, checkAtBackend = true, activity = requireActivity())
+            }
+
+            override fun showAuthDialog() {
+                (requireActivity() as ActivityViewModelHolder).showAuthenticationScreen()
+            }
+
+            override fun copyPurchaseTokenToClipboard() {
+                model.status.value?.also {
+                    if (it is PurchaseModel.Status.ReadyToken) {
+                        Clipboard.setAndToast(requireContext(), it.token)
+                    }
+                }
             }
         }
 
@@ -152,4 +178,6 @@ interface PurchaseFragmentHandlers {
     fun showErrorDetails()
     fun buyForOneMonth()
     fun buyForOneYear()
+    fun showAuthDialog()
+    fun copyPurchaseTokenToClipboard()
 }

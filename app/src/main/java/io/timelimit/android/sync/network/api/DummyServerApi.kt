@@ -1,5 +1,5 @@
 /*
- * TimeLimit Copyright <C> 2019 - 2021 Jonas Lochmann
+ * TimeLimit Copyright <C> 2019 - 2022 Jonas Lochmann
  *
  * This program is free software: you can redistribute it and/or modify
  * it under the terms of the GNU General Public License as published by
@@ -96,6 +96,14 @@ class DummyServerApi: ServerApi {
     }
 
     override suspend fun isDeviceRemoved(deviceAuthToken: String): Boolean {
+        throw IOException()
+    }
+
+    override suspend fun createIdentityToken(
+        deviceAuthToken: String,
+        parentUserId: String,
+        parentPasswordSecondHash: String
+    ): String {
         throw IOException()
     }
 }
