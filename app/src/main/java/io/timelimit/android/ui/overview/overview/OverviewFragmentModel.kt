@@ -166,8 +166,15 @@ class OverviewFragmentModel(application: Application): AndroidViewModel(applicat
                                 add(OverviewFragmentActionAddDevice)
                             } else {
                                 add(ShowMoreOverviewFragmentItem.ShowMoreDevices(when (itemVisibility.devices) {
-                                    DeviceListItemVisibility.BareMinimum -> if (deviceEntries.find { it.deviceUser?.type == UserType.Child } != null)
-                                        DeviceListItemVisibility.AllChildDevices else DeviceListItemVisibility.AllDevices
+                                    DeviceListItemVisibility.BareMinimum -> run {
+                                        if (
+                                            deviceEntries.any {
+                                                !it.isCurrentDevice &&
+                                                        !it.isImportant &&
+                                                        it.deviceUser?.type == UserType.Child
+                                            }
+                                        ) DeviceListItemVisibility.AllChildDevices else DeviceListItemVisibility.AllDevices
+                                    }
                                     DeviceListItemVisibility.AllChildDevices -> DeviceListItemVisibility.AllDevices
                                     DeviceListItemVisibility.AllDevices -> DeviceListItemVisibility.AllDevices
                                 }))
