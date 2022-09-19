@@ -432,6 +432,12 @@ class LoginDialogFragmentModel(application: Application): AndroidViewModel(appli
                     Toast.makeText(getApplication(), R.string.login_child_done_toast, Toast.LENGTH_SHORT).show()
 
                     isLoginDone.value = true
+                } catch (ex: Exception) {
+                    if (BuildConfig.DEBUG) {
+                        Log.d(LOG_TAG, "tryChildLogin", ex)
+                    }
+
+                    Toast.makeText(getApplication(), R.string.error_general, Toast.LENGTH_SHORT).show()
                 } finally {
                     isCheckingPassword.value = false
                 }
