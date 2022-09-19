@@ -17,10 +17,12 @@ package io.timelimit.android.ui.login
 
 import android.app.Application
 import android.content.Context
+import android.util.Log
 import android.widget.Toast
 import androidx.lifecycle.AndroidViewModel
 import androidx.lifecycle.LiveData
 import androidx.lifecycle.MutableLiveData
+import io.timelimit.android.BuildConfig
 import io.timelimit.android.R
 import io.timelimit.android.async.Threads
 import io.timelimit.android.coroutines.executeAndWait
@@ -45,6 +47,8 @@ import kotlinx.coroutines.sync.withLock
 
 class LoginDialogFragmentModel(application: Application): AndroidViewModel(application) {
     companion object {
+        private const val LOG_TAG = "LoginDialogFragment"
+
         fun formatAllowLoginStatusError(status: AllowUserLoginStatus, context: Context): String = when (status) {
             is AllowUserLoginStatus.Allow -> context.getString(R.string.error_general)
             is AllowUserLoginStatus.ForbidUserNotFound -> context.getString(R.string.error_general)
@@ -375,6 +379,12 @@ class LoginDialogFragmentModel(application: Application): AndroidViewModel(appli
                     }
 
                     isLoginDone.value = true
+                } catch (ex: Exception) {
+                    if (BuildConfig.DEBUG) {
+                        Log.d(LOG_TAG, "tryParentLogin", ex)
+                    }
+
+                    Toast.makeText(getApplication(), R.string.error_general, Toast.LENGTH_SHORT).show()
                 } finally {
                     isCheckingPassword.value = false
                 }
