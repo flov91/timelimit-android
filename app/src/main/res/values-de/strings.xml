@@ -1209,6 +1209,12 @@
 
     <string name="overview_server_message">Mitteilung</string>
 
+    <string name="overview_server_outdated_title">alte Serverversion</string>
+    <string name="overview_server_outdated_text">Sie verwenden eine ältere Version
+        des TimeLimit-Servers. Das kann zu einem eingeschränkten Funktionsumfang
+        und Sicherheitspropblemen führen.
+    </string>
+
     <string name="parent_limit_login_title">Anmeldeverhinderungskategorie</string>
     <string name="parent_limit_login_help">Hier können Sie eine Kategorie wählen.
         Sobald diese Kategorie gesperrt ist können Sie sich nicht mehr als Elternteil anmelden, sodass

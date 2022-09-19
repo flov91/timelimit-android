@@ -77,6 +77,7 @@ class OverviewFragmentAdapter : RecyclerView.Adapter<OverviewFragmentViewHolder>
         is OverviewFragmentItemMessage -> OverviewFragmentViewType.ServerMessage
         is ShowMoreOverviewFragmentItem -> OverviewFragmentViewType.ShowMoreButton
         is TaskReviewOverviewItem -> OverviewFragmentViewType.TaskReview
+        is OverviewFragmentItemOutdatedServer -> OverviewFragmentViewType.ServerMessage
     }
 
     override fun getItemViewType(position: Int) = getItemType(getItem(position)).ordinal
@@ -170,6 +171,7 @@ class OverviewFragmentAdapter : RecyclerView.Adapter<OverviewFragmentViewHolder>
     }
 
     override fun onBindViewHolder(holder: OverviewFragmentViewHolder, position: Int) {
+        val context = holder.itemView.context
         val item = getItem(position)
 
         when (item) {
@@ -237,6 +239,7 @@ class OverviewFragmentAdapter : RecyclerView.Adapter<OverviewFragmentViewHolder>
             is OverviewFragmentItemMessage -> {
                 holder as ServerMessageViewHolder
 
+                holder.binding.title = context.getString(R.string.overview_server_message)
                 holder.binding.text = item.message
                 holder.binding.executePendingBindings()
             }
@@ -275,6 +278,13 @@ class OverviewFragmentAdapter : RecyclerView.Adapter<OverviewFragmentViewHolder>
                     it.skipButton.setOnClickListener { handlers?.onSkipTaskReviewClicked(item.task) }
                 }
 
+                holder.binding.executePendingBindings()
+            }
+            is OverviewFragmentItemOutdatedServer -> {
+                holder as ServerMessageViewHolder
+
+                holder.binding.title = context.getString(R.string.overview_server_outdated_title)
+                holder.binding.text = context.getString(R.string.overview_server_outdated_text)
                 holder.binding.executePendingBindings()
             }
         }.let {  }

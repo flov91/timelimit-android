@@ -1253,6 +1253,12 @@
 
     <string name="overview_server_message">Message</string>
 
+    <string name="overview_server_outdated_title">old server version</string>
+    <string name="overview_server_outdated_text">You are using an outdated version
+        of timelimit-server. This can limit the available features and can be
+        a security risk.
+    </string>
+
     <string name="parent_limit_login_title">Limit login category</string>
     <string name="parent_limit_login_help">Here you can select a category. As soon as Apps of this
         category are blocked, you can not sign in with your parent user. This

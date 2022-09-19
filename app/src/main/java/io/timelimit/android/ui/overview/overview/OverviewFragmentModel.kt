@@ -19,12 +19,10 @@ import android.app.Application
 import androidx.lifecycle.AndroidViewModel
 import androidx.lifecycle.LiveData
 import androidx.lifecycle.MutableLiveData
+import io.timelimit.android.BuildConfig
 import io.timelimit.android.data.model.HintsToShow
 import io.timelimit.android.data.model.UserType
-import io.timelimit.android.livedata.ignoreUnchanged
-import io.timelimit.android.livedata.liveDataFromFunction
-import io.timelimit.android.livedata.map
-import io.timelimit.android.livedata.switchMap
+import io.timelimit.android.livedata.*
 import io.timelimit.android.logic.DefaultAppLogic
 import java.util.*
 
@@ -94,27 +92,29 @@ class OverviewFragmentModel(application: Application): AndroidViewModel(applicat
     private val isNoUserAssignedLive = logic.deviceUserEntry.map { it == null }.ignoreUnchanged()
     private val hasShownIntroduction = logic.database.config().wereHintsShown(HintsToShow.OVERVIEW_INTRODUCTION)
     private val messageLive = logic.database.config().getServerMessage()
-    private val introEntries = isNoUserAssignedLive.switchMap { noUserAssigned ->
-        hasShownIntroduction.switchMap { hasShownIntro ->
-            messageLive.map { message ->
-                val result = mutableListOf<OverviewFragmentItem>()
+    private val serverVersion = logic.serverApiLevelLogic.infoLive
+    private val introEntries = mergeLiveDataWaitForValues(isNoUserAssignedLive, hasShownIntroduction, messageLive, serverVersion)
+        .map { (noUserAssigned, hasShownIntro, message, serverVersion) ->
+            val result = mutableListOf<OverviewFragmentItem>()
 
-                if (noUserAssigned) {
-                    result.add(OverviewFragmentHeaderFinishSetup)
-                }
-
-                if (message != null) {
-                    result.add(OverviewFragmentItemMessage(message))
-                }
-
-                if (!hasShownIntro) {
-                    result.add(OverviewFragmentHeaderIntro)
-                }
-
-                result
+            if (noUserAssigned) {
+                result.add(OverviewFragmentHeaderFinishSetup)
             }
+
+            if (!serverVersion.hasLevelOrIsOffline(BuildConfig.minimumRecommendServerVersion)) {
+                result.add(OverviewFragmentItemOutdatedServer)
+            }
+
+            if (message != null) {
+                result.add(OverviewFragmentItemMessage(message))
+            }
+
+            if (!hasShownIntro) {
+                result.add(OverviewFragmentHeaderIntro)
+            }
+
+            result
         }
-    }
 
     private val hiddenTaskIdsLive = MutableLiveData<Set<String>>().apply { value = emptySet() }
     private val tasksWithPendingReviewLive = logic.database.childTasks().getPendingTasks()

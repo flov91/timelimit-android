@@ -45,6 +45,7 @@ android {
         // get with unzip -p *.apk META-INF/CERT.RSA | keytool -printcert | grep SHA256 | sed -e 's/\s*SHA256: //' -e 's/://g'
         // set to empty string to disable this check
         buildConfigField 'String', 'updateServerBuildsCertificate', '"2170068198547F15129DE8CC46E2A8BF1485A6E5030916E26DDE41AE0E81DAC2"'
+        buildConfigField 'int', 'minimumRecommendServerVersion', '5'
     }
     buildFeatures {
         viewBinding true

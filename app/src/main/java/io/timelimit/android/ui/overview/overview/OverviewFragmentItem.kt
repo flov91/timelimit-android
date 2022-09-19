@@ -39,6 +39,7 @@ object OverviewFragmentActionAddDevice: OverviewFragmentItem()
 object OverviewFragmentHeaderIntro: OverviewFragmentItem()
 object OverviewFragmentHeaderFinishSetup: OverviewFragmentItem()
 data class OverviewFragmentItemMessage(val message: String): OverviewFragmentItem()
+object OverviewFragmentItemOutdatedServer: OverviewFragmentItem()
 sealed class ShowMoreOverviewFragmentItem: OverviewFragmentItem() {
     object ShowAllUsers: ShowMoreOverviewFragmentItem()
     data class ShowMoreDevices(val level: DeviceListItemVisibility): ShowMoreOverviewFragmentItem()
