@@ -1,5 +1,5 @@
 /*
- * TimeLimit Copyright <C> 2019 Jonas Lochmann
+ * TimeLimit Copyright <C> 2019 - 2022 Jonas Lochmann
  *
  * This program is free software: you can redistribute it and/or modify
  * it under the terms of the GNU General Public License as published by
@@ -26,7 +26,7 @@ import io.timelimit.android.data.backup.DatabaseBackup
 import io.timelimit.android.integration.platform.android.AndroidIntegration
 import io.timelimit.android.integration.time.RealTimeApi
 import io.timelimit.android.sync.network.api.HttpServerApi
-import io.timelimit.android.sync.websocket.NetworkStatusUtil
+import io.timelimit.android.sync.websocket.networkstatus.NetworkStatusUtil
 import io.timelimit.android.sync.websocket.SocketIoWebsocketClient
 import java.util.concurrent.CountDownLatch
 
@@ -55,7 +55,7 @@ object AndroidAppLogic {
                                     }
                             )
                         },
-                        networkStatus = NetworkStatusUtil(safeContext),
+                        networkStatus = NetworkStatusUtil.createWith(safeContext),
                         websocketClientCreator = SocketIoWebsocketClient.creator,
                         context = safeContext,
                         isInitialized = isInitialized

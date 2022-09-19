@@ -13,7 +13,7 @@
  * You should have received a copy of the GNU General Public License
  * along with this program. If not, see <https://www.gnu.org/licenses/>.
  */
-package io.timelimit.android.sync.websocket
+package io.timelimit.android.sync.websocket.networkstatus
 
 import android.content.BroadcastReceiver
 import android.content.Context
@@ -21,15 +21,12 @@ import android.content.Intent
 import android.content.IntentFilter
 import android.net.ConnectivityManager
 import android.net.NetworkInfo
-import androidx.lifecycle.LiveData
 import androidx.lifecycle.MutableLiveData
 import io.timelimit.android.BuildConfig
 import io.timelimit.android.async.Threads
-import io.timelimit.android.extensions.registerNotExportedReceiver
-import io.timelimit.android.livedata.castDown
 import io.timelimit.android.livedata.ignoreUnchanged
 
-class NetworkStatusUtil (context: Context): NetworkStatusInterface {
+class LegacyNetworkStatusUtil (context: Context): NetworkStatusInterface {
     companion object {
         private val handler = Threads.mainThreadHandler
     }
@@ -62,21 +59,13 @@ class NetworkStatusUtil (context: Context): NetworkStatusInterface {
 
         if (BuildConfig.hasServer) {
             if (didRegister) context.applicationContext.unregisterReceiver(receiver)
-            context.applicationContext.registerNotExportedReceiver(receiver, IntentFilter(ConnectivityManager.CONNECTIVITY_ACTION)); didRegister = true
+            context.applicationContext.registerReceiver(receiver, IntentFilter(
+                ConnectivityManager.CONNECTIVITY_ACTION)
+            ); didRegister = true
 
             handler.postDelayed(refreshRunnable, 15 * 1000 /* 15 seconds */)
         }
     }
 
     init { forceRefresh() }
-}
-
-enum class NetworkStatus {
-    Offline, Online
-}
-
-interface NetworkStatusInterface {
-    fun forceRefresh()
-
-    val status: LiveData<NetworkStatus>
 }

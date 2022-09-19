@@ -1,5 +1,5 @@
 /*
- * TimeLimit Copyright <C> 2019 - 2021 Jonas Lochmann
+ * TimeLimit Copyright <C> 2019 - 2022 Jonas Lochmann
  *
  * This program is free software: you can redistribute it and/or modify
  * it under the terms of the GNU General Public License as published by
@@ -24,8 +24,8 @@ import io.timelimit.android.integration.time.DummyTimeApi
 import io.timelimit.android.livedata.liveDataFromNonNullValue
 import io.timelimit.android.sync.network.api.DummyServerApi
 import io.timelimit.android.sync.websocket.DummyWebsocketClient
-import io.timelimit.android.sync.websocket.NetworkStatus
-import io.timelimit.android.sync.websocket.NetworkStatusInterface
+import io.timelimit.android.sync.websocket.networkstatus.NetworkStatus
+import io.timelimit.android.sync.websocket.networkstatus.NetworkStatusInterface
 
 class TestAppLogic(maximumProtectionLevel: ProtectionLevel, context: Context) {
     val platformIntegration = DummyIntegration(maximumProtectionLevel)

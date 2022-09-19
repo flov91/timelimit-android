@@ -1,5 +1,5 @@
 /*
- * TimeLimit Copyright <C> 2019 - 2020 Jonas Lochmann
+ * TimeLimit Copyright <C> 2019 - 2022 Jonas Lochmann
  *
  * This program is free software: you can redistribute it and/or modify
  * it under the terms of the GNU General Public License as published by
@@ -23,7 +23,7 @@ import io.timelimit.android.coroutines.runAsyncExpectForever
 import io.timelimit.android.data.model.ExperimentalFlags
 import io.timelimit.android.data.model.UserType
 import io.timelimit.android.livedata.*
-import io.timelimit.android.sync.websocket.NetworkStatus
+import io.timelimit.android.sync.websocket.networkstatus.NetworkStatus
 import io.timelimit.android.sync.websocket.WebsocketClient
 import io.timelimit.android.sync.websocket.WebsocketClientCreator
 import io.timelimit.android.sync.websocket.WebsocketClientListener

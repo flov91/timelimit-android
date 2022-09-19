@@ -1,5 +1,5 @@
 /*
- * TimeLimit Copyright <C> 2019 - 2021 Jonas Lochmann
+ * TimeLimit Copyright <C> 2019 - 2022 Jonas Lochmann
  *
  * This program is free software: you can redistribute it and/or modify
  * it under the terms of the GNU General Public License as published by
@@ -31,7 +31,7 @@ import io.timelimit.android.integration.platform.NetworkId
 import io.timelimit.android.livedata.liveDataFromFunction
 import io.timelimit.android.livedata.liveDataFromNullableValue
 import io.timelimit.android.logic.DefaultAppLogic
-import io.timelimit.android.sync.websocket.NetworkStatus
+import io.timelimit.android.sync.websocket.networkstatus.NetworkStatus
 import io.timelimit.android.ui.main.FragmentWithCustomTitle
 
 class DiagnoseConnectionFragment : Fragment(), FragmentWithCustomTitle {
