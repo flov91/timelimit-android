@@ -47,6 +47,7 @@ data class ServerDataStatus(
         val pendingKeyRequests: List<ServerKeyRequest>,
         val keyResponses: List<ServerKeyResponse>,
         val dh: ServerDhKey?,
+        val u2f: ServerU2fData?,
         val fullVersionUntil: Long,
         val message: String?,
         val apiLevel: Int
@@ -65,6 +66,7 @@ data class ServerDataStatus(
         private const val PENDING_KEY_REQUESTS = "krq"
         private const val KEY_RESPONSES = "kr"
         private const val DH = "dh"
+        private const val U2F = "u2f"
         private const val FULL_VERSION_UNTIL = "fullVersion"
         private const val MESSAGE = "message"
         private const val API_LEVEL = "apiLevel"
@@ -83,6 +85,7 @@ data class ServerDataStatus(
             var pendingKeyRequests = emptyList<ServerKeyRequest>()
             var keyResponses = emptyList<ServerKeyResponse>()
             var dh: ServerDhKey? = null
+            var u2f: ServerU2fData? = null
             var fullVersionUntil: Long? = null
             var message: String? = null
             var apiLevel = 0
@@ -103,6 +106,7 @@ data class ServerDataStatus(
                     PENDING_KEY_REQUESTS -> pendingKeyRequests = ServerKeyRequest.parseList(reader)
                     KEY_RESPONSES -> keyResponses = ServerKeyResponse.parseList(reader)
                     DH -> dh = ServerDhKey.parse(reader)
+                    U2F -> u2f = ServerU2fData.parse(reader)
                     FULL_VERSION_UNTIL -> fullVersionUntil = reader.nextLong()
                     MESSAGE -> message = reader.nextString()
                     API_LEVEL -> apiLevel = reader.nextInt()
@@ -125,6 +129,7 @@ data class ServerDataStatus(
                 pendingKeyRequests = pendingKeyRequests,
                 keyResponses = keyResponses,
                 dh = dh,
+                u2f = u2f,
                 fullVersionUntil = fullVersionUntil!!,
                 message = message,
                 apiLevel = apiLevel
@@ -1293,6 +1298,78 @@ data class ServerDhKey(val version: String, val key: ByteArray) {
             return ServerDhKey(
                 version = version!!,
                 key = key!!
+            )
+        }
+    }
+}
+
+data class ServerU2fData(
+    val version: String,
+    val data: List<ServerU2fItem>
+) {
+    companion object {
+        private const val VERSION = "v"
+        private const val DATA = "d"
+
+        fun parse(reader: JsonReader): ServerU2fData {
+            var version: String? = null
+            var data: List<ServerU2fItem>? = null
+
+            reader.beginObject()
+            while (reader.hasNext()) {
+                when (reader.nextName()) {
+                    VERSION -> version = reader.nextString()
+                    DATA -> data = ServerU2fItem.parseList(reader)
+                    else -> reader.skipValue()
+                }
+            }
+            reader.endObject()
+
+            return ServerU2fData(
+                version = version!!,
+                data = data!!
+            )
+        }
+    }
+}
+
+data class ServerU2fItem(
+    val userId: String,
+    val addedAt: Long,
+    val keyHandle: ByteArray,
+    val publicKey: ByteArray
+) {
+    companion object {
+        private const val USER_ID = "u"
+        private const val ADDED_AT = "a"
+        private const val KEY_HANDLE = "h"
+        private const val PUBLIC_KEY = "p"
+
+        fun parseList(reader: JsonReader) = parseJsonArray(reader) { parse(reader) }
+
+        fun parse(reader: JsonReader): ServerU2fItem {
+            var userId: String? = null
+            var addedAt: Long? = null
+            var keyHandle: ByteArray? = null
+            var publicKey: ByteArray? = null
+
+            reader.beginObject()
+            while (reader.hasNext()) {
+                when (reader.nextName()) {
+                    USER_ID -> userId = reader.nextString()
+                    ADDED_AT -> addedAt = reader.nextLong()
+                    KEY_HANDLE -> keyHandle = reader.nextString().parseBase64()
+                    PUBLIC_KEY -> publicKey = reader.nextString().parseBase64()
+                    else -> reader.skipValue()
+                }
+            }
+            reader.endObject()
+
+            return ServerU2fItem(
+                userId = userId!!,
+                addedAt = addedAt!!,
+                keyHandle = keyHandle!!,
+                publicKey = publicKey!!
             )
         }
     }

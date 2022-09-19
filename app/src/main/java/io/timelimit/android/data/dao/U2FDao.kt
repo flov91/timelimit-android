@@ -35,6 +35,9 @@ interface U2FDao {
     @Query("SELECT * FROM user_u2f_key WHERE user_id = :userId")
     fun getByUserLive(userId: String): LiveData<List<UserU2FKey>>
 
+    @Query("SELECT * FROM user_u2f_key WHERE key_id = :keyId")
+    fun getByClientKeyIdLive(keyId: Long): LiveData<UserU2FKey?>
+
     @Query("UPDATe user_u2f_key SET next_counter = :counter + 1 WHERE user_id = :parentUserId AND key_handle = :keyHandle AND public_key = :publicKey AND :counter >= next_counter")
     fun updateCounter(parentUserId: String, keyHandle: ByteArray, publicKey: ByteArray, counter: Long): Int
 }

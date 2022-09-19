@@ -25,9 +25,7 @@ import io.timelimit.android.R
 import io.timelimit.android.coroutines.runAsync
 import io.timelimit.android.livedata.castDown
 import io.timelimit.android.logic.DefaultAppLogic
-import io.timelimit.android.sync.actions.apply.ApplyActionChildAddLimitAuthentication
-import io.timelimit.android.sync.actions.apply.ApplyActionParentDeviceAuthentication
-import io.timelimit.android.sync.actions.apply.ApplyActionParentPasswordAuthentication
+import io.timelimit.android.sync.actions.apply.ApplyDirectCallAuthentication
 import io.timelimit.android.ui.main.ActivityViewModel
 
 class RemoveDeviceModel(application: Application): AndroidViewModel(application) {
@@ -54,28 +52,18 @@ class RemoveDeviceModel(application: Application): AndroidViewModel(application)
                 if (!server.hasAuthToken) {
                     Toast.makeText(getApplication(), R.string.remove_device_local_mode, Toast.LENGTH_LONG).show()
                 } else {
-                    val parent = activityViewModel.authenticatedUser.value?.first
+                    val auth = activityViewModel.authenticatedUser.value?.first?.let {
+                        ApplyDirectCallAuthentication.from(it)
+                    }
 
-                    if (parent != null) {
+                    if (auth != null) {
                         try {
-                            when (parent) {
-                                ApplyActionParentDeviceAuthentication -> server.api.removeDevice(
-                                        deviceAuthToken = server.deviceAuthToken,
-                                        parentUserId = "",
-                                        parentPasswordSecondHash = "device",
-                                        deviceId = deviceId
-                                )
-                                is ApplyActionParentPasswordAuthentication -> server.api.removeDevice(
-                                        deviceAuthToken = server.deviceAuthToken,
-                                        parentUserId = parent.parentUserId,
-                                        parentPasswordSecondHash = parent.secondPasswordHash,
-                                        deviceId = deviceId
-                                )
-                                is ApplyActionChildAddLimitAuthentication -> {
-                                    // caught below
-                                    throw IllegalStateException()
-                                }
-                            }
+                            server.api.removeDevice(
+                                deviceAuthToken = server.deviceAuthToken,
+                                parentUserId = auth.parentUserId,
+                                parentPasswordSecondHash = auth.parentPasswordSecondHash,
+                                deviceId = deviceId
+                            )
                         } catch (ex: Exception) {
                             if (BuildConfig.DEBUG) {
                                 Log.w(LOG_TAG, "removing device failed", ex)

@@ -25,9 +25,7 @@ import io.timelimit.android.extensions.BillingNotSupportedException
 import io.timelimit.android.livedata.castDown
 import io.timelimit.android.logic.AppLogic
 import io.timelimit.android.logic.DefaultAppLogic
-import io.timelimit.android.sync.actions.apply.ApplyActionChildAddLimitAuthentication
-import io.timelimit.android.sync.actions.apply.ApplyActionParentDeviceAuthentication
-import io.timelimit.android.sync.actions.apply.ApplyActionParentPasswordAuthentication
+import io.timelimit.android.sync.actions.apply.ApplyDirectCallAuthentication
 import io.timelimit.android.sync.network.CanDoPurchaseStatus
 import io.timelimit.android.sync.network.api.NotFoundHttpError
 import io.timelimit.android.ui.main.ActivityViewModel
@@ -78,25 +76,16 @@ class PurchaseModel(application: Application): AndroidViewModel(application) {
 
                     if (!BuildConfig.storeCompilant) {
                         if (auth.isParentAuthenticated()) {
-                            val authData = auth.authenticatedUser.value?.first
-
                             try {
-                                val token = when (authData) {
-                                    ApplyActionParentDeviceAuthentication -> server.api.createIdentityToken(
-                                        deviceAuthToken = server.deviceAuthToken,
-                                        parentUserId = "",
-                                        parentPasswordSecondHash = "device"
-                                    )
-                                    is ApplyActionParentPasswordAuthentication -> server.api.createIdentityToken(
-                                        deviceAuthToken = server.deviceAuthToken,
-                                        parentUserId = authData.parentUserId,
-                                        parentPasswordSecondHash = authData.secondPasswordHash
-                                    )
-                                    is ApplyActionChildAddLimitAuthentication -> throw RuntimeException(
-                                        "child can not do that"
-                                    )
-                                    null -> throw RuntimeException("missing user")
-                                }
+                                val authData = ApplyDirectCallAuthentication.from(
+                                    auth.authenticatedUser.value?.first!!
+                                )
+
+                                val token = server.api.createIdentityToken(
+                                    deviceAuthToken = server.deviceAuthToken,
+                                    parentUserId = authData.parentUserId,
+                                    parentPasswordSecondHash = authData.parentPasswordSecondHash
+                                )
 
                                 statusInternal.value = Status.ReadyToken(token)
                             } catch (ex: NotFoundHttpError) {

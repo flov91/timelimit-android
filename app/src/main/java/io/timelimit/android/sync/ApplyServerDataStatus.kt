@@ -614,6 +614,42 @@ object ApplyServerDataStatus {
                 }
             }
 
+            status.u2f?.also { u2f ->
+                database.config().setU2fListVersionSync(u2f.version)
+
+                val savedKeys = database.u2f().getAllSync().toMutableList()
+
+                u2f.data.forEach { newKey ->
+                    val oldKey = savedKeys.find {
+                        it.keyHandle.contentEquals(newKey.keyHandle) &&
+                                it.publicKey.contentEquals(newKey.publicKey)
+                    }
+
+                    if (oldKey != null) {
+                        savedKeys.remove(oldKey)
+                    } else {
+                        database.u2f().addKey(
+                            UserU2FKey(
+                                keyId = 0,
+                                userId = newKey.userId,
+                                addedAt = newKey.addedAt,
+                                keyHandle = newKey.keyHandle,
+                                publicKey = newKey.publicKey,
+                                nextCounter = 0
+                            )
+                        )
+                    }
+                }
+
+                savedKeys.forEach { key ->
+                    database.u2f().deleteKey(
+                        parentUserId = key.userId,
+                        keyHandle = key.keyHandle,
+                        publicKey = key.publicKey
+                    )
+                }
+            }
+
             Result(
                 newDeviceTitles = newDeviceTitles,
                 didCreateNewActions = didCreateNewActions

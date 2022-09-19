@@ -31,6 +31,10 @@
             type="Boolean" />
 
         <variable
+            name="hasU2fSupport"
+            type="boolean" />
+
+        <variable
             name="handlers"
             type="io.timelimit.android.ui.manage.parent.ManageParentFragmentHandlers" />
 
@@ -158,7 +162,7 @@
                     layout="@layout/manage_parent_notifications" />
 
                 <androidx.cardview.widget.CardView
-                    android:visibility="@{isUsingLocalMode ? View.VISIBLE : View.GONE}"
+                    android:visibility="@{hasU2fSupport ? View.VISIBLE : View.GONE}"
                     android:onClick="@{() -> handlers.onManageU2FClicked()}"
                     android:foreground="?selectableItemBackground"
                     app:cardUseCompatPadding="true"
@@ -179,6 +183,12 @@
                         <TextView
                             android:text="@string/manage_parent_u2f_description"
                             android:textAppearance="?android:textAppearanceMedium"
+                            android:layout_width="match_parent"
+                            android:layout_height="wrap_content" />
+
+                        <TextView
+                            android:textAppearance="?android:textAppearanceSmall"
+                            android:text="@string/purchase_required_info_local_mode_free"
                             android:layout_width="match_parent"
                             android:layout_height="wrap_content" />
 

@@ -1,5 +1,5 @@
 /*
- * TimeLimit Copyright <C> 2019 - 2021 Jonas Lochmann
+ * TimeLimit Copyright <C> 2019 - 2022 Jonas Lochmann
  *
  * This program is free software: you can redistribute it and/or modify
  * it under the terms of the GNU General Public License as published by
@@ -94,6 +94,11 @@ class ManageParentFragment : Fragment(), FragmentWithCustomTitle {
 
             binding.isUsingLocalMode = isLocalMode
         })
+
+        logic.serverApiLevelLogic.infoLive
+            .map { it.hasLevelOrIsOffline(6) }
+            .observe(viewLifecycleOwner)
+            { binding.hasU2fSupport = it }
 
         DeleteParentView.bind(
                 view = binding.deleteParent,

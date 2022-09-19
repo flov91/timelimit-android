@@ -922,6 +922,7 @@ object LocalDatabaseParentActionDispatcher {
                         publicKey = action.publicKey
                     )
                 }
+                is ReportU2fLoginAction -> null // nothing to do
             }.let { }
         }
     }

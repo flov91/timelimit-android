@@ -39,7 +39,6 @@ import io.timelimit.android.sync.actions.apply.ApplyActionChildAuthentication
 import io.timelimit.android.sync.actions.apply.ApplyActionUtil
 import io.timelimit.android.ui.main.ActivityViewModel
 import io.timelimit.android.ui.main.AuthenticatedUser
-import io.timelimit.android.ui.main.AuthenticationMethod
 import io.timelimit.android.ui.manage.parent.key.ScannedKey
 import kotlinx.coroutines.sync.Mutex
 import kotlinx.coroutines.sync.withLock
@@ -210,11 +209,10 @@ class LoginDialogFragmentModel(application: Application): AndroidViewModel(appli
                     }
 
                     if (shouldSignIn) {
-                        model.setAuthenticatedUser(AuthenticatedUser(
+                        model.setAuthenticatedUser(AuthenticatedUser.Password(
                                 userId = user.id,
                                 firstPasswordHash = user.password,
-                                secondPasswordHash = Threads.crypto.executeAndWait { PasswordHashing.hashSyncWithSalt("", user.secondPasswordSalt) },
-                                authenticatedBy = AuthenticationMethod.Password
+                                secondPasswordHash = Threads.crypto.executeAndWait { PasswordHashing.hashSyncWithSalt("", user.secondPasswordSalt) }
                         ))
 
                         isLoginDone.value = true
@@ -278,11 +276,8 @@ class LoginDialogFragmentModel(application: Application): AndroidViewModel(appli
 
                     if (shouldSignIn) {
                         // this feature is limited to the local mode
-                        model.setAuthenticatedUser(AuthenticatedUser(
-                                userId = user.id,
-                                firstPasswordHash = user.password,
-                                secondPasswordHash = "device",
-                                authenticatedBy = AuthenticationMethod.Password
+                        model.setAuthenticatedUser(AuthenticatedUser.LocalAuth.ScanCode(
+                            userId = user.id
                         ))
 
                         isLoginDone.value = true
@@ -326,11 +321,10 @@ class LoginDialogFragmentModel(application: Application): AndroidViewModel(appli
 
                     val secondPasswordHash = Threads.crypto.executeAndWait { PasswordHashing.hashSyncWithSalt(password, userEntry.secondPasswordSalt) }
 
-                    val authenticatedUser = AuthenticatedUser(
+                    val authenticatedUser = AuthenticatedUser.Password(
                             userId = userEntry.id,
                             firstPasswordHash = userEntry.password,
-                            secondPasswordHash = secondPasswordHash,
-                            authenticatedBy = AuthenticationMethod.Password
+                            secondPasswordHash = secondPasswordHash
                     )
 
                     val allowLoginStatus = Threads.database.executeAndWait {

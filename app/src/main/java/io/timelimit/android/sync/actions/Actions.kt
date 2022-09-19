@@ -2122,6 +2122,18 @@ data class RemoveParentU2FKey(val publicKey: ByteArray, val keyHandle: ByteArray
     }
 }
 
+object ReportU2fLoginAction: ParentAction() {
+    const val TYPE_VALUE = "REPORT_U2F_LOGIN"
+
+    override fun serialize(writer: JsonWriter) {
+        writer.beginObject()
+
+        writer.name(TYPE).value(TYPE_VALUE)
+
+        writer.endObject()
+    }
+}
+
 // child actions
 object ChildSignInAction: ChildAction() {
     private const val TYPE_VALUE = "CHILD_SIGN_IN"

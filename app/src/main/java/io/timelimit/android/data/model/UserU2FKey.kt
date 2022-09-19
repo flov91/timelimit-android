@@ -16,6 +16,9 @@
 package io.timelimit.android.data.model
 
 import androidx.room.*
+import io.timelimit.android.extensions.base64
+import io.timelimit.android.extensions.toByteArray
+import java.security.MessageDigest
 
 @Entity(
     tableName = "user_u2f_key",
@@ -49,4 +52,14 @@ data class UserU2FKey (
     val publicKey: ByteArray,
     @ColumnInfo(name = "next_counter")
     val nextCounter: Long
-)
+) {
+    fun calculateServerKeyIdSync() = MessageDigest.getInstance("SHA256").also {
+        it.update(keyHandle.size.toByteArray())
+        it.update(keyHandle)
+
+        it.update(publicKey.size.toByteArray())
+        it.update(publicKey)
+    }.digest()
+        .sliceArray(0 until 6)
+        .base64()
+}

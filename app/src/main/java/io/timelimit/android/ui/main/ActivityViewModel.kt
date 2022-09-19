@@ -21,19 +21,19 @@ import android.widget.Toast
 import androidx.lifecycle.AndroidViewModel
 import androidx.lifecycle.LiveData
 import androidx.lifecycle.MutableLiveData
+import androidx.lifecycle.map
 import io.timelimit.android.BuildConfig
 import io.timelimit.android.R
 import io.timelimit.android.coroutines.runAsync
+import io.timelimit.android.crypto.DHHandshake
 import io.timelimit.android.data.model.User
 import io.timelimit.android.data.model.UserType
-import io.timelimit.android.livedata.ignoreUnchanged
-import io.timelimit.android.livedata.liveDataFromNullableValue
-import io.timelimit.android.livedata.map
-import io.timelimit.android.livedata.switchMap
+import io.timelimit.android.livedata.*
 import io.timelimit.android.logic.AppLogic
 import io.timelimit.android.logic.DefaultAppLogic
 import io.timelimit.android.sync.actions.ParentAction
 import io.timelimit.android.sync.actions.apply.*
+import io.timelimit.android.u2f.protocol.U2FResponse
 
 class ActivityViewModel(application: Application): AndroidViewModel(application) {
     companion object {
@@ -47,10 +47,7 @@ class ActivityViewModel(application: Application): AndroidViewModel(application)
             ApplyActionUtil.applyParentAction(
                     action = action,
                     database = logic.database,
-                    authentication = ApplyActionParentPasswordAuthentication(
-                            parentUserId = authenticatedUser.userId,
-                            secondPasswordHash = authenticatedUser.secondPasswordHash
-                    ),
+                    authentication = ApplyActionUserAuthentication(authenticatedUser),
                     syncUtil = logic.syncUtil,
                     platformIntegration = logic.platformIntegration
             )
@@ -79,41 +76,45 @@ class ActivityViewModel(application: Application): AndroidViewModel(application)
         }
     }.ignoreUnchanged()
 
-    private val authenticatedChild: LiveData<Pair<ApplyActionParentAuthentication, User>?> = deviceUser.map { user ->
+    private val authenticatedUserChecked = authenticatedUserMetadata.switchMap { user ->
+        val userEntryLive =
+            if (user == null) liveDataFromNullableValue(null)
+            else database.user().getUserByIdLive(user.userId)
+
+        userEntryLive.switchMap { userEntry ->
+            if (userEntry == null) liveDataFromNullableValue(null)
+            else {
+                val stillValid = when (user) {
+                    is AuthenticatedUser.Password -> liveDataFromNonNullValue( user.firstPasswordHash == userEntry.password)
+                    is AuthenticatedUser.U2fSigned -> logic.database.u2f().getByClientKeyIdLive(user.u2fClientKeyId).map { keyEntry ->
+                        keyEntry != null && keyEntry.userId == user.userId
+                    }
+                    is AuthenticatedUser.LocalAuth -> logic.fullVersion.isLocalMode
+                    null -> liveDataFromNonNullValue(false)
+                }
+
+                stillValid.map { valid ->
+                    if (valid && user != null) ApplyActionUserAuthentication(user) to userEntry
+                    else null
+                }
+            }
+        }
+    }
+
+    private val authenticatedChildChecked: LiveData<Pair<ApplyActionParentAuthentication, User>?> = deviceUser.map { user ->
         if (user?.type == UserType.Child && user.allowSelfLimitAdding) {
             ApplyActionChildAddLimitAuthentication as ApplyActionParentAuthentication to user
         } else null
     }
 
-    val authenticatedUserOrChild: LiveData<Pair<ApplyActionParentAuthentication, User>?> = userWhichIsKeptSignedIn.switchMap { signedInUser ->
-        if (signedInUser != null) {
-            liveDataFromNullableValue(
-                    (ApplyActionParentDeviceAuthentication to signedInUser)
-                            as Pair<ApplyActionParentAuthentication, User>?
-            )
-        } else {
-            authenticatedUserMetadata.switchMap {
-                authenticatedUser ->
-
-                if (authenticatedUser == null) {
-                    authenticatedChild
-                } else {
-                    database.user().getUserByIdLive(authenticatedUser.userId).switchMap {
-                        if (it == null || it.password != authenticatedUser.firstPasswordHash) {
-                            authenticatedChild
-                        } else {
-                            liveDataFromNullableValue(
-                                    (ApplyActionParentPasswordAuthentication(
-                                            parentUserId = authenticatedUser.userId,
-                                            secondPasswordHash = authenticatedUser.secondPasswordHash
-                                    ) to it) as Pair<ApplyActionParentAuthentication, User>?
-                            )
-                        }
-                    }
-                }
+    val authenticatedUserOrChild: LiveData<Pair<ApplyActionParentAuthentication, User>?> =
+        mergeLiveDataWaitForValues(userWhichIsKeptSignedIn, authenticatedChildChecked, authenticatedUserChecked)
+            .map { (keptSignedIn, localChild, authenticatedUser) ->
+                keptSignedIn?.let {
+                    ApplyActionParentDeviceAuthentication to it
+                } ?: authenticatedUser ?: localChild
             }
-        }
-    }
+            .ignoreUnchanged()
 
     val authenticatedUser = authenticatedUserOrChild.map { if (it?.second?.type != UserType.Parent) null else it }
 
@@ -198,13 +199,25 @@ class ActivityViewModel(application: Application): AndroidViewModel(application)
     }
 }
 
-data class AuthenticatedUser (
-        val userId: String,
-        val firstPasswordHash: String,
-        val secondPasswordHash: String,
-        val authenticatedBy: AuthenticationMethod
-)
+sealed class AuthenticatedUser {
+    abstract val userId: String
 
-enum class AuthenticationMethod {
-    Password, KeyCode
+    data class Password(
+        override val userId: String,
+        val firstPasswordHash: String,
+        val secondPasswordHash: String
+    ): AuthenticatedUser()
+
+    data class U2fSigned(
+        override val userId: String,
+        val u2fServerKeyId: String,
+        val u2fClientKeyId: Long,
+        val signature: U2FResponse.Login,
+        val dh: DHHandshake
+    ): AuthenticatedUser()
+
+    sealed class LocalAuth: AuthenticatedUser() {
+        data class U2f(override val userId: String): LocalAuth()
+        data class ScanCode(override val userId: String): LocalAuth()
+    }
 }

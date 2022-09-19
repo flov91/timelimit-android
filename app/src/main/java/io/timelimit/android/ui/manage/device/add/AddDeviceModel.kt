@@ -1,5 +1,5 @@
 /*
- * TimeLimit Copyright <C> 2019 Jonas Lochmann
+ * TimeLimit Copyright <C> 2019 - 2022 Jonas Lochmann
  *
  * This program is free software: you can redistribute it and/or modify
  * it under the terms of the GNU General Public License as published by
@@ -23,9 +23,7 @@ import io.timelimit.android.livedata.castDown
 import io.timelimit.android.livedata.waitForNonNullValue
 import io.timelimit.android.livedata.waitUntilValueMatches
 import io.timelimit.android.logic.DefaultAppLogic
-import io.timelimit.android.sync.actions.apply.ApplyActionChildAddLimitAuthentication
-import io.timelimit.android.sync.actions.apply.ApplyActionParentDeviceAuthentication
-import io.timelimit.android.sync.actions.apply.ApplyActionParentPasswordAuthentication
+import io.timelimit.android.sync.actions.apply.ApplyDirectCallAuthentication
 import io.timelimit.android.ui.main.ActivityViewModel
 import kotlinx.coroutines.Job
 import kotlinx.coroutines.withContext
@@ -65,21 +63,13 @@ class AddDeviceModel(application: Application): AndroidViewModel(application) {
                 statusInternal.value = Failed
             } else {
                 try {
-                    val auth = user.first
+                    val auth = ApplyDirectCallAuthentication.from(user.first)
 
-                    val response = when (auth) {
-                        ApplyActionParentDeviceAuthentication -> server.api.createAddDeviceToken(
-                                deviceAuthToken = server.deviceAuthToken,
-                                parentUserId = "",
-                                parentPasswordSecondHash = "device"
-                        )
-                        is ApplyActionParentPasswordAuthentication -> server.api.createAddDeviceToken(
-                                deviceAuthToken = server.deviceAuthToken,
-                                parentUserId = auth.parentUserId,
-                                parentPasswordSecondHash = auth.secondPasswordHash
-                        )
-                        is ApplyActionChildAddLimitAuthentication -> throw RuntimeException("child can not do that")
-                    }
+                    val response = server.api.createAddDeviceToken(
+                        deviceAuthToken = server.deviceAuthToken,
+                        parentUserId = auth.parentUserId,
+                        parentPasswordSecondHash = auth.parentPasswordSecondHash
+                    )
 
                     statusInternal.value = ShowingToken(response.token)
 

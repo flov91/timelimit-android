@@ -25,15 +25,21 @@ import io.timelimit.android.data.Database
 import io.timelimit.android.data.model.PendingSyncAction
 import io.timelimit.android.data.model.PendingSyncActionType
 import io.timelimit.android.data.model.UserType
+import io.timelimit.android.extensions.base64
+import io.timelimit.android.extensions.toByteArray
 import io.timelimit.android.integration.platform.PlatformIntegration
 import io.timelimit.android.logic.AppLogic
+import io.timelimit.android.logic.ServerApiLevelLogic
 import io.timelimit.android.sync.SyncUtil
 import io.timelimit.android.sync.actions.*
 import io.timelimit.android.sync.actions.dispatch.LocalDatabaseAppLogicActionDispatcher
 import io.timelimit.android.sync.actions.dispatch.LocalDatabaseChildActionDispatcher
 import io.timelimit.android.sync.actions.dispatch.LocalDatabaseParentActionDispatcher
+import io.timelimit.android.ui.main.AuthenticatedUser
 import org.json.JSONObject
 import java.io.StringWriter
+import javax.crypto.Mac
+import javax.crypto.spec.SecretKeySpec
 
 object ApplyActionUtil {
     private const val LOG_TAG = "ApplyActionUtil"
@@ -192,7 +198,13 @@ object ApplyActionUtil {
         }
     }
 
-    suspend fun applyParentAction(action: ParentAction, database: Database, authentication: ApplyActionParentAuthentication, syncUtil: SyncUtil, platformIntegration: PlatformIntegration) {
+    suspend fun applyParentAction(
+        action: ParentAction,
+        database: Database,
+        authentication: ApplyActionParentAuthentication,
+        syncUtil: SyncUtil,
+        platformIntegration: PlatformIntegration
+    ) {
         Threads.database.executeAndWait {
             database.runInTransaction {
                 val deviceUserIdBeforeDispatchingForDeviceAuth = if (authentication is ApplyActionParentDeviceAuthentication || authentication is ApplyActionChildAddLimitAuthentication) {
@@ -226,7 +238,7 @@ object ApplyActionUtil {
                         database = database,
                         fromChildSelfLimitAddChildUserId = if (authentication is ApplyActionChildAddLimitAuthentication) deviceUserIdBeforeDispatchingForDeviceAuth else null,
                         parentUserId = when (authentication) {
-                            is ApplyActionParentPasswordAuthentication -> authentication.parentUserId
+                            is ApplyActionUserAuthentication -> authentication.user.userId
                             is ApplyActionParentDeviceAuthentication -> deviceUserIdBeforeDispatchingForDeviceAuth
                             is ApplyActionChildAddLimitAuthentication -> null
                         }
@@ -249,27 +261,62 @@ object ApplyActionUtil {
 
                     val sequenceNumber = database.config().getNextSyncActionSequenceActionAndIncrementIt()
 
+                    fun mac(secret: ByteArray) = Mac.getInstance("HmacSHA256").also {
+                        val binaryDeviceId = database.config().getOwnDeviceIdSync()!!.toByteArray(Charsets.UTF_8)
+                        val binaryAction = serializedAction.toByteArray(Charsets.UTF_8)
+
+                        it.init(SecretKeySpec(secret, "HmacSHA256"))
+
+                        it.update(sequenceNumber.toByteArray())
+
+                        it.update(binaryDeviceId.size.toByteArray())
+                        it.update(binaryDeviceId)
+
+                        it.update(binaryAction.size.toByteArray())
+                        it.update(binaryAction)
+                    }.doFinal()
+
                     val pendingAction = when (authentication) {
-                        is ApplyActionParentPasswordAuthentication -> {
-                            val integrityData = sequenceNumber.toString() +
-                                    database.config().getOwnDeviceIdSync() +
-                                    authentication.secondPasswordHash +
-                                    serializedAction
+                        is ApplyActionUserAuthentication -> {
+                            val integrity = when (authentication.user) {
+                                is AuthenticatedUser.Password -> {
+                                    val serverLevel = ServerApiLevelLogic.getSync(database)
 
-                            val hashedIntegrityData = Sha512.hashSync(integrityData)
+                                    if (serverLevel.hasLevelOrIsOffline(6)) {
+                                        val mac = mac(authentication.user.secondPasswordHash.toByteArray(Charsets.UTF_8))
 
-                            if (BuildConfig.DEBUG) {
-                                Log.d(LOG_TAG, "integrity data: $integrityData")
-                                Log.d(LOG_TAG, "integrity hash: $hashedIntegrityData")
+                                        "password:${mac.base64()}"
+                                    } else {
+                                        val integrityData = sequenceNumber.toString() +
+                                                database.config().getOwnDeviceIdSync() +
+                                                authentication.user.secondPasswordHash +
+                                                serializedAction
+
+                                        val hashedIntegrityData = Sha512.hashSync(integrityData)
+
+                                        if (BuildConfig.DEBUG) {
+                                            Log.d(LOG_TAG, "integrity data: $integrityData")
+                                            Log.d(LOG_TAG, "integrity hash: $hashedIntegrityData")
+                                        }
+
+                                        hashedIntegrityData
+                                    }
+                                }
+                                is AuthenticatedUser.U2fSigned -> {
+                                    val mac = mac(authentication.user.dh.sharedSecret)
+
+                                    constructU2fIntegrityString(authentication.user, mac)
+                                }
+                                is AuthenticatedUser.LocalAuth -> throw IllegalStateException()
                             }
 
                             PendingSyncAction(
-                                    sequenceNumber = sequenceNumber,
-                                    encodedAction = serializedAction,
-                                    integrity = hashedIntegrityData,
-                                    scheduledForUpload = false,
-                                    type = PendingSyncActionType.Parent,
-                                    userId = authentication.parentUserId
+                                sequenceNumber = sequenceNumber,
+                                encodedAction = serializedAction,
+                                integrity = integrity,
+                                scheduledForUpload = false,
+                                type = PendingSyncActionType.Parent,
+                                userId = authentication.user.userId
                             )
                         }
                         ApplyActionParentDeviceAuthentication -> {
@@ -353,6 +400,10 @@ object ApplyActionUtil {
         }
     }
 
+    fun constructU2fIntegrityString(authentication: AuthenticatedUser.U2fSigned, mac: ByteArray): String {
+        return "u2f:${authentication.dh.keyVersion}.${authentication.dh.ownPublicKey.base64()}.${authentication.u2fServerKeyId}.${authentication.signature.raw.base64()}.${mac.base64()}"
+    }
+
     private fun isSyncEnabled(database: Database): Boolean {
         return database.config().getDeviceAuthTokenSync() != ""
     }
@@ -361,6 +412,34 @@ object ApplyActionUtil {
 sealed class ApplyActionParentAuthentication
 object ApplyActionParentDeviceAuthentication: ApplyActionParentAuthentication()
 object ApplyActionChildAddLimitAuthentication: ApplyActionParentAuthentication()
-data class ApplyActionParentPasswordAuthentication(val parentUserId: String, val secondPasswordHash: String): ApplyActionParentAuthentication()
-
+data class ApplyActionUserAuthentication(val user: AuthenticatedUser): ApplyActionParentAuthentication()
 data class ApplyActionChildAuthentication(val childUserId: String, val secondPasswordHash: String)
+
+data class ApplyDirectCallAuthentication (
+    val parentUserId: String,
+    val parentPasswordSecondHash: String
+) {
+    companion object {
+        fun from(auth: ApplyActionParentAuthentication) = when (auth) {
+            ApplyActionParentDeviceAuthentication -> ApplyDirectCallAuthentication(
+                parentUserId = "",
+                parentPasswordSecondHash = "device"
+            )
+            is ApplyActionUserAuthentication -> ApplyDirectCallAuthentication(
+                parentUserId = auth.user.userId,
+                parentPasswordSecondHash = when (auth.user) {
+                    is AuthenticatedUser.Password -> auth.user.secondPasswordHash
+                    is AuthenticatedUser.U2fSigned -> ApplyActionUtil.constructU2fIntegrityString(
+                        auth.user,
+                        Mac.getInstance("HmacSHA256").also {
+                            it.init(SecretKeySpec(auth.user.dh.sharedSecret, "HmacSHA256"))
+                            it.update("direct action".toByteArray(Charsets.UTF_8))
+                        }.doFinal()
+                    )
+                    is AuthenticatedUser.LocalAuth -> throw RuntimeException("authentication does not support that")
+                }
+            )
+            is ApplyActionChildAddLimitAuthentication -> throw RuntimeException("child can not do that")
+        }
+    }
+}

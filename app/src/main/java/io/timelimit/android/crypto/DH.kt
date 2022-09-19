@@ -27,7 +27,10 @@ import javax.crypto.KeyAgreement
 import javax.crypto.spec.GCMParameterSpec
 import javax.crypto.spec.SecretKeySpec
 
-data class DHHandshake(val keyVersion: String, val ownPublicKey: ByteArray, val sharedSecret: ByteArray) {
+data class DHHandshake(
+    val keyVersion: String, val otherPublicKey: ByteArray,
+    val ownPublicKey: ByteArray, val sharedSecret: ByteArray
+) {
     companion object {
         private const val SHARED_SECRET_LENGTH = 32
         private const val AES_KEY_SIZE = 16
@@ -51,6 +54,7 @@ data class DHHandshake(val keyVersion: String, val ownPublicKey: ByteArray, val 
 
             return DHHandshake(
                 keyVersion = serverDhKey.version,
+                otherPublicKey = serverDhKey.key,
                 ownPublicKey = ownPublicKey,
                 sharedSecret = sharedSecret
             )

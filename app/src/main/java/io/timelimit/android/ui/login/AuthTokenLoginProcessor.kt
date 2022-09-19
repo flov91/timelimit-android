@@ -22,6 +22,10 @@ import io.timelimit.android.R
 import io.timelimit.android.async.Threads
 import io.timelimit.android.coroutines.executeAndWait
 import io.timelimit.android.coroutines.runAsync
+import io.timelimit.android.crypto.DHHandshake
+import io.timelimit.android.extensions.toByteArray
+import io.timelimit.android.livedata.waitForNonNullValue
+import io.timelimit.android.sync.actions.ReportU2fLoginAction
 import io.timelimit.android.u2f.U2FApplicationId
 import io.timelimit.android.u2f.U2FSignatureValidation
 import io.timelimit.android.u2f.protocol.U2FDevice
@@ -31,7 +35,7 @@ import io.timelimit.android.u2f.util.U2FException
 import io.timelimit.android.u2f.util.U2FThread
 import io.timelimit.android.ui.main.ActivityViewModel
 import io.timelimit.android.ui.main.AuthenticatedUser
-import io.timelimit.android.ui.main.AuthenticationMethod
+import java.security.MessageDigest
 import java.security.SecureRandom
 
 object AuthTokenLoginProcessor {
@@ -45,17 +49,51 @@ object AuthTokenLoginProcessor {
 
         runAsync {
             try {
+                val hasFullVersion = model.logic.fullVersion.shouldProvideFullVersionFunctions.waitForNonNullValue()
+
+                if (!hasFullVersion) {
+                    toast(R.string.update_primary_device_toast_requires_full_version)
+
+                    return@runAsync
+                }
+
                 device.connect().use { session ->
-                    val keys = Threads.database.executeAndWait { model.logic.database.u2f().getAllSync() }
-                    val random = SecureRandom()
+                    val (keys, serverDhKey) = Threads.database.executeAndWait {
+                        model.logic.database.runInTransaction {
+                            val u2f = model.logic.database.u2f().getAllSync()
+                            val dh = model.logic.database.config().getLastDhKeySync()
+
+                            u2f to dh
+                        }
+                    }
+
+                    val dhHandshake = serverDhKey?.let {
+                        Threads.crypto.executeAndWait {
+                            DHHandshake.fromServerKey(it)
+                        }
+                    }
+
                     val applicationId = U2FApplicationId.fromUrl(U2FApplicationId.URL)
+                    val challenge = if (dhHandshake == null) ByteArray(32).also { SecureRandom().nextBytes(it) }
+                    else {
+                        val binaryDhKey = dhHandshake.keyVersion.toByteArray(Charsets.UTF_8)
+
+                        MessageDigest.getInstance("SHA256").also {
+                            it.update(binaryDhKey.size.toByteArray())
+                            it.update(binaryDhKey)
+
+                            it.update(dhHandshake.otherPublicKey.size.toByteArray())
+                            it.update(dhHandshake.otherPublicKey)
+
+                            it.update(dhHandshake.ownPublicKey.size.toByteArray())
+                            it.update(dhHandshake.ownPublicKey)
+                        }.digest()
+                    }
 
                     for (key in keys) {
                         if (BuildConfig.DEBUG) {
                             Log.d(LOG_TAG, "try key $key")
                         }
-
-                        val challenge = ByteArray(32).also { random.nextBytes(it) }
 
                         try {
                             val response = session.login(
@@ -121,13 +159,28 @@ object AuthTokenLoginProcessor {
                                 return@runAsync
                             }
 
-                            model.setAuthenticatedUser(
-                                AuthenticatedUser(
+                            val authenticatedUser = if (dhHandshake == null) {
+                                AuthenticatedUser.LocalAuth.U2f(userId = key.userId)
+                            } else {
+                                val serverKeyId = Threads.crypto.executeAndWait {
+                                    key.calculateServerKeyIdSync()
+                                }
+
+                                AuthenticatedUser.U2fSigned(
                                     userId = key.userId,
-                                    authenticatedBy = AuthenticationMethod.KeyCode,
-                                    firstPasswordHash = userEntry.password,
-                                    secondPasswordHash = "u2f"
+                                    u2fServerKeyId = serverKeyId,
+                                    u2fClientKeyId = key.keyId,
+                                    signature = response,
+                                    dh = dhHandshake
                                 )
+                            }
+
+                            model.setAuthenticatedUser(authenticatedUser)
+
+                            ActivityViewModel.dispatchWithoutCheckOrCatching(
+                                action = ReportU2fLoginAction,
+                                authenticatedUser = authenticatedUser,
+                                logic = model.logic
                             )
 
                             return@runAsync // no need to try more

@@ -1,5 +1,5 @@
 /*
- * TimeLimit Copyright <C> 2019 - 2020 Jonas Lochmann
+ * TimeLimit Copyright <C> 2019 - 2022 Jonas Lochmann
  *
  * This program is free software: you can redistribute it and/or modify
  * it under the terms of the GNU General Public License as published by
@@ -30,6 +30,7 @@ class UploadActionsUtil(private val database: Database, private val syncConflict
             database.runInTransaction {
                 database.config().setUserListVersionSync("")
                 database.config().setDeviceListVersionSync("")
+                database.config().setU2fListVersionSync(null)
                 database.device().deleteAllInstalledAppsVersions()
                 database.category().deleteAllCategoriesVersionNumbers()
                 database.cryptContainer().deleteAllServerVersionNumbers()

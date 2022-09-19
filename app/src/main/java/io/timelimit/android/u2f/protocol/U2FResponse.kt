@@ -48,6 +48,16 @@ object U2FResponse {
         val counter: UInt,
         val signature: ByteArray
     ) {
+        val raw by lazy {
+            byteArrayOf(
+                flags,
+                counter.shr(24).toUByte().toByte(),
+                counter.shr(16).toUByte().toByte(),
+                counter.shr(8).toUByte().toByte(),
+                counter.toUByte().toByte(),
+            ) + signature
+        }
+
         companion object {
             fun parse(rawResponse: U2fRawResponse): Login {
                 if (rawResponse.payload.size < 5) throw U2FException.InvalidDataException()

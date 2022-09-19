@@ -29,9 +29,10 @@ import io.timelimit.android.livedata.castDown
 import io.timelimit.android.livedata.waitForNullableValue
 import io.timelimit.android.logic.DefaultAppLogic
 import io.timelimit.android.sync.actions.ChangeParentPasswordAction
-import io.timelimit.android.sync.actions.apply.ApplyActionParentPasswordAuthentication
+import io.timelimit.android.sync.actions.apply.ApplyActionUserAuthentication
 import io.timelimit.android.sync.actions.apply.ApplyActionUtil
 import io.timelimit.android.sync.network.ParentPassword
+import io.timelimit.android.ui.main.AuthenticatedUser
 import java.nio.charset.Charset
 import javax.crypto.Cipher
 import javax.crypto.spec.IvParameterSpec
@@ -155,14 +156,17 @@ class ChangeParentPasswordViewModel(application: Application): AndroidViewModel(
                 }
 
                 ApplyActionUtil.applyParentAction(
-                        action,
-                        logic.database,
-                        ApplyActionParentPasswordAuthentication(
-                                parentUserId = parentUserId,
-                                secondPasswordHash = oldPasswordSecondHash
-                        ),
-                        logic.syncUtil,
-                        logic.platformIntegration
+                    action,
+                    logic.database,
+                    ApplyActionUserAuthentication(
+                        AuthenticatedUser.Password(
+                            userId = parentUserId,
+                            firstPasswordHash = userEntry.password,
+                            secondPasswordHash = oldPasswordSecondHash
+                        )
+                    ),
+                    logic.syncUtil,
+                    logic.platformIntegration
                 )
 
                 if (BuildConfig.DEBUG) {

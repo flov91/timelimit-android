@@ -379,4 +379,12 @@ abstract class ConfigDao {
         updateValueSync(ConfigurationItemType.DhKeyVersion, key.version)
         updateValueSync(ConfigurationItemType.DhKey, key.key.base64())
     }
+
+    fun getU2fVersionSync(): String? {
+        return getValueOfKeySync(ConfigurationItemType.U2fListVersion)
+    }
+
+    fun setU2fListVersionSync(version: String?) {
+        updateValueSync(ConfigurationItemType.U2fListVersion, version)
+    }
 }

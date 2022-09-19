@@ -105,7 +105,8 @@ enum class ConfigurationItemType {
     LastServerKeyRequestSequence,
     LastKeyResponseSequence,
     DhKey,
-    DhKeyVersion
+    DhKeyVersion,
+    U2fListVersion
 }
 
 object ConfigurationItemTypeUtil {
@@ -140,6 +141,7 @@ object ConfigurationItemTypeUtil {
     private const val LAST_SERVER_KEY_RESPONSE_SEQUENCE = 30
     private const val DH_KEY = 31
     private const val DH_KEY_VERSION = 32
+    private const val U2F_LIST_VERSION = 33
 
     val TYPES = listOf(
             ConfigurationItemType.OwnDeviceId,
@@ -172,7 +174,8 @@ object ConfigurationItemTypeUtil {
             ConfigurationItemType.LastServerKeyRequestSequence,
             ConfigurationItemType.LastKeyResponseSequence,
             ConfigurationItemType.DhKey,
-            ConfigurationItemType.DhKeyVersion
+            ConfigurationItemType.DhKeyVersion,
+            ConfigurationItemType.U2fListVersion
     )
 
     fun serialize(value: ConfigurationItemType) = when(value) {
@@ -207,6 +210,7 @@ object ConfigurationItemTypeUtil {
         ConfigurationItemType.LastKeyResponseSequence -> LAST_SERVER_KEY_RESPONSE_SEQUENCE
         ConfigurationItemType.DhKey -> DH_KEY
         ConfigurationItemType.DhKeyVersion -> DH_KEY_VERSION
+        ConfigurationItemType.U2fListVersion -> U2F_LIST_VERSION
     }
 
     fun parse(value: Int) = when(value) {
@@ -241,6 +245,7 @@ object ConfigurationItemTypeUtil {
         LAST_SERVER_KEY_RESPONSE_SEQUENCE -> ConfigurationItemType.LastKeyResponseSequence
         DH_KEY -> ConfigurationItemType.DhKey
         DH_KEY_VERSION -> ConfigurationItemType.DhKeyVersion
+        U2F_LIST_VERSION -> ConfigurationItemType.U2fListVersion
         else -> throw IllegalArgumentException()
     }
 }
