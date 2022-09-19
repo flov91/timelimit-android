@@ -22,6 +22,8 @@ import android.view.View
 import android.view.ViewGroup
 import androidx.fragment.app.Fragment
 import androidx.fragment.app.viewModels
+import androidx.lifecycle.LiveData
+import androidx.lifecycle.map
 import androidx.recyclerview.widget.ItemTouchHelper
 import androidx.recyclerview.widget.LinearLayoutManager
 import androidx.recyclerview.widget.RecyclerView
@@ -32,6 +34,7 @@ import io.timelimit.android.data.Database
 import io.timelimit.android.data.model.HintsToShow
 import io.timelimit.android.data.model.TimeLimitRule
 import io.timelimit.android.databinding.FragmentCategoryAppsAndRulesBinding
+import io.timelimit.android.livedata.ignoreUnchanged
 import io.timelimit.android.logic.DefaultAppLogic
 import io.timelimit.android.sync.actions.AddCategoryAppsAction
 import io.timelimit.android.sync.actions.CreateTimeLimitRuleAction
@@ -50,6 +53,11 @@ abstract class CategoryAppsAndRulesFragment: Fragment(), Handlers, EditTimeLimit
     val model: AppsAndRulesModel by viewModels()
     val auth: ActivityViewModel by lazy { getActivityViewModel(requireActivity()) }
     val database: Database by lazy { DefaultAppLogic.with(requireContext()).database }
+    private val doesServerSupportRuleEditing: LiveData<Boolean> by lazy {
+        auth.logic.serverApiLevelLogic.infoLive
+            .map { it.hasLevelOrIsOffline(7) }
+            .ignoreUnchanged()
+    }
     abstract val childId: String
     abstract val categoryId: String
 
@@ -90,6 +98,8 @@ abstract class CategoryAppsAndRulesFragment: Fragment(), Handlers, EditTimeLimit
             }
         }).attachToRecyclerView(binding.recycler)
 
+        doesServerSupportRuleEditing.observe(viewLifecycleOwner) {/* keep the value fresh */}
+
         return binding.root
     }
 
@@ -114,22 +124,23 @@ abstract class CategoryAppsAndRulesFragment: Fragment(), Handlers, EditTimeLimit
 
     override fun notifyRuleUpdated(oldRule: TimeLimitRule, newRule: TimeLimitRule) {
         Snackbar.make(requireView(), R.string.category_time_limit_rules_snackbar_updated, Snackbar.LENGTH_SHORT)
-                .setAction(R.string.generic_undo) {
+            .also {
+                if (auth.isParentAuthenticated()) it.setAction(R.string.generic_undo) {
                     auth.tryDispatchParentAction(
-                            UpdateTimeLimitRuleAction(
-                                    ruleId = oldRule.id,
-                                    applyToExtraTimeUsage = oldRule.applyToExtraTimeUsage,
-                                    maximumTimeInMillis = oldRule.maximumTimeInMillis,
-                                    dayMask = oldRule.dayMask,
-                                    start = oldRule.startMinuteOfDay,
-                                    end = oldRule.endMinuteOfDay,
-                                    sessionDurationMilliseconds = oldRule.sessionDurationMilliseconds,
-                                    sessionPauseMilliseconds = oldRule.sessionPauseMilliseconds,
-                                    perDay = oldRule.perDay
-                            )
+                        UpdateTimeLimitRuleAction(
+                            ruleId = oldRule.id,
+                            applyToExtraTimeUsage = oldRule.applyToExtraTimeUsage,
+                            maximumTimeInMillis = oldRule.maximumTimeInMillis,
+                            dayMask = oldRule.dayMask,
+                            start = oldRule.startMinuteOfDay,
+                            end = oldRule.endMinuteOfDay,
+                            sessionDurationMilliseconds = oldRule.sessionDurationMilliseconds,
+                            sessionPauseMilliseconds = oldRule.sessionPauseMilliseconds,
+                            perDay = oldRule.perDay
+                        )
                     )
                 }
-                .show()
+            }.show()
     }
 
     override fun onAppClicked(app: AppAndRuleItem.AppEntry) {
@@ -174,14 +185,18 @@ abstract class CategoryAppsAndRulesFragment: Fragment(), Handlers, EditTimeLimit
     }
 
     override fun onTimeLimitRuleClicked(rule: TimeLimitRule) {
-        if (auth.requestAuthenticationOrReturnTrue()) {
-            EditTimeLimitRuleDialogFragment.newInstance(rule, this).show(parentFragmentManager)
-        }
+        val allowSelfLimit = doesServerSupportRuleEditing.value ?: false
+
+        if (auth.isParentAuthenticated()) {
+            EditTimeLimitRuleDialogFragment.newInstance(rule, false,  this).show(parentFragmentManager)
+        } else if (allowSelfLimit && auth.isParentOrChildAuthenticated(childId)) {
+            EditTimeLimitRuleDialogFragment.newInstance(rule, true, this).show(parentFragmentManager)
+        } else auth.requestAuthentication()
     }
 
     override fun onAddTimeLimitRuleClicked() {
         if (auth.requestAuthenticationOrReturnTrueAllowChild(childId = childId)) {
-            EditTimeLimitRuleDialogFragment.newInstance(categoryId, this).show(parentFragmentManager)
+            EditTimeLimitRuleDialogFragment.newInstance(categoryId, true, this).show(parentFragmentManager)
         }
     }
 
