@@ -32,6 +32,7 @@ import io.timelimit.android.BuildConfig
 import io.timelimit.android.async.Threads
 import io.timelimit.android.crypto.HexString
 import io.timelimit.android.data.IdGenerator
+import io.timelimit.android.extensions.registerNotExportedReceiver
 import io.timelimit.android.integration.platform.android.PendingIntentIds
 import io.timelimit.android.livedata.castDown
 import io.timelimit.android.logic.DefaultAppLogic
@@ -156,7 +157,7 @@ class InstallUpdateDialogModel(application: Application): AndroidViewModel(appli
                     }
                 }
 
-                application.registerReceiver(receiver, IntentFilter(action))
+                application.registerNotExportedReceiver(receiver, IntentFilter(action))
 
                 session.commit(
                         PendingIntent.getBroadcast(

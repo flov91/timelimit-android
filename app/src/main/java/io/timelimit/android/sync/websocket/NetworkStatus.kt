@@ -1,5 +1,5 @@
 /*
- * TimeLimit Copyright <C> 2019 - 2020 Jonas Lochmann
+ * TimeLimit Copyright <C> 2019 - 2022 Jonas Lochmann
  *
  * This program is free software: you can redistribute it and/or modify
  * it under the terms of the GNU General Public License as published by
@@ -25,6 +25,7 @@ import androidx.lifecycle.LiveData
 import androidx.lifecycle.MutableLiveData
 import io.timelimit.android.BuildConfig
 import io.timelimit.android.async.Threads
+import io.timelimit.android.extensions.registerNotExportedReceiver
 import io.timelimit.android.livedata.castDown
 import io.timelimit.android.livedata.ignoreUnchanged
 
@@ -61,7 +62,7 @@ class NetworkStatusUtil (context: Context): NetworkStatusInterface {
 
         if (BuildConfig.hasServer) {
             if (didRegister) context.applicationContext.unregisterReceiver(receiver)
-            context.applicationContext.registerReceiver(receiver, IntentFilter(ConnectivityManager.CONNECTIVITY_ACTION)); didRegister = true
+            context.applicationContext.registerNotExportedReceiver(receiver, IntentFilter(ConnectivityManager.CONNECTIVITY_ACTION)); didRegister = true
 
             handler.postDelayed(refreshRunnable, 15 * 1000 /* 15 seconds */)
         }
