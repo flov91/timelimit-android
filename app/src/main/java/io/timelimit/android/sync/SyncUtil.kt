@@ -210,6 +210,8 @@ class SyncUtil (private val logic: AppLogic) {
                     if (BuildConfig.DEBUG) {
                         Log.d(LOG_TAG, "no reset should happen")
                     }
+
+                    throw ex
                 }
             }
         }
