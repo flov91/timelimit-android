@@ -119,6 +119,7 @@ class NotificationListener: NotificationListenerService() {
                                                     BlockingReason.MissingRequiredNetwork -> getString(R.string.lock_reason_short_missing_required_network)
                                                     BlockingReason.MissingNetworkCheckPermission -> getString(R.string.lock_reason_short_missing_network_check_permission)
                                                     BlockingReason.ForbiddenNetwork -> getString(R.string.lock_reason_short_forbidden_network)
+                                                    BlockingReason.PedometerSteps -> getString(R.string.lock_reason_too_few_steps)
                                                     BlockingReason.None -> throw IllegalStateException()
                                                 }
                                 )
@@ -180,6 +181,7 @@ class NotificationListener: NotificationListenerService() {
                 val battery = appLogic.platformIntegration.getBatteryStatus()
                 val networkId = if (appHandling.needsNetworkId) appLogic.platformIntegration.getCurrentNetworkId() else null
                 val hasPremiumOrLocalMode = appLogic.fullVersion.shouldProvideFullVersionFunctions.waitForNonNullValue()
+                val pedometerSteps = appLogic.platformIntegration.getPedometerSteps()
 
                 appLogic.realTimeLogic.getRealTime(time)
 
@@ -194,6 +196,7 @@ class NotificationListener: NotificationListenerService() {
                                     user = deviceAndUserRelatedData.userRelatedData
                             ),
                             batteryStatus = battery,
+                            pedometerSteps = pedometerSteps,
                             shouldTrustTimeTemporarily = time.shouldTrustTimeTemporarily,
                             timeInMillis = time.timeInMillis,
                             currentNetworkId = networkId,

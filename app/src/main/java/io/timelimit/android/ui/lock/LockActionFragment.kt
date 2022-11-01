@@ -33,6 +33,7 @@ import io.timelimit.android.data.model.derived.UserRelatedData
 import io.timelimit.android.databinding.LockActionFragmentBinding
 import io.timelimit.android.databinding.LockFragmentCategoryButtonBinding
 import io.timelimit.android.date.DateInTimezone
+import io.timelimit.android.integration.platform.android.PedometerListener
 import io.timelimit.android.logic.BlockingLevel
 import io.timelimit.android.logic.BlockingReason
 import io.timelimit.android.sync.actions.AddCategoryAppsAction
@@ -264,7 +265,9 @@ class LockActionFragment : Fragment() {
                     }
 
                     when (content) {
+
                         is LockscreenContent.Blocked.BlockedCategory -> {
+
                             binding.appCategoryTitle = content.appCategoryTitle
                             setupHandlers(
                                     deviceId = content.deviceId,

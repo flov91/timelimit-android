@@ -38,6 +38,7 @@
     <uses-permission-sdk-23 android:name="android.permission.ACCESS_FINE_LOCATION" />
     <uses-permission android:name="android.permission.POST_NOTIFICATIONS" />
     <uses-permission android:name="android.permission.NFC" />
+    <uses-permission android:name="android.permission.ACTIVITY_RECOGNITION" />
 
     <uses-feature android:name="android.hardware.telephony" android:required="false" />
     <uses-feature android:name="android.software.leanback" android:required="false" />
@@ -191,6 +192,9 @@
         <service android:name=".ui.widget.TimesWidgetService"
             android:exported="false"
             android:permission="android.permission.BIND_REMOTEVIEWS"/>
+
+        <service android:name=".integration.platform.android.PedometerListener"
+            android:permission="android.permission.BIND_JOB_SERVICE" />
 
     </application>
 

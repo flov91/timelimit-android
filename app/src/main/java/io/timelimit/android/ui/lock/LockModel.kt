@@ -30,6 +30,7 @@ import io.timelimit.android.data.model.derived.DeviceAndUserRelatedData
 import io.timelimit.android.data.model.derived.UserRelatedData
 import io.timelimit.android.integration.platform.BatteryStatus
 import io.timelimit.android.integration.platform.NetworkId
+import io.timelimit.android.integration.platform.android.PedometerListener
 import io.timelimit.android.livedata.*
 import io.timelimit.android.logic.*
 import io.timelimit.android.logic.blockingreason.AppBaseHandling
@@ -78,6 +79,7 @@ class LockModel(application: Application): AndroidViewModel(application) {
         private fun update() {
             val deviceAndUserRelatedData = deviceAndUserRelatedData.value ?: return
             val batteryStatus = batteryStatus.value ?: return
+            val pedometerSteps = PedometerListener.getDailySteps()
             val networkId = networkIdLive.value
             val hasPremiumOrLocalMode = deviceAndUserRelatedData.deviceRelatedData.let { it.isLocalMode || it.isConnectedAndHasPremium }
             val (packageName, activityName) = packageAndActivityNameLiveInternal.value ?: return
@@ -113,7 +115,8 @@ class LockModel(application: Application): AndroidViewModel(application) {
                     timeInMillis = realTime.timeInMillis,
                     shouldTrustTimeTemporarily = realTime.shouldTrustTimeTemporarily,
                     currentNetworkId = networkId,
-                    hasPremiumOrLocalMode = hasPremiumOrLocalMode
+                    hasPremiumOrLocalMode = hasPremiumOrLocalMode,
+                    pedometerSteps = pedometerSteps
             )
 
             val blockingCategories = appBaseHandling.getCategories(AppBaseHandling.GetCategoriesPurpose.Blocking)

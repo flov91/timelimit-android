@@ -94,7 +94,8 @@ object TimesWidgetContentLoader {
                 shouldTrustTimeTemporarily = realTime.shouldTrustTimeTemporarily,
                 assumeCurrentDevice = true,
                 currentNetworkId = null, // not relevant here
-                hasPremiumOrLocalMode = false   // not relevant here
+                hasPremiumOrLocalMode = false,   // not relevant here
+                pedometerSteps = null // not relevant here
             )
 
             var maxTime = Long.MAX_VALUE

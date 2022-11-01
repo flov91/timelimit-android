@@ -23,13 +23,20 @@ import android.view.ViewGroup
 import androidx.fragment.app.Fragment
 import androidx.fragment.app.activityViewModels
 import io.timelimit.android.databinding.LockReasonFragmentBinding
+import io.timelimit.android.integration.platform.android.PedometerListener
 import io.timelimit.android.logic.BlockingLevel
+import io.timelimit.android.logic.DefaultAppLogic
+import io.timelimit.android.logic.blockingreason.AppBaseHandling
+import io.timelimit.android.logic.blockingreason.CategoryHandlingCache
 
 class LockReasonFragment: Fragment() {
     val model: LockModel by activityViewModels()
+    private val handlingCache = CategoryHandlingCache()
 
     override fun onCreateView(inflater: LayoutInflater, container: ViewGroup?, savedInstanceState: Bundle?): View? {
         val binding = LockReasonFragmentBinding.inflate(inflater, container, false)
+
+        binding.currentPedometerSteps = PedometerListener.getDailySteps()
 
         model.content.observe(viewLifecycleOwner) { content ->
             if (content is LockscreenContent.Blocked) {
@@ -40,6 +47,13 @@ class LockReasonFragment: Fragment() {
                     BlockingLevel.App -> "App"
                 }
                 binding.appCategoryTitle = if (content is LockscreenContent.Blocked.BlockedCategory) content.appCategoryTitle else null
+                if (content is LockscreenContent.Blocked.BlockedCategory) {
+                    content.userRelatedData.categoryById[content.blockedCategoryId]?.category?.minPedometerSteps.also {
+                        if (it != null) {
+                            binding.minPedometerSteps = it
+                        }
+                    }
+                }
             }
         }
 

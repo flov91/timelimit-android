@@ -395,7 +395,9 @@ object ApplyServerDataStatus {
                                     sort = newCategory.sort,
                                     disableLimitsUntil = newCategory.disableLimitsUntil,
                                     flags = newCategory.flags,
-                                    blockNotificationDelay = newCategory.blockNotificationDelay
+                                    blockNotificationDelay = newCategory.blockNotificationDelay,
+                                    minPedometerSteps = 0,
+                                    pedometerResetTime = 0L
                             ))
                         } else {
                             val updatedCategory = oldCategory.copy(

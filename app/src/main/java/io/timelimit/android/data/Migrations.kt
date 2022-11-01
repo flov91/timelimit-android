@@ -15,8 +15,11 @@
  */
 package io.timelimit.android.data
 
+import android.database.sqlite.SQLiteException
+import android.util.Log
 import androidx.room.migration.Migration
 import androidx.sqlite.db.SupportSQLiteDatabase
+import io.timelimit.android.data.dao.UserLimitLoginCategoryDao_Impl
 import io.timelimit.android.data.model.TimeLimitRule
 import io.timelimit.android.extensions.MinuteOfDay
 
@@ -339,6 +342,13 @@ object DatabaseMigrations {
         }
     }
 
+    val MIGRATE_TO_V47 = object: Migration(46, 47) {
+        override fun migrate(database: SupportSQLiteDatabase) {
+                database.execSQL("ALTER TABLE `category` ADD COLUMN `min_pedometer_steps` INTEGER NOT NULL DEFAULT 0")
+                database.execSQL("ALTER TABLE `category` ADD COLUMN `pedometer_reset_time` INTEGER NOT NULL DEFAULT 0")
+        }
+    }
+
     val ALL = arrayOf(
         MIGRATE_TO_V2,
         MIGRATE_TO_V3,
@@ -384,6 +394,7 @@ object DatabaseMigrations {
         MIGRATE_TP_V43,
         MIGRATE_TO_V44,
         MIGRATE_TO_V45,
-        MIGRATE_TO_V46
+        MIGRATE_TO_V46,
+        MIGRATE_TO_V47
     )
 }

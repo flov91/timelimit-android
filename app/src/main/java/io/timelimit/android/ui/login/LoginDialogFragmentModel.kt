@@ -73,6 +73,7 @@ class LoginDialogFragmentModel(application: Application): AndroidViewModel(appli
             BlockingReason.MissingRequiredNetwork -> context.getString(R.string.lock_reason_short_missing_required_network)
             BlockingReason.MissingNetworkCheckPermission -> context.getString(R.string.lock_reason_short_missing_network_check_permission)
             BlockingReason.ForbiddenNetwork -> context.getString(R.string.lock_reason_short_forbidden_network)
+            BlockingReason.PedometerSteps -> context.getString(R.string.lock_reason_short_too_few_steps)
             BlockingReason.NotPartOfAnCategory -> "???"
             BlockingReason.None -> "???"
         }

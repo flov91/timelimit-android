@@ -56,6 +56,10 @@ class DummyIntegration(
         return null
     }
 
+    override fun getPedometerSteps(): Int {
+        return 0
+    }
+
     override fun isSystemImageApp(packageName: String): Boolean = false
 
     override fun getLauncherAppPackageName(): String? = null

@@ -71,6 +71,8 @@ abstract class PlatformIntegration(
     abstract fun getBatteryStatus(): BatteryStatus
     abstract fun getBatteryStatusLive(): LiveData<BatteryStatus>
 
+    abstract fun getPedometerSteps(): Int
+
     abstract fun setEnableCustomHomescreen(enable: Boolean)
 
     // this function requires the device owner permission and a recent android version

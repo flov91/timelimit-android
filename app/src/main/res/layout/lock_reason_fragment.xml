@@ -43,6 +43,14 @@
             name="blockedKindLabel"
             type="String" />
 
+        <variable
+            name="currentPedometerSteps"
+            type="int" />
+
+        <variable
+            name="minPedometerSteps"
+            type="int" />
+
         <import type="android.view.View" />
         <import type="io.timelimit.android.logic.BlockingReason" />
         <import type="android.text.TextUtils" />
@@ -177,6 +185,20 @@
                         android:textAppearance="?android:textAppearanceMedium"
                         android:text="@{@string/lock_reason_temporarily_blocked(blockedKindLabel)}"
                         tools:text="@string/lock_reason_temporarily_blocked"
+                        android:layout_width="match_parent"
+                        android:layout_height="wrap_content" />
+
+                    <TextView
+                        android:paddingStart="8dp"
+                        android:paddingEnd="0dp"
+                        tools:ignore="UnusedAttribute"
+                        android:drawablePadding="16dp"
+                        android:drawableTint="?colorOnSurface"
+                        android:drawableStart="@drawable/ic_block_black_24dp"
+                        android:visibility="@{reason == BlockingReason.PedometerSteps ? View.VISIBLE : View.GONE}"
+                        android:textAppearance="?android:textAppearanceMedium"
+                        android:text="@{@string/lock_reason_pedometer_steps(blockedKindLabel, currentPedometerSteps, minPedometerSteps)}"
+                        tools:text="@string/lock_reason_pedometer_steps"
                         android:layout_width="match_parent"
                         android:layout_height="wrap_content" />
 

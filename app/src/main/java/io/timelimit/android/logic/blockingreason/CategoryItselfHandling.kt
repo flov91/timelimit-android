@@ -24,6 +24,7 @@ import io.timelimit.android.date.getMinuteOfWeek
 import io.timelimit.android.extensions.MinuteOfDay
 import io.timelimit.android.integration.platform.BatteryStatus
 import io.timelimit.android.integration.platform.NetworkId
+import io.timelimit.android.integration.platform.android.PedometerListener
 import io.timelimit.android.logic.BlockingReason
 import io.timelimit.android.logic.RemainingSessionDuration
 import io.timelimit.android.logic.RemainingTime
@@ -46,6 +47,7 @@ data class CategoryItselfHandling (
         val okByTimeLimitRules: Boolean,
         val okBySessionDurationLimits: Boolean,
         val okByCurrentDevice: Boolean,
+        val okByPedometer: Boolean,
         val missingNetworkTime: Boolean,
         val blockAllNotifications: BlockAllNotifications,
         val remainingTime: RemainingTime?,
@@ -56,6 +58,7 @@ data class CategoryItselfHandling (
         val dependsOnMinBatteryLevel: Int,
         val dependsOnMaxBatteryLevel: Int,
         val dependsOnNetworkId: Boolean,
+        val dependsOnPedometerSteps: Int,
         val createdWithCategoryRelatedData: CategoryRelatedData,
         val createdWithUserRelatedData: UserRelatedData,
         val createdWithBatteryStatus: BatteryStatus,
@@ -67,14 +70,15 @@ data class CategoryItselfHandling (
 ) {
     companion object {
         fun calculate(
-                categoryRelatedData: CategoryRelatedData,
-                user: UserRelatedData,
-                batteryStatus: BatteryStatus,
-                shouldTrustTimeTemporarily: Boolean,
-                timeInMillis: Long,
-                assumeCurrentDevice: Boolean,
-                currentNetworkId: NetworkId?,
-                hasPremiumOrLocalMode: Boolean
+            categoryRelatedData: CategoryRelatedData,
+            user: UserRelatedData,
+            batteryStatus: BatteryStatus,
+            pedometerSteps: Int,
+            shouldTrustTimeTemporarily: Boolean,
+            timeInMillis: Long,
+            assumeCurrentDevice: Boolean,
+            currentNetworkId: NetworkId?,
+            hasPremiumOrLocalMode: Boolean
         ): CategoryItselfHandling {
             val dependsOnMinTime = timeInMillis
             val dateInTimezone = DateInTimezone.newInstance(timeInMillis, user.timeZone)
@@ -89,6 +93,15 @@ data class CategoryItselfHandling (
             val dependsOnBatteryCharging = categoryRelatedData.category.minBatteryLevelWhileCharging != categoryRelatedData.category.minBatteryLevelMobile
             val dependsOnMinBatteryLevel = if (okByBattery) minRequiredBatteryLevel else Int.MIN_VALUE
             val dependsOnMaxBatteryLevel = if (okByBattery) Int.MAX_VALUE else minRequiredBatteryLevel - 1
+
+            val dependsOnPedometerSteps = categoryRelatedData.category.minPedometerSteps
+            if (dependsOnPedometerSteps > 0 &&
+                PedometerListener.getLastDayOfWeekReset() != dayOfWeek &&
+                localDate.atStartOfDay(ZoneId.of(user.user.timeZone)).plusMinutes(categoryRelatedData.category.pedometerResetTime).toInstant().toEpochMilli() < timeInMillis) {
+                PedometerListener.resetDailySteps(dayOfWeek)
+            }
+            // TODO: if !okByPedometer, update the sensor live and try again
+            val okByPedometer = if (dependsOnPedometerSteps > 0) pedometerSteps >= dependsOnPedometerSteps else true
 
             val okByTempBlocking = !categoryRelatedData.category.temporarilyBlocked || (
                     shouldTrustTimeTemporarily && categoryRelatedData.category.temporarilyBlockedEndTime != 0L && categoryRelatedData.category.temporarilyBlockedEndTime < timeInMillis )
@@ -260,6 +273,7 @@ data class CategoryItselfHandling (
                     sessionDurationSlotsToCount = sessionDurationSlotsToCount,
                     areLimitsTemporarilyDisabled = areLimitsTemporarilyDisabled,
                     okByBattery = okByBattery,
+                    okByPedometer = okByPedometer,
                     okByTempBlocking = okByTempBlocking,
                     okByNetworkId = okByNetworkId,
                     okByBlockedTimeAreas = okByBlockedTimeAreas,
@@ -277,6 +291,7 @@ data class CategoryItselfHandling (
                     dependsOnMinBatteryLevel = dependsOnMinBatteryLevel,
                     dependsOnMaxBatteryLevel = dependsOnMaxBatteryLevel,
                     dependsOnNetworkId = dependsOnNetworkId,
+                    dependsOnPedometerSteps = dependsOnPedometerSteps,
                     createdWithCategoryRelatedData = categoryRelatedData,
                     createdWithBatteryStatus = batteryStatus,
                     createdWithTemporarilyTrustTime = shouldTrustTimeTemporarily,
@@ -289,11 +304,13 @@ data class CategoryItselfHandling (
         }
     }
 
-    val okBasic = okByBattery && okByTempBlocking && okByBlockedTimeAreas && okByTimeLimitRules && okBySessionDurationLimits && !missingNetworkTime
+    val okBasic = okByBattery && okByPedometer && okByTempBlocking && okByBlockedTimeAreas && okByTimeLimitRules && okBySessionDurationLimits && !missingNetworkTime
     val okAll = okBasic && okByCurrentDevice && okByNetworkId
     val shouldBlockActivities = !okAll
     val activityBlockingReason: BlockingReason = if (!okByBattery)
         BlockingReason.BatteryLimit
+    else if (!okByPedometer)
+        BlockingReason.PedometerSteps
     else if (!okByTempBlocking)
         BlockingReason.TemporarilyBlocked
     else if (!okByNetworkId) {
@@ -324,6 +341,8 @@ data class CategoryItselfHandling (
     val shouldBlockAtSystemLevel = !okBasic
     val systemLevelBlockingReason: BlockingReason = if (!okByBattery)
         BlockingReason.BatteryLimit
+    else if (!okByPedometer)
+        BlockingReason.PedometerSteps
     else if (!okByTempBlocking)
         BlockingReason.TemporarilyBlocked
     else if (!okByBlockedTimeAreas)
@@ -346,6 +365,7 @@ data class CategoryItselfHandling (
             categoryRelatedData: CategoryRelatedData,
             user: UserRelatedData,
             batteryStatus: BatteryStatus,
+            pedometerSteps: Int?,
             shouldTrustTimeTemporarily: Boolean,
             timeInMillis: Long,
             assumeCurrentDevice: Boolean,
@@ -368,6 +388,10 @@ data class CategoryItselfHandling (
         }
 
         if (batteryStatus.level < dependsOnMinBatteryLevel || batteryStatus.level > dependsOnMaxBatteryLevel) {
+            return false
+        }
+
+        if (pedometerSteps != null && pedometerSteps < dependsOnPedometerSteps) {
             return false
         }
 

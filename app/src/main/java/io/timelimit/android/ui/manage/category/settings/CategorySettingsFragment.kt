@@ -130,6 +130,15 @@ class CategorySettingsFragment : Fragment() {
                 fragmentManager = parentFragmentManager
         )
 
+        CategoryPedometerLimitView.bind(
+            binding = binding.pedometerLimit,
+            lifecycleOwner = this,
+            category = categoryEntry,
+            auth = auth,
+            categoryId = categoryId,
+            fragmentManager = parentFragmentManager
+        )
+
         ParentCategoryView.bind(
                 binding = binding.parentCategory,
                 lifecycleOwner = this,

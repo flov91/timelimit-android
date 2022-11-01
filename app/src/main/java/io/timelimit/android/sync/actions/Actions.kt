@@ -958,6 +958,47 @@ data class SetParentCategory(val categoryId: String, val parentCategory: String)
         writer.endObject()
     }
 }
+data class UpdateCategoryPedometerLimit(val categoryId: String, val pedometerLimit: Int?, val pedometerResetTime: Long?): ParentAction() {
+    companion object {
+        private const val TYPE_VALUE = "UPDATE_CATEGORY_PEDOMETER_LIMIT"
+        private const val CATEGORY_ID = "categoryId"
+        private const val PEDOMETER_LIMIT = "pedometerLimit"
+        private const val PEDOMETER_RESET_TIME = "pedometerResetTime"
+    }
+
+    init {
+        IdGenerator.assertIdValid(categoryId)
+
+        if (pedometerLimit != null) {
+            if (pedometerLimit < 0 || pedometerLimit > 10000) {
+                throw IllegalArgumentException()
+            }
+        }
+
+        if (pedometerResetTime != null) {
+            if (pedometerResetTime < 0 || pedometerResetTime > (60 * 23 + 59)) {
+                throw IllegalArgumentException()
+            }
+        }
+
+    }
+
+    override fun serialize(writer: JsonWriter) {
+        writer.beginObject()
+
+        writer.name(TYPE).value(TYPE_VALUE)
+        writer.name(CATEGORY_ID).value(categoryId)
+
+        if (pedometerLimit != null) {
+            writer.name(PEDOMETER_LIMIT).value(pedometerLimit)
+        }
+        if (pedometerResetTime != null) {
+            writer.name(PEDOMETER_RESET_TIME).value(pedometerResetTime)
+        }
+
+        writer.endObject()
+    }
+}
 data class UpdateCategoryBatteryLimit(val categoryId: String, val chargingLimit: Int?, val mobileLimit: Int?): ParentAction() {
     companion object {
         private const val TYPE_VALUE = "UPDATE_CATEGORY_BATTERY_LIMIT"

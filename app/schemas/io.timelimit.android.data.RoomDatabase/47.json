@@ -1,7 +1,7 @@
 {
   "formatVersion": 1,
   "database": {
-    "version": 46,
+    "version": 47,
     "identityHash": "1e584662bbc608fdb61775b1b1f1f04b",
     "entities": [
       {
@@ -420,7 +420,7 @@
       },
       {
         "tableName": "category",
-        "createSql": "CREATE TABLE IF NOT EXISTS `${TABLE_NAME}` (`id` TEXT NOT NULL, `child_id` TEXT NOT NULL, `title` TEXT NOT NULL, `blocked_times` TEXT NOT NULL, `extra_time` INTEGER NOT NULL, `extra_time_day` INTEGER NOT NULL, `temporarily_blocked` INTEGER NOT NULL, `temporarily_blocked_end_time` INTEGER NOT NULL, `base_version` TEXT NOT NULL, `apps_version` TEXT NOT NULL, `rules_version` TEXT NOT NULL, `usedtimes_version` TEXT NOT NULL, `tasks_version` TEXT NOT NULL DEFAULT '', `parent_category_id` TEXT NOT NULL, `block_all_notifications` INTEGER NOT NULL, `time_warnings` INTEGER NOT NULL, `min_battery_charging` INTEGER NOT NULL, `min_battery_mobile` INTEGER NOT NULL, `min_pedometer_steps` INTEGER NOT NULL, `pedometer_reset_time` INTEGER NOT NULL, `sort` INTEGER NOT NULL, `disable_limits_until` INTEGER NOT NULL, `flags` INTEGER NOT NULL DEFAULT 0, `block_notification_delay` INTEGER NOT NULL DEFAULT 0, PRIMARY KEY(`id`))",
+        "createSql": "CREATE TABLE IF NOT EXISTS `${TABLE_NAME}` (`id` TEXT NOT NULL, `child_id` TEXT NOT NULL, `title` TEXT NOT NULL, `blocked_times` TEXT NOT NULL, `extra_time` INTEGER NOT NULL, `extra_time_day` INTEGER NOT NULL, `temporarily_blocked` INTEGER NOT NULL, `temporarily_blocked_end_time` INTEGER NOT NULL, `base_version` TEXT NOT NULL, `apps_version` TEXT NOT NULL, `rules_version` TEXT NOT NULL, `usedtimes_version` TEXT NOT NULL, `tasks_version` TEXT NOT NULL DEFAULT '', `parent_category_id` TEXT NOT NULL, `block_all_notifications` INTEGER NOT NULL, `time_warnings` INTEGER NOT NULL, `min_battery_charging` INTEGER NOT NULL, `min_battery_mobile` INTEGER NOT NULL, `pedometer_reset_time` INTEGER NOT NULL, `min_pedometer_steps` INTEGER NOT NULL, `sort` INTEGER NOT NULL, `disable_limits_until` INTEGER NOT NULL, `flags` INTEGER NOT NULL DEFAULT 0, `block_notification_delay` INTEGER NOT NULL DEFAULT 0, PRIMARY KEY(`id`))",
         "fields": [
           {
             "fieldPath": "id",
@@ -533,13 +533,13 @@
           },
           {
             "fieldPath": "pedometerResetTime",
-            "columnName": "min_pedometer_steps",
+            "columnName": "pedometer_reset_time",
             "affinity": "INTEGER",
             "notNull": true
           },
           {
             "fieldPath": "minPedometerSteps",
-            "columnName": "pedometer_reset_time",
+            "columnName": "min_pedometer_steps",
             "affinity": "INTEGER",
             "notNull": true
           },

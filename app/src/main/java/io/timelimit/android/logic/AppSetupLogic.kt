@@ -192,7 +192,9 @@ class AppSetupLogic(private val appLogic: AppLogic) {
                             sort = 0,
                             disableLimitsUntil = 0,
                             flags = 0,
-                            blockNotificationDelay = 0
+                            blockNotificationDelay = 0,
+                            minPedometerSteps = 0,
+                            pedometerResetTime = 0L
                     ))
 
                     appLogic.database.category().addCategory(Category(
@@ -217,7 +219,9 @@ class AppSetupLogic(private val appLogic: AppLogic) {
                             sort = 1,
                             disableLimitsUntil = 0,
                             flags = 0,
-                            blockNotificationDelay = 0
+                            blockNotificationDelay = 0,
+                            minPedometerSteps = 0,
+                            pedometerResetTime = 0L
                     ))
 
                     // add default allowed apps

@@ -68,6 +68,11 @@ data class Category(
         val minBatteryLevelWhileCharging: Int,
         @ColumnInfo(name = "min_battery_mobile")
         val minBatteryLevelMobile: Int,
+        @ColumnInfo(name = "pedometer_reset_time")
+        // minute of day
+        val pedometerResetTime: Long,
+        @ColumnInfo(name = "min_pedometer_steps")
+        val minPedometerSteps: Int,
         @ColumnInfo(name = "sort")
         val sort: Int,
         // 0 = time limits enabled
@@ -99,6 +104,8 @@ data class Category(
         private const val TIME_WARNINGS = "tw"
         private const val MIN_BATTERY_CHARGING = "minBatteryCharging"
         private const val MIN_BATTERY_MOBILE = "minBatteryMobile"
+        private const val MIN_PEDOMETER_STEPS = "minPedometerSteps"
+        private const val PEDOMETER_RESET_TIME = "pedometerResetTime"
         private const val SORT = "sort"
         private const val EXTRA_TIME_DAY = "extraTimeDay"
         private const val DISABLE_LIMIITS_UNTIL = "dlu"
@@ -124,6 +131,8 @@ data class Category(
             var timeWarnings = 0
             var minBatteryCharging = 0
             var minBatteryMobile = 0
+            var minPedometerSteps = 0
+            var pedometerResetTime = 120L
             var sort = 0
             var extraTimeDay = -1
             var disableLimitsUntil = 0L
@@ -151,12 +160,14 @@ data class Category(
                     TIME_WARNINGS -> timeWarnings = reader.nextInt()
                     MIN_BATTERY_CHARGING -> minBatteryCharging = reader.nextInt()
                     MIN_BATTERY_MOBILE -> minBatteryMobile = reader.nextInt()
+                    MIN_PEDOMETER_STEPS -> minPedometerSteps = reader.nextInt()
                     SORT -> sort = reader.nextInt()
                     EXTRA_TIME_DAY -> extraTimeDay = reader.nextInt()
                     DISABLE_LIMIITS_UNTIL -> disableLimitsUntil = reader.nextLong()
                     TASKS_VERSION -> tasksVersion = reader.nextString()
                     FLAGS -> flags = reader.nextLong()
                     BLOCK_NOTIFICATION_DELAY -> blockNotificationDelay = reader.nextLong()
+                    PEDOMETER_RESET_TIME -> pedometerResetTime = reader.nextLong()
                     else -> reader.skipValue()
                 }
             }
@@ -181,6 +192,8 @@ data class Category(
                     timeWarnings = timeWarnings,
                     minBatteryLevelWhileCharging = minBatteryCharging,
                     minBatteryLevelMobile = minBatteryMobile,
+                    minPedometerSteps = minPedometerSteps,
+                    pedometerResetTime = pedometerResetTime,
                     sort = sort,
                     extraTimeDay = extraTimeDay,
                     disableLimitsUntil = disableLimitsUntil,
@@ -210,6 +223,14 @@ data class Category(
             throw IllegalArgumentException()
         }
 
+        if (minPedometerSteps < 0) {
+            throw IllegalArgumentException()
+        }
+
+        if (pedometerResetTime < -1) {
+            throw IllegalArgumentException()
+        }
+
         if (extraTimeDay < -1) {
             throw IllegalArgumentException()
         }
@@ -217,7 +238,6 @@ data class Category(
         if (disableLimitsUntil < 0) {
             throw IllegalArgumentException()
         }
-
 
         if (blockNotificationDelay < 0) {
             throw IllegalArgumentException()
@@ -246,11 +266,13 @@ data class Category(
         writer.name(TIME_WARNINGS).value(timeWarnings)
         writer.name(MIN_BATTERY_CHARGING).value(minBatteryLevelWhileCharging)
         writer.name(MIN_BATTERY_MOBILE).value(minBatteryLevelMobile)
+        writer.name(MIN_PEDOMETER_STEPS).value(minPedometerSteps)
         writer.name(SORT).value(sort)
         writer.name(EXTRA_TIME_DAY).value(extraTimeDay)
         writer.name(DISABLE_LIMIITS_UNTIL).value(disableLimitsUntil)
         writer.name(FLAGS).value(flags)
         writer.name(BLOCK_NOTIFICATION_DELAY).value(blockNotificationDelay)
+        writer.name(PEDOMETER_RESET_TIME).value(pedometerResetTime)
 
         writer.endObject()
     }

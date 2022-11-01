@@ -24,6 +24,7 @@ import io.timelimit.android.data.model.UserType
 import io.timelimit.android.data.model.derived.UserRelatedData
 import io.timelimit.android.integration.platform.ProtectionLevel
 import io.timelimit.android.integration.platform.android.AndroidIntegrationApps
+import io.timelimit.android.integration.platform.android.PedometerListener
 import io.timelimit.android.logic.blockingreason.CategoryHandlingCache
 import java.lang.ref.WeakReference
 import java.util.concurrent.CountDownLatch
@@ -117,6 +118,8 @@ class SuspendAppsLogic(private val appLogic: AppLogic): Observer {
             return
         }
 
+        val pedometerSteps = PedometerListener.getDailySteps()
+
         val userRelatedData = userAndDeviceRelatedData!!.userRelatedData!!
 
         val latch = CountDownLatch(1)
@@ -135,7 +138,8 @@ class SuspendAppsLogic(private val appLogic: AppLogic): Observer {
                         user = userRelatedData
                 ),
                 currentNetworkId = null, // not relevant/ not suspending Apps if there is no matching network
-                hasPremiumOrLocalMode = userAndDeviceRelatedData.deviceRelatedData.isLocalMode || userAndDeviceRelatedData.deviceRelatedData.isConnectedAndHasPremium
+                hasPremiumOrLocalMode = userAndDeviceRelatedData.deviceRelatedData.isLocalMode || userAndDeviceRelatedData.deviceRelatedData.isConnectedAndHasPremium,
+                pedometerSteps = pedometerSteps
         )
 
         val defaultCategory = userRelatedData.user.categoryForNotAssignedApps

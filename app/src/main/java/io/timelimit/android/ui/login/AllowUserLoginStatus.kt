@@ -24,6 +24,7 @@ import io.timelimit.android.data.model.ExperimentalFlags
 import io.timelimit.android.data.model.derived.CompleteUserLoginRelatedData
 import io.timelimit.android.integration.platform.BatteryStatus
 import io.timelimit.android.integration.platform.NetworkId
+import io.timelimit.android.integration.platform.android.PedometerListener
 import io.timelimit.android.livedata.ignoreUnchanged
 import io.timelimit.android.livedata.liveDataFromFunction
 import io.timelimit.android.logic.AppLogic
@@ -79,6 +80,7 @@ object AllowUserLoginStatusUtil {
                 val maxCheckedTime = time.timeInMillis + preBlockDuration
                 val categoryIds = data.limitLoginCategoryUserRelatedData.getCategoryWithParentCategories(data.loginRelatedData.limitLoginCategory.categoryId)
                 var dependsOnAnyNetworkId = false
+                val pedometerSteps = PedometerListener.getDailySteps()
 
                 while (true) {
                     cache.reportStatus(
@@ -88,7 +90,8 @@ object AllowUserLoginStatusUtil {
                             shouldTrustTimeTemporarily = time.shouldTrustTimeTemporarily,
                             batteryStatus = batteryStatus,
                             currentNetworkId = currentNetworkId,
-                            hasPremiumOrLocalMode = data.deviceRelatedData.isLocalMode || data.deviceRelatedData.isConnectedAndHasPremium
+                            hasPremiumOrLocalMode = data.deviceRelatedData.isLocalMode || data.deviceRelatedData.isConnectedAndHasPremium,
+                            pedometerSteps = pedometerSteps
                     )
 
                     val handlings = categoryIds.map { cache.get(it) }

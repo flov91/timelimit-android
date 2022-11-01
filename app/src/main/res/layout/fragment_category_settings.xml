@@ -83,6 +83,9 @@
             <include android:id="@+id/battery_limit"
                 layout="@layout/category_battery_limit_view" />
 
+            <include android:id="@+id/pedometer_limit"
+                layout="@layout/category_pedometer_limit_view" />
+
             <include android:id="@+id/time_warnings"
                 layout="@layout/category_time_warnings_view" />
 

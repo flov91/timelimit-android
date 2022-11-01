@@ -30,6 +30,7 @@ class CategoryHandlingCache {
     private var assumeCurrentDevice: Boolean = false
     private var currentNetworkId: NetworkId? = null
     private var hasPremiumOrLocalMode: Boolean = false
+    private var pedometerSteps: Int = 0
 
     fun reportStatus(
             user: UserRelatedData,
@@ -38,7 +39,8 @@ class CategoryHandlingCache {
             timeInMillis: Long,
             assumeCurrentDevice: Boolean,
             currentNetworkId: NetworkId?,
-            hasPremiumOrLocalMode: Boolean
+            hasPremiumOrLocalMode: Boolean,
+            pedometerSteps: Int?
     ) {
         this.user = user
         this.batteryStatus = batteryStatus
@@ -47,6 +49,9 @@ class CategoryHandlingCache {
         this.assumeCurrentDevice = assumeCurrentDevice
         this.currentNetworkId = currentNetworkId
         this.hasPremiumOrLocalMode = hasPremiumOrLocalMode
+        if (pedometerSteps != null) {
+            this.pedometerSteps = pedometerSteps
+        }
 
         val iterator = cachedItems.iterator()
 
@@ -63,7 +68,8 @@ class CategoryHandlingCache {
                             shouldTrustTimeTemporarily = shouldTrustTimeTemporarily,
                             timeInMillis = timeInMillis,
                             currentNetworkId = currentNetworkId,
-                            hasPremiumOrLocalMode = hasPremiumOrLocalMode
+                            hasPremiumOrLocalMode = hasPremiumOrLocalMode,
+                            pedometerSteps = pedometerSteps
                     )
             ) {
                 iterator.remove()
@@ -87,6 +93,7 @@ class CategoryHandlingCache {
             shouldTrustTimeTemporarily = shouldTrustTimeTemporarily,
             timeInMillis = timeInMillis,
             currentNetworkId = currentNetworkId,
-            hasPremiumOrLocalMode = hasPremiumOrLocalMode
+            hasPremiumOrLocalMode = hasPremiumOrLocalMode,
+            pedometerSteps = pedometerSteps
     )
 }

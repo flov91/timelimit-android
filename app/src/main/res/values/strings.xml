@@ -1748,4 +1748,14 @@
 
     <string name="u2f_login_error_unknown">unknown key</string>
     <string name="u2f_login_error_invalid">invalid key</string>
+    <string name="lock_reason_too_few_steps">too few steps</string>
+    <string name="lock_reason_short_too_few_steps">not enough steps</string>
+    <string name="category_settings_pedometer_limit_title">Minimum Pedometer steps</string>
+    <string name="category_settings_pedometer_limit_steps">The local phone\'s pedometer must have registered at least %d steps.</string>
+    <string name="category_settings_pedometer_reset_time">The step counter will reset at this time each day. Generally set to the earliest time you could expect to reasonably have walked.</string>
+    <string name="lock_reason_pedometer_steps">The %s cannot be used while the system\'s pedometer hasn\'t reached the limit. (%d/%d)</string>
+    <string name="tmp_preference_pedometer">com.timelimit-android.tmp_preference_pedometer</string>
+    <string name="tmp_preference_pedometer_stepcount">com.timelimit-android.tmp_preference_pedometer_stepcount</string>
+    <string name="tmp_preference_pedometer_lastdayofweek">com.timelimit-android.tmp_preference_pedometer_lastdayofweek</string>
+    <string name="tmp_preference_pedometer_steps_at_reset">com.timelimit.tmp_preference_pedometer_steps_at_reset</string>
 </resources>

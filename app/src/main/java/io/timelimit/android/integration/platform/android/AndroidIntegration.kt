@@ -15,12 +15,15 @@
  */
 package io.timelimit.android.integration.platform.android
 
+import android.Manifest
 import android.annotation.TargetApi
 import android.app.ActivityManager
 import android.app.Application
 import android.app.NotificationManager
 import android.app.PendingIntent
 import android.app.admin.DevicePolicyManager
+import android.app.job.JobInfo
+import android.app.job.JobScheduler
 import android.content.*
 import android.content.pm.ApplicationInfo
 import android.content.pm.PackageManager
@@ -38,8 +41,10 @@ import android.util.Log
 import android.view.KeyEvent
 import android.widget.Toast
 import androidx.collection.LruCache
+import androidx.core.app.ActivityCompat
 import androidx.core.app.NotificationCompat
 import androidx.core.app.NotificationManagerCompat
+import androidx.core.content.ContextCompat
 import androidx.fragment.app.FragmentActivity
 import androidx.lifecycle.LiveData
 import io.timelimit.android.BuildConfig
@@ -110,6 +115,17 @@ class AndroidIntegration(context: Context): PlatformIntegration(maximumProtectio
                 systemClockChangeListener?.run()
             }
         }, IntentFilter(Intent.ACTION_TIME_CHANGED))
+
+        val jobScheduler = context.getSystemService(Context.JOB_SCHEDULER_SERVICE) as JobScheduler
+        val componentName = ComponentName(context, PedometerListener::class.java)
+        val jobInfo = JobInfo.Builder(PedometerListener.nextFreejobId, componentName)
+            .setPeriodic(15 * 60 * 1000)
+            .build()
+        jobScheduler.schedule(jobInfo)
+    }
+
+    override fun getPedometerSteps(): Int {
+        return PedometerListener.getDailySteps()
     }
 
     override fun getLocalApps(deviceId: String): Collection<App> {

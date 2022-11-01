@@ -35,6 +35,7 @@ import io.timelimit.android.extensions.MinuteOfDay
 import io.timelimit.android.extensions.nextBlockedMinuteOfWeek
 import io.timelimit.android.integration.platform.*
 import io.timelimit.android.integration.platform.android.AccessibilityService
+import io.timelimit.android.integration.platform.android.PedometerListener
 import io.timelimit.android.livedata.*
 import io.timelimit.android.logic.blockingreason.AppBaseHandling
 import io.timelimit.android.logic.blockingreason.CategoryHandlingCache
@@ -344,6 +345,8 @@ class BackgroundTaskLogic(val appLogic: AppLogic) {
                 val needsNetworkId = allAppsBaseHandlings.find { it.needsNetworkId } != null
                 val networkId: NetworkId? = if (needsNetworkId) appLogic.platformIntegration.getCurrentNetworkId() else null
 
+                val pedometerSteps = PedometerListener.getDailySteps()
+
                 fun reportStatusToCategoryHandlingCache(userRelatedData: UserRelatedData) {
                     categoryHandlingCache.reportStatus(
                             user = userRelatedData,
@@ -352,7 +355,8 @@ class BackgroundTaskLogic(val appLogic: AppLogic) {
                             assumeCurrentDevice = CurrentDeviceLogic.handleDeviceAsCurrentDevice(deviceRelatedData, userRelatedData),
                             batteryStatus = batteryStatus,
                             currentNetworkId = networkId,
-                            hasPremiumOrLocalMode = deviceRelatedData.isLocalMode || deviceRelatedData.isConnectedAndHasPremium
+                            hasPremiumOrLocalMode = deviceRelatedData.isLocalMode || deviceRelatedData.isConnectedAndHasPremium,
+                            pedometerSteps = pedometerSteps
                     )
                 }; reportStatusToCategoryHandlingCache(userRelatedData)
 

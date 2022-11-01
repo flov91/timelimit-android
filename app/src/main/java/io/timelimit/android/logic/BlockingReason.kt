@@ -34,7 +34,8 @@ enum class BlockingReason {
     SessionDurationLimit,
     MissingRequiredNetwork,
     MissingNetworkCheckPermission,
-    ForbiddenNetwork
+    ForbiddenNetwork,
+    PedometerSteps
 }
 
 enum class BlockingLevel {

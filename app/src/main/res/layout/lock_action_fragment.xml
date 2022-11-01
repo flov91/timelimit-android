@@ -47,6 +47,14 @@
             name="missingNetworkIdPermission"
             type="boolean" />
 
+        <variable
+            name="currentPedometerSteps"
+            type="int" />
+
+        <variable
+            name="minPedometerSteps"
+            type="int" />
+
         <import type="android.view.View" />
         <import type="io.timelimit.android.logic.BlockingReason" />
         <import type="android.text.TextUtils" />

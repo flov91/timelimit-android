@@ -153,7 +153,9 @@ object LocalDatabaseParentActionDispatcher {
                             sort = sort,
                             disableLimitsUntil = 0,
                             flags = 0,
-                            blockNotificationDelay = 0
+                            blockNotificationDelay = 0,
+                            minPedometerSteps = 0,
+                            pedometerResetTime = 0L
                     ))
                 }
                 is DeleteCategoryAction -> {
@@ -731,6 +733,17 @@ object LocalDatabaseParentActionDispatcher {
                                     minBatteryLevelWhileCharging = action.chargingLimit ?: categoryEntry.minBatteryLevelWhileCharging,
                                     minBatteryLevelMobile = action.mobileLimit ?: categoryEntry.minBatteryLevelMobile
                             )
+                    )
+                }
+                is UpdateCategoryPedometerLimit -> {
+                    val categoryEntry = database.category().getCategoryByIdSync(action.categoryId)
+                        ?: throw IllegalArgumentException("can not update battery limit for a category which does not exist")
+
+                    database.category().updateCategorySync(
+                        categoryEntry.copy(
+                            minPedometerSteps = action.pedometerLimit ?: categoryEntry.minPedometerSteps,
+                            pedometerResetTime = action.pedometerResetTime ?: categoryEntry.pedometerResetTime,
+                        )
                     )
                 }
                 is UpdateCategorySortingAction -> {
