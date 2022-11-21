@@ -1,1 +1,2 @@
-- added U2F support at the connected mode
+- fix sync issues that could occur after not using a client for a longer duration
+- updated dependencies
