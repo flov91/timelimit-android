@@ -116,7 +116,9 @@ object CryptDataHandler {
         database.cryptContainer().updateMetadata(updatedMetadata)
 
         if (updatedMetadata.status == CryptContainerMetadata.ProcessingStatus.MissingKey && header != null) {
-            if (database.cryptContainerKeyRequest().byCryptContainerId(currentItem.cryptContainerId) == null) {
+            val existingRequest = database.cryptContainerKeyRequest().byCryptContainerId(currentItem.cryptContainerId)
+
+            if (existingRequest == null || existingRequest.requestTimeCryptContainerGeneration < header.generation) {
                 val signingKey = DeviceSigningKey.getPublicAndPrivateKeySync(database)!!.let { Curve25519.getPrivateKey(it) }
                 val requestKeyPair = Curve25519.generateKeyPair()
                 val sequenceNumber = database.config().getNextSigningSequenceNumberAndIncrementIt()
@@ -142,6 +144,8 @@ object CryptDataHandler {
                         )
                     ), database
                 )
+
+                if (existingRequest != null) database.cryptContainerKeyRequest().delete(existingRequest)
 
                 database.cryptContainerKeyRequest().insert(
                     CryptContainerPendingKeyRequest(
