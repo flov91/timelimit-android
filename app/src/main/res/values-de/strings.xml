@@ -1665,6 +1665,7 @@
 
     <string name="dummy_app_unassigned_system_image_app">nicht zugeordnete Apps von der Systempartition</string>
     <string name="dummy_app_feature_adb">Entwickleroptionen</string>
+    <string name="dummy_app_feature_dns">DNS-Einstellungen</string>
     <string name="dummy_app_activity_audio">Hintergrundmusikwiedergabe</string>
 
     <string name="notify_permission_title">Benachrichtigungen</string>

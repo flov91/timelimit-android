@@ -1713,6 +1713,7 @@
 
     <string name="dummy_app_unassigned_system_image_app">not assigned Apps from the system image</string>
     <string name="dummy_app_feature_adb">Developer Options</string>
+    <string name="dummy_app_feature_dns">DNS Settings</string>
     <string name="dummy_app_activity_audio">Background Audio Playback</string>
 
     <string name="notify_permission_title">Notifications</string>
