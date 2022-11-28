@@ -96,14 +96,6 @@ class SyncInstalledAppsLogic(val appLogic: AppLogic) {
         doSyncLock.withLock {
             val deviceState = Threads.database.executeAndWait { DeviceState.getSync(appLogic.database) } ?: return
 
-            if (deviceState.isLocalMode) {
-                // local mode -> sync always
-            } else {
-                // connected mode -> don't sync always
-                if (!deviceState.hasSyncConsent) return@withLock
-                if (!deviceState.hasAnyChildUser) return@withLock
-            }
-
             val installed = InstalledAppsUtil.getInstalledAppsFromOs(appLogic, deviceState)
 
             val savedPlain = InstalledAppsUtil.getInstalledAppsFromPlainDatabaseAsync(appLogic.database, deviceState.id)
@@ -121,7 +113,12 @@ class SyncInstalledAppsLogic(val appLogic: AppLogic) {
                 }
             }
 
-            if (deviceState.isConnectedMode && deviceState.serverApiLevel.hasLevelOrIsOffline(4)) {
+            if (
+                deviceState.hasSyncConsent &&
+                deviceState.isConnectedMode &&
+                deviceState.hasAnyChildUser &&
+                deviceState.serverApiLevel.hasLevelOrIsOffline(4)
+            ) {
                 CryptoAppListSync.sync(
                     deviceState = deviceState,
                     database = appLogic.database,
