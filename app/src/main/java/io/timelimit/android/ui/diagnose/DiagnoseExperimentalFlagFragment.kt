@@ -195,12 +195,6 @@ data class DiagnoseExperimentalFlagItem(
                 enableFlags = ExperimentalFlags.STRICT_OVERLAY_CHECKING,
                 disableFlags = ExperimentalFlags.STRICT_OVERLAY_CHECKING,
                 enable = { true }
-            ),
-            DiagnoseExperimentalFlagItem(
-                label = R.string.diagnose_exf_dls,
-                enableFlags = ExperimentalFlags.DISABLE_LEGACY_APP_SENDING,
-                disableFlags = ExperimentalFlags.DISABLE_LEGACY_APP_SENDING,
-                enable = { true }
             )
         )
     }

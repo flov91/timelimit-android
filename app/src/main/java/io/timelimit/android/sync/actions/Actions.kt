@@ -471,8 +471,7 @@ data class UpdateAppActivitiesAction(
 }
 data class UpdateInstalledAppsAction (
     val base: ByteArray?,
-    val diff: ByteArray?,
-    val wipe: Boolean
+    val diff: ByteArray?
 ): AppLogicAction() {
     companion object {
         private const val TYPE_VALUE = "UPDATE_INSTALLED_APPS"
@@ -489,7 +488,7 @@ data class UpdateInstalledAppsAction (
         base?.let { writer.name(BASE).value(it.base64()) }
         diff?.let { writer.name(DIFF).value(it.base64()) }
 
-        writer.name(WIPE).value(wipe)
+        writer.name(WIPE).value(true)
 
         writer.endObject()
     }

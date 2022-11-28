@@ -41,7 +41,6 @@ object CryptoAppListSync {
         database: Database,
         installed: InstalledAppsProto,
         syncUtil: SyncUtil,
-        disableLegacySync: Boolean,
         serverApiLevelInfo: ServerApiLevelInfo
     ) {
         val compressedDataSizeLimit =
@@ -166,8 +165,7 @@ object CryptoAppListSync {
 
                     dispatchSync(UpdateInstalledAppsAction(
                         base = baseEncrypted,
-                        diff = diffEncrypted,
-                        wipe = disableLegacySync
+                        diff = diffEncrypted
                     ))
                 }
 
@@ -197,8 +195,7 @@ object CryptoAppListSync {
 
                     dispatchSync(UpdateInstalledAppsAction(
                         base = null,
-                        diff = diffEncrypted,
-                        wipe = disableLegacySync
+                        diff = diffEncrypted
                     ))
                 }
 

@@ -289,51 +289,12 @@ object ApplyServerDataStatus {
             }
 
             run {
-                val disableLegacySync = database.config().isExperimentalFlagsSetSync(ExperimentalFlags.DISABLE_LEGACY_APP_SENDING)
-
                 for (item in status.newInstalledApps) {
-                    DatabaseValidation.assertDeviceExists(database, item.deviceId)
-
-                    if (
-                        database.cryptContainer().getCryptoMetadataSyncByDeviceId(item.deviceId, CryptContainerMetadata.TYPE_APP_LIST_BASE) == null ||
-                        (item.deviceId == database.config().getOwnDeviceIdSync() && !disableLegacySync)
-                    ) {
-                        run {
-                            // apply apps
-                            database.app().deleteAllAppsByDeviceId(item.deviceId)
-                            database.app().addAppsSync(item.apps.map {
-                                App(
-                                    deviceId = item.deviceId,
-                                    packageName = it.packageName,
-                                    title = it.title,
-                                    isLaunchable = it.isLaunchable,
-                                    recommendation = it.recommendation
-                                )
-                            })
-                        }
-
-                        run {
-                            // apply activities
-                            database.appActivity()
-                                .deleteAppActivitiesByDeviceIds(listOf(item.deviceId))
-                            database.appActivity().addAppActivitiesSync(item.activities.map {
-                                AppActivity(
-                                    deviceId = item.deviceId,
-                                    appPackageName = it.packageName,
-                                    activityClassName = it.className,
-                                    title = it.title
-                                )
-                            })
-                        }
-                    }
-
-                    run {
-                        // apply changed version number
-                        database.device().updateAppsVersion(
-                                deviceId = item.deviceId,
-                                appsVersion = item.version
-                        )
-                    }
+                    // apply changed version number
+                    database.device().updateAppsVersion(
+                        deviceId = item.deviceId,
+                        appsVersion = item.version
+                    )
                 }
             }
 

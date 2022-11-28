@@ -586,7 +586,6 @@
     <string name="diagnose_exf_esb">Do not use a overlay or the home button for blocking</string>
     <string name="diagnose_exf_srn">Show sync related toasts</string>
     <string name="diagnose_exf_soc">Enable strict overlay permission check</string>
-    <string name="diagnose_exf_dls">Disable sending the App List with the legacy encoding</string>
 
     <string name="diagnose_bg_task_loop_ex">Background task loop exception</string>
 

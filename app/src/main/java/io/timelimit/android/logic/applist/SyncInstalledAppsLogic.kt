@@ -111,23 +111,13 @@ class SyncInstalledAppsLogic(val appLogic: AppLogic) {
             val diffPlain = AppsDifferenceUtil.calculateAppsDifference(savedPlain, installed)
             val diffPlainActions = AppsDifferenceUtil.calculateAppsDifferenceActions(diffPlain, deviceState.id)
 
-            if (deviceState.disableLegacySync) {
-                if (diffPlainActions.isNotEmpty()) {
-                    Threads.database.executeAndWait {
-                        diffPlainActions.forEach {
-                            LocalDatabaseAppLogicActionDispatcher.dispatchAppLogicActionSync(
-                                it, appLogic.database.config().getOwnDeviceIdSync()!!, appLogic.database
-                            )
-                        }
+            if (diffPlainActions.isNotEmpty()) {
+                Threads.database.executeAndWait {
+                    diffPlainActions.forEach {
+                        LocalDatabaseAppLogicActionDispatcher.dispatchAppLogicActionSync(
+                            it, appLogic.database.config().getOwnDeviceIdSync()!!, appLogic.database
+                        )
                     }
-                }
-            } else {
-                diffPlainActions.forEach { action ->
-                    ApplyActionUtil.applyAppLogicAction(
-                        action = action,
-                        appLogic = appLogic,
-                        ignoreIfDeviceIsNotConfigured = true
-                    )
                 }
             }
 
@@ -137,7 +127,6 @@ class SyncInstalledAppsLogic(val appLogic: AppLogic) {
                     database = appLogic.database,
                     installed = installed,
                     syncUtil = appLogic.syncUtil,
-                    disableLegacySync = deviceState.disableLegacySync,
                     serverApiLevelInfo = deviceState.serverApiLevel
                 )
             }

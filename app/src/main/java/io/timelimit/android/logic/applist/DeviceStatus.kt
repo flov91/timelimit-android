@@ -18,7 +18,6 @@ package io.timelimit.android.logic.applist
 import androidx.lifecycle.LiveData
 import io.timelimit.android.data.Database
 import io.timelimit.android.data.model.ConsentFlags
-import io.timelimit.android.data.model.ExperimentalFlags
 import io.timelimit.android.data.model.UserType
 import io.timelimit.android.integration.platform.ProtectionLevel
 import io.timelimit.android.livedata.*
@@ -34,7 +33,6 @@ data class DeviceState(
     val isDeviceOwner: Boolean,
     val hasSyncConsent: Boolean,
     val isLocalMode: Boolean,
-    val disableLegacySync: Boolean,
     val serverApiLevel: ServerApiLevelInfo
 ) {
     companion object {
@@ -43,7 +41,6 @@ data class DeviceState(
             val deviceRelatedData = userAndDeviceData.deviceRelatedData
             val device = deviceRelatedData.deviceEntry
             val defaultUser = if (device.defaultUser.isNotEmpty()) database.user().getUserByIdSync(device.defaultUser) else null
-            val disableLegacySync = deviceRelatedData.isExperimentalFlagSetSync(ExperimentalFlags.DISABLE_LEGACY_APP_SENDING)
             val serverApiLevel = ServerApiLevelLogic.getSync(database)
 
             return DeviceState(
@@ -54,7 +51,6 @@ data class DeviceState(
                 isDeviceOwner = device.currentProtectionLevel == ProtectionLevel.DeviceOwner,
                 hasSyncConsent = deviceRelatedData.consentFlags and ConsentFlags.APP_LIST_SYNC == ConsentFlags.APP_LIST_SYNC,
                 isLocalMode = deviceRelatedData.isLocalMode,
-                disableLegacySync = disableLegacySync,
                 serverApiLevel = serverApiLevel
             )
         }
@@ -70,9 +66,8 @@ data class DeviceState(
                 if (defaultUser.isNullOrEmpty()) liveDataFromNullableValue(null)
                 else appLogic.database.user().getUserByIdLive(defaultUser)
             },
-            appLogic.database.config().isExperimentalFlagsSetAsync(ExperimentalFlags.DISABLE_LEGACY_APP_SENDING),
             appLogic.serverApiLevelLogic.infoLive
-        ).map { (deviceEntry, hasSyncConsent, isLocalMode, deviceUser, deviceDefaultUser, disableLegacySync, serverApiLevel) ->
+        ).map { (deviceEntry, hasSyncConsent, isLocalMode, deviceUser, deviceDefaultUser, serverApiLevel) ->
             deviceEntry?.let { device ->
                 DeviceState(
                     id = device.id,
@@ -82,7 +77,6 @@ data class DeviceState(
                     isDeviceOwner = device.currentProtectionLevel == ProtectionLevel.DeviceOwner,
                     hasSyncConsent = hasSyncConsent,
                     isLocalMode = isLocalMode,
-                    disableLegacySync = disableLegacySync,
                     serverApiLevel = serverApiLevel
                 )
             }

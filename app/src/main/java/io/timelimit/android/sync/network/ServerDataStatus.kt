@@ -24,10 +24,7 @@ import io.timelimit.android.data.customtypes.ImmutableBitmaskJson
 import io.timelimit.android.data.model.*
 import io.timelimit.android.extensions.MinuteOfDay
 import io.timelimit.android.extensions.parseBase64
-import io.timelimit.android.extensions.parseList
 import io.timelimit.android.integration.platform.*
-import io.timelimit.android.sync.actions.AppActivityItem
-import io.timelimit.android.sync.actions.InstalledApp
 import io.timelimit.android.util.parseJsonArray
 import io.timelimit.android.util.parseJsonStringArray
 import java.util.*
@@ -1057,29 +1054,21 @@ data class ServerUpdatedCategoryTask (
 
 data class ServerInstalledAppsData(
         val deviceId: String,
-        val version: String,
-        val apps: List<InstalledApp>,
-        val activities: List<AppActivityItem>
+        val version: String
 ) {
     companion object {
         private const val DEVICE_ID = "deviceId"
         private const val VERSION = "version"
-        private const val APPS = "apps"
-        private const val ACTIVITIES = "activities"
 
         fun parse(reader: JsonReader): ServerInstalledAppsData {
             var deviceId: String? = null
             var version: String? = null
-            var apps: List<InstalledApp>? = null
-            var activities: List<AppActivityItem>? = null
 
             reader.beginObject()
             while (reader.hasNext()) {
                 when(reader.nextName()) {
                     DEVICE_ID -> deviceId = reader.nextString()
                     VERSION -> version = reader.nextString()
-                    APPS -> apps = InstalledApp.parseList(reader)
-                    ACTIVITIES -> activities = reader.parseList { AppActivityItem.parse(it) }
                     else -> reader.skipValue()
                 }
             }
@@ -1087,9 +1076,7 @@ data class ServerInstalledAppsData(
 
             return ServerInstalledAppsData(
                     deviceId = deviceId!!,
-                    version = version!!,
-                    apps = apps!!,
-                    activities = activities!!
+                    version = version!!
             )
         }
 

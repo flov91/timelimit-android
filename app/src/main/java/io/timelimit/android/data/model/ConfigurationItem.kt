@@ -289,7 +289,7 @@ object ExperimentalFlags {
     // const val INSTANCE_ID_FG_APP_DETECTION = 65536L
     // private const val OBSOLETE_DISABLE_FG_APP_DETECTION_FALLBACK = 131072L
     const val STRICT_OVERLAY_CHECKING = 0x40000L
-    const val DISABLE_LEGACY_APP_SENDING = 0x80000L
+    // const val DISABLE_LEGACY_APP_SENDING = 0x80000L
 }
 
 object ConsentFlags {
