@@ -58,7 +58,7 @@ class SetupRemoteChildViewModel(application: Application): AndroidViewModel(appl
                         deviceName = deviceModelName
                 )
 
-                val clientStatusResponse = api.pullChanges(registerResponse.deviceAuthToken, ClientDataStatus.empty)
+                val clientStatusResponse = registerResponse.data
 
                 Threads.database.executeAndWait {
                     logic.database.runInTransaction {

@@ -58,6 +58,7 @@ class HttpServerApi(private val endpointWithoutSlashAtEnd: String): ServerApi {
         private const val LOCALE = "locale"
         private const val MAIL_LOGIN_TOKEN = "mailLoginToken"
         private const val RECEIVED_CODE = "receivedCode"
+        private const val CLIENT_LEVEL = "clientLevel"
 
         private val JSON = "application/json; charset=utf-8".toMediaTypeOrNull()
 
@@ -236,8 +237,26 @@ class HttpServerApi(private val endpointWithoutSlashAtEnd: String): ServerApi {
         }
     }
 
-    override suspend fun createFamilyByMailToken(mailToken: String, parentPassword: ParentPassword, parentDevice: NewDeviceInfo, timeZone: String, parentName: String, deviceName: String): AddDeviceResponse {
-        httpClient.newCall(
+    override suspend fun createFamilyByMailToken(
+        mailToken: String, parentPassword: ParentPassword, parentDevice: NewDeviceInfo,
+        timeZone: String, parentName: String, deviceName: String
+    ): AddDeviceResponse {
+        try {
+            return createFamilyByMailTokenInternal(
+                mailToken, parentPassword, parentDevice, timeZone, parentName, deviceName, skipClientLevel = false
+            )
+        } catch (ex: BadRequestHttpError) {
+            return createFamilyByMailTokenInternal(
+                mailToken, parentPassword, parentDevice, timeZone, parentName, deviceName, skipClientLevel = true
+            )
+        }
+    }
+
+    private suspend fun createFamilyByMailTokenInternal(
+        mailToken: String, parentPassword: ParentPassword, parentDevice: NewDeviceInfo,
+        timeZone: String, parentName: String, deviceName: String, skipClientLevel: Boolean
+    ): AddDeviceResponse {
+        return httpClient.newCall(
                 Request.Builder()
                         .url("$endpointWithoutSlashAtEnd/parent/create-family")
                         .post(createJsonRequestBody {
@@ -256,6 +275,10 @@ class HttpServerApi(private val endpointWithoutSlashAtEnd: String): ServerApi {
                             writer.name(PARENT_DEVICE)
                             parentDevice.serialize(writer)
 
+                            if (!skipClientLevel) {
+                                writer.name(CLIENT_LEVEL).value(ClientDataStatus.CLIENT_LEVEL_VALUE)
+                            }
+
                             writer.endObject()
                         })
                         .header("Content-Encoding", "gzip")
@@ -265,14 +288,30 @@ class HttpServerApi(private val endpointWithoutSlashAtEnd: String): ServerApi {
 
             val body = it.body!!
 
-            return Threads.network.executeAndWait {
-                AddDeviceResponse.parse(JsonReader(body.charStream()))
+            Threads.network.executeAndWait {
+                ServerAddDeviceResponse.parse(JsonReader(body.charStream()))
             }
+        }.let {
+            AddDeviceResponse(
+                deviceAuthToken = it.deviceAuthToken,
+                ownDeviceId = it.ownDeviceId,
+                data = it.data ?: pullChanges(it.deviceAuthToken, ClientDataStatus.empty)
+            )
         }
     }
 
     override suspend fun signInToFamilyByMailToken(mailToken: String, parentDevice: NewDeviceInfo, deviceName: String): AddDeviceResponse {
-        httpClient.newCall(
+        try {
+            return signInToFamilyByMailTokenInternal(mailToken, parentDevice, deviceName, skipClientLevel = false)
+        } catch (ex: BadRequestHttpError) {
+            return signInToFamilyByMailTokenInternal(mailToken, parentDevice, deviceName, skipClientLevel = true)
+        }
+    }
+
+    private suspend fun signInToFamilyByMailTokenInternal(
+        mailToken: String, parentDevice: NewDeviceInfo, deviceName: String, skipClientLevel: Boolean
+    ): AddDeviceResponse {
+        return httpClient.newCall(
                 Request.Builder()
                         .url("$endpointWithoutSlashAtEnd/parent/sign-in-into-family")
                         .post(createJsonRequestBody {
@@ -286,6 +325,10 @@ class HttpServerApi(private val endpointWithoutSlashAtEnd: String): ServerApi {
                             writer.name(PARENT_DEVICE)
                             parentDevice.serialize(writer)
 
+                            if (!skipClientLevel) {
+                                writer.name(CLIENT_LEVEL).value(ClientDataStatus.CLIENT_LEVEL_VALUE)
+                            }
+
                             writer.endObject()
                         })
                         .header("Content-Encoding", "gzip")
@@ -295,9 +338,15 @@ class HttpServerApi(private val endpointWithoutSlashAtEnd: String): ServerApi {
 
             val body = it.body!!
 
-            return Threads.network.executeAndWait {
-                AddDeviceResponse.parse(JsonReader(body.charStream()))
+            Threads.network.executeAndWait {
+                ServerAddDeviceResponse.parse(JsonReader(body.charStream()))
             }
+        }.let {
+            AddDeviceResponse(
+                deviceAuthToken = it.deviceAuthToken,
+                ownDeviceId = it.ownDeviceId,
+                data = it.data ?: pullChanges(it.deviceAuthToken, ClientDataStatus.empty)
+            )
         }
     }
 
@@ -325,7 +374,17 @@ class HttpServerApi(private val endpointWithoutSlashAtEnd: String): ServerApi {
     }
 
     override suspend fun registerChildDevice(registerToken: String, childDeviceInfo: NewDeviceInfo, deviceName: String): AddDeviceResponse {
-        httpClient.newCall(
+        try {
+            return registerChildDeviceInternal(registerToken, childDeviceInfo, deviceName, skipClientLevel = false)
+        } catch (ex: BadRequestHttpError) {
+            return registerChildDeviceInternal(registerToken, childDeviceInfo, deviceName, skipClientLevel = true)
+        }
+    }
+
+    private suspend fun registerChildDeviceInternal(
+        registerToken: String, childDeviceInfo: NewDeviceInfo, deviceName: String, skipClientLevel: Boolean
+    ): AddDeviceResponse {
+        return httpClient.newCall(
                 Request.Builder()
                         .url("$endpointWithoutSlashAtEnd/child/add-device")
                         .post(createJsonRequestBody {
@@ -340,6 +399,10 @@ class HttpServerApi(private val endpointWithoutSlashAtEnd: String): ServerApi {
 
                             writer.name(DEVICE_NAME).value(deviceName)
 
+                            if (!skipClientLevel) {
+                                writer.name(CLIENT_LEVEL).value(ClientDataStatus.CLIENT_LEVEL_VALUE)
+                            }
+
                             writer.endObject()
                         })
                         .header("Content-Encoding", "gzip")
@@ -349,9 +412,15 @@ class HttpServerApi(private val endpointWithoutSlashAtEnd: String): ServerApi {
 
             val body = it.body!!
 
-            return Threads.network.executeAndWait {
-                AddDeviceResponse.parse(JsonReader(body.charStream()))
+            Threads.network.executeAndWait {
+                ServerAddDeviceResponse.parse(JsonReader(body.charStream()))
             }
+        }.let {
+            AddDeviceResponse(
+                deviceAuthToken = it.deviceAuthToken,
+                ownDeviceId = it.ownDeviceId,
+                data = it.data ?: pullChanges(it.deviceAuthToken, ClientDataStatus.empty)
+            )
         }
     }
 

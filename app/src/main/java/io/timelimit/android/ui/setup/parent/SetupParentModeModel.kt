@@ -102,7 +102,7 @@ class SetupParentModeModel(application: Application): AndroidViewModel(applicati
                         timeZone = logic.timeApi.getSystemTimeZone().id
                 )
 
-                val clientStatusResponse = api.pullChanges(registerResponse.deviceAuthToken, ClientDataStatus.empty)
+                val clientStatusResponse = registerResponse.data
 
                 Threads.database.executeAndWait {
                     logic.database.runInTransaction {
@@ -174,7 +174,7 @@ class SetupParentModeModel(application: Application): AndroidViewModel(applicati
                         deviceName = deviceName
                 )
 
-                val clientStatusResponse = api.pullChanges(registerResponse.deviceAuthToken, ClientDataStatus.empty)
+                val clientStatusResponse = registerResponse.data
 
                 Threads.database.executeAndWait {
                     logic.database.runInTransaction {

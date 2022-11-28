@@ -1,5 +1,5 @@
 /*
- * TimeLimit Copyright <C> 2019 Jonas Lochmann
+ * TimeLimit Copyright <C> 2019 - 2022 Jonas Lochmann
  *
  * This program is free software: you can redistribute it and/or modify
  * it under the terms of the GNU General Public License as published by
@@ -19,29 +19,40 @@ import android.util.JsonReader
 
 data class AddDeviceResponse (
     val deviceAuthToken: String,
-    val ownDeviceId: String
+    val ownDeviceId: String,
+    val data: ServerDataStatus
+)
+
+data class ServerAddDeviceResponse (
+    val deviceAuthToken: String,
+    val ownDeviceId: String,
+    val data: ServerDataStatus?
 ) {
     companion object {
         private const val DEVICE_AUTH_TOKEN = "deviceAuthToken"
         private const val OWN_DEVICE_ID = "ownDeviceId"
+        private const val DATA = "data"
 
-        fun parse(reader: JsonReader): AddDeviceResponse {
+        fun parse(reader: JsonReader): ServerAddDeviceResponse {
             var deviceAuthToken: String? = null
             var ownDeviceId: String? = null
+            var data: ServerDataStatus? = null
 
             reader.beginObject()
             while (reader.hasNext()) {
                 when (reader.nextName()) {
                     DEVICE_AUTH_TOKEN -> deviceAuthToken = reader.nextString()
                     OWN_DEVICE_ID -> ownDeviceId = reader.nextString()
+                    DATA -> data = ServerDataStatus.parse(reader)
                     else -> reader.skipValue()
                 }
             }
             reader.endObject()
 
-            return AddDeviceResponse(
-                    deviceAuthToken = deviceAuthToken!!,
-                    ownDeviceId = ownDeviceId!!
+            return ServerAddDeviceResponse(
+                deviceAuthToken = deviceAuthToken!!,
+                ownDeviceId = ownDeviceId!!,
+                data = data
             )
         }
     }
