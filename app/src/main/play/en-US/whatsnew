@@ -1,2 +1,2 @@
-- fix sync issues that could occur after not using a client for a longer duration
-- updated dependencies
+- improved initial configuration synchronization
+- removed old App list synchronization method

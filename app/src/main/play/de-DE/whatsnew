@@ -1,2 +1,2 @@
-- Synchronisationsprobleme, die nach längerer Nichtbenutzung auftreten konnten, behoben
-- Abhängigkeiten aktualisiert
+- initiale Synchronisation optimiert
+- altes Verfahren zur App-Listen-Synchronisation entfernt
