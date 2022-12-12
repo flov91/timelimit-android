@@ -1,5 +1,5 @@
 /*
- * TimeLimit Copyright <C> 2019 Jonas Lochmann
+ * TimeLimit Copyright <C> 2019 - 2022 Jonas Lochmann
  *
  * This program is free software: you can redistribute it and/or modify
  * it under the terms of the GNU General Public License as published by
@@ -20,6 +20,7 @@ import io.socket.client.IO
 import io.socket.client.Socket
 import io.socket.engineio.client.transports.WebSocket
 import io.timelimit.android.sync.network.api.httpClient
+import okhttp3.HttpUrl.Companion.toHttpUrlOrNull
 import org.json.JSONArray
 import org.json.JSONObject
 
@@ -48,11 +49,14 @@ class SocketIoWebsocketClient(serverUrl: String, private val deviceAuthTokenToCo
         }
     }
 
+    private val parsedUrl = serverUrl.toHttpUrlOrNull()
+
     private val client = IO.socket(
-            serverUrl,
+            parsedUrl?.newBuilder()?.encodedPath("/")?.build()?.toString() ?: serverUrl,
             IO.Options().apply {
                 transports = arrayOf(WebSocket.NAME)
                 webSocketFactory = httpClient
+                path = (parsedUrl?.encodedPath ?: "").removeSuffix("/") + "/socket.io"
             }
     )
 
