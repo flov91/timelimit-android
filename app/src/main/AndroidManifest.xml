@@ -45,6 +45,8 @@
     <uses-feature android:name="android.hardware.nfc" android:required="false" />
     <uses-feature android:name="android.hardware.usb.host" android:required="false" />
 
+    <meta-data android:name="isMonitoringTool" android:value="child_monitoring" />
+
     <application
         android:banner="@drawable/banner"
         android:name=".Application"
