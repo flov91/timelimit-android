@@ -39,3 +39,5 @@ TimeLimit verwendet die Bedienhilfe-Berechtigung, um den Home-Button vor dem Auf
 TimeLimit verwendet die Berechtigung "Über anderen Apps anzeigen", um bei neueren Android-Versionen den Sperrbildschirm aufrufen zu können und um gesperrte Apps zu überlagern, bis der Sperrbildschirm gestartet wurde.
 
 TimeLimit verwendet den Standortzugriff, um das verwendete Netzwerk zu erkennen und auf der Basis Anwendungen abhängig von den Einstellungen zu erlauben oder zu sperren. Der Standortzugriff wird darüber hinaus nicht verwendet.
+
+Bei der Nutzung der Vernetzung übermittelt TimeLimit die Nutzungsdauern und - falls aktiviert - die Liste der installierten Apps an die Eltern.

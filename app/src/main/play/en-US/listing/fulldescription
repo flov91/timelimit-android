@@ -40,3 +40,5 @@ TimeLimit uses an accessibility service to press the home button before showing 
 TimeLimit uses the permission "draw over other Apps" to allow opening the lockscreen at newer android versions and to overlay blocked Apps until the lockscreen is launched.
 
 TimeLimit uses the location access to detect the used WiFi network and allow/ block Apps depending on it and your settings. The location access is not used otherwise.
+
+If the connected mode is used, then TimeLimit may transmit the usage durations and - if enabled - the installed Apps to the parent user.
