@@ -1,5 +1,5 @@
 /*
- * TimeLimit Copyright <C> 2019 - 2022 Jonas Lochmann
+ * TimeLimit Copyright <C> 2019 - 2023 Jonas Lochmann
  *
  * This program is free software: you can redistribute it and/or modify
  * it under the terms of the GNU General Public License as published by
@@ -123,11 +123,6 @@ abstract class RoomDatabase: RoomDatabase(), io.timelimit.android.data.Database 
         transactionCommitListeners.remove(listener)
     }
 
-    // the room compiler needs this
-    override fun <T> runInTransaction(block: () -> T): T {
-        return super.runInTransaction(block)
-    }
-
     override fun <T> runInUnobservedTransaction(block: () -> T): T {
         openHelper.readableDatabase.beginTransaction()
         try {
@@ -175,8 +170,8 @@ abstract class RoomDatabase: RoomDatabase(), io.timelimit.android.data.Database 
             tableNames[index] = TableUtil.toName(table)
         }
 
-        invalidationTracker.addObserver(object: InvalidationTracker.Observer(tableNames) {
-            override fun onInvalidated(tables: MutableSet<String>) {
+        invalidationTracker.addObserver(object: InvalidationTracker.Observer(tableNames.requireNoNulls()) {
+            override fun onInvalidated(tables: Set<String>) {
                 val item = observer.get()
 
                 if (item != null) {

@@ -23,9 +23,9 @@ buildscript {
         mavenCentral()
     }
     dependencies {
-        classpath 'com.android.tools.build:gradle:7.3.0'
+        classpath 'com.android.tools.build:gradle:7.4.0'
         classpath "org.jetbrains.kotlin:kotlin-gradle-plugin:$kotlin_version"
-        classpath "androidx.navigation:navigation-safe-args-gradle-plugin:2.5.2"
+        classpath "androidx.navigation:navigation-safe-args-gradle-plugin:2.5.3"
         classpath 'com.squareup.wire:wire-gradle-plugin:4.4.0'
 
         // NOTE: Do not place your application dependencies here; they belong
