@@ -1,2 +1,2 @@
-- improved initial configuration synchronization
-- removed old App list synchronization method
+- declared the isMonitoringTool attribute
+- updated device name database

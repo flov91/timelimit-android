@@ -1,2 +1,2 @@
-- initiale Synchronisation optimiert
-- altes Verfahren zur App-Listen-Synchronisation entfernt
+- Deklaration des isMonitoringTool-Attributs
+- Gerätenamendatenbank aktualisiert
