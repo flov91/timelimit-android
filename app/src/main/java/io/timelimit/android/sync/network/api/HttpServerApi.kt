@@ -1,5 +1,5 @@
 /*
- * TimeLimit Copyright <C> 2019 - 2022 Jonas Lochmann
+ * TimeLimit Copyright <C> 2019 - 2023 Jonas Lochmann
  *
  * This program is free software: you can redistribute it and/or modify
  * it under the terms of the GNU General Public License as published by
@@ -26,6 +26,7 @@ import io.timelimit.android.sync.network.*
 import okhttp3.MediaType.Companion.toMediaTypeOrNull
 import okhttp3.Request
 import okhttp3.RequestBody
+import okhttp3.Response
 import okio.BufferedSink
 import okio.GzipSink
 import okio.buffer
@@ -109,21 +110,15 @@ class HttpServerApi(private val endpointWithoutSlashAtEnd: String): ServerApi {
     }
 
     override suspend fun sendMailLoginCode(mail: String, locale: String, deviceAuthToken: String?): String {
-        httpClient.newCall(
-                Request.Builder()
-                        .url("$endpointWithoutSlashAtEnd/auth/send-mail-login-code-v2")
-                        .post(createJsonRequestBody {
-                            writer ->
-
-                            writer.beginObject()
-                            writer.name(MAIL).value(mail)
-                            writer.name(LOCALE).value(locale)
-                            if (deviceAuthToken != null) { writer.name(DEVICE_AUTH_TOKEN).value(deviceAuthToken) }
-                            writer.endObject()
-                        })
-                        .header("Content-Encoding", "gzip")
-                        .build()
-        ).waitForResponse().use {
+        postJsonRequest(
+            "auth/send-mail-login-code-v2"
+        ) { writer ->
+            writer.beginObject()
+            writer.name(MAIL).value(mail)
+            writer.name(LOCALE).value(locale)
+            if (deviceAuthToken != null) { writer.name(DEVICE_AUTH_TOKEN).value(deviceAuthToken) }
+            writer.endObject()
+        }.use {
             try {
                 it.assertSuccess()
             } catch (ex: BadRequestHttpError) {
@@ -174,20 +169,15 @@ class HttpServerApi(private val endpointWithoutSlashAtEnd: String): ServerApi {
     }
 
     override suspend fun signInByMailCode(mailLoginToken: String, code: String): String {
-        httpClient.newCall(
-                Request.Builder()
-                        .url("$endpointWithoutSlashAtEnd/auth/sign-in-by-mail-code")
-                        .post(createJsonRequestBody {
-                            writer ->
+        postJsonRequest(
+            "auth/sign-in-by-mail-code"
+        ) { writer ->
 
-                            writer.beginObject()
-                            writer.name(MAIL_LOGIN_TOKEN).value(mailLoginToken)
-                            writer.name(RECEIVED_CODE).value(code)
-                            writer.endObject()
-                        })
-                        .header("Content-Encoding", "gzip")
-                        .build()
-        ).waitForResponse().use {
+            writer.beginObject()
+            writer.name(MAIL_LOGIN_TOKEN).value(mailLoginToken)
+            writer.name(RECEIVED_CODE).value(code)
+            writer.endObject()
+        }.use {
             it.assertSuccess()
 
             val body = it.body!!
@@ -214,19 +204,11 @@ class HttpServerApi(private val endpointWithoutSlashAtEnd: String): ServerApi {
     }
 
     override suspend fun getStatusByMailToken(mailAuthToken: String): StatusOfMailAddressResponse {
-        httpClient.newCall(
-                Request.Builder()
-                        .url("$endpointWithoutSlashAtEnd/parent/get-status-by-mail-address")
-                        .post(createJsonRequestBody {
-                            writer ->
-
-                            writer.beginObject()
-                            writer.name(MAIL_AUTH_TOKEN).value(mailAuthToken)
-                            writer.endObject()
-                        })
-                        .header("Content-Encoding", "gzip")
-                        .build()
-        ).waitForResponse().use {
+        postJsonRequest("parent/get-status-by-mail-address") { writer ->
+            writer.beginObject()
+            writer.name(MAIL_AUTH_TOKEN).value(mailAuthToken)
+            writer.endObject()
+        }.use {
             it.assertSuccess()
 
             val body = it.body!!
@@ -256,34 +238,26 @@ class HttpServerApi(private val endpointWithoutSlashAtEnd: String): ServerApi {
         mailToken: String, parentPassword: ParentPassword, parentDevice: NewDeviceInfo,
         timeZone: String, parentName: String, deviceName: String, skipClientLevel: Boolean
     ): AddDeviceResponse {
-        return httpClient.newCall(
-                Request.Builder()
-                        .url("$endpointWithoutSlashAtEnd/parent/create-family")
-                        .post(createJsonRequestBody {
-                            writer ->
+        return postJsonRequest("parent/create-family") { writer ->
+            writer.beginObject()
 
-                            writer.beginObject()
+            writer.name(MAIL_AUTH_TOKEN).value(mailToken)
+            writer.name(TIMEZONE).value(timeZone)
+            writer.name(PARENT_NAME).value(parentName)
+            writer.name(DEVICE_NAME).value(deviceName)
 
-                            writer.name(MAIL_AUTH_TOKEN).value(mailToken)
-                            writer.name(TIMEZONE).value(timeZone)
-                            writer.name(PARENT_NAME).value(parentName)
-                            writer.name(DEVICE_NAME).value(deviceName)
+            writer.name(PARENT_PASSWORD)
+            parentPassword.serialize(writer)
 
-                            writer.name(PARENT_PASSWORD)
-                            parentPassword.serialize(writer)
+            writer.name(PARENT_DEVICE)
+            parentDevice.serialize(writer)
 
-                            writer.name(PARENT_DEVICE)
-                            parentDevice.serialize(writer)
+            if (!skipClientLevel) {
+                writer.name(CLIENT_LEVEL).value(ClientDataStatus.CLIENT_LEVEL_VALUE)
+            }
 
-                            if (!skipClientLevel) {
-                                writer.name(CLIENT_LEVEL).value(ClientDataStatus.CLIENT_LEVEL_VALUE)
-                            }
-
-                            writer.endObject()
-                        })
-                        .header("Content-Encoding", "gzip")
-                        .build()
-        ).waitForResponse().use {
+            writer.endObject()
+        }.use {
             it.assertSuccess()
 
             val body = it.body!!
@@ -311,29 +285,21 @@ class HttpServerApi(private val endpointWithoutSlashAtEnd: String): ServerApi {
     private suspend fun signInToFamilyByMailTokenInternal(
         mailToken: String, parentDevice: NewDeviceInfo, deviceName: String, skipClientLevel: Boolean
     ): AddDeviceResponse {
-        return httpClient.newCall(
-                Request.Builder()
-                        .url("$endpointWithoutSlashAtEnd/parent/sign-in-into-family")
-                        .post(createJsonRequestBody {
-                            writer ->
+        return postJsonRequest("parent/sign-in-into-family") { writer ->
+            writer.beginObject()
 
-                            writer.beginObject()
+            writer.name(MAIL_AUTH_TOKEN).value(mailToken)
+            writer.name(DEVICE_NAME).value(deviceName)
 
-                            writer.name(MAIL_AUTH_TOKEN).value(mailToken)
-                            writer.name(DEVICE_NAME).value(deviceName)
+            writer.name(PARENT_DEVICE)
+            parentDevice.serialize(writer)
 
-                            writer.name(PARENT_DEVICE)
-                            parentDevice.serialize(writer)
+            if (!skipClientLevel) {
+                writer.name(CLIENT_LEVEL).value(ClientDataStatus.CLIENT_LEVEL_VALUE)
+            }
 
-                            if (!skipClientLevel) {
-                                writer.name(CLIENT_LEVEL).value(ClientDataStatus.CLIENT_LEVEL_VALUE)
-                            }
-
-                            writer.endObject()
-                        })
-                        .header("Content-Encoding", "gzip")
-                        .build()
-        ).waitForResponse().use {
+            writer.endObject()
+        }.use {
             it.assertSuccess()
 
             val body = it.body!!
@@ -351,24 +317,16 @@ class HttpServerApi(private val endpointWithoutSlashAtEnd: String): ServerApi {
     }
 
     override suspend fun recoverPasswordByMailToken(mailToken: String, parentPassword: ParentPassword) {
-        httpClient.newCall(
-                Request.Builder()
-                        .url("$endpointWithoutSlashAtEnd/parent/recover-parent-password")
-                        .post(createJsonRequestBody {
-                            writer ->
+        postJsonRequest("parent/recover-parent-password") { writer ->
+            writer.beginObject()
 
-                            writer.beginObject()
+            writer.name(MAIL_AUTH_TOKEN).value(mailToken)
 
-                            writer.name(MAIL_AUTH_TOKEN).value(mailToken)
+            writer.name(PASSWORD)
+            parentPassword.serialize(writer)
 
-                            writer.name(PASSWORD)
-                            parentPassword.serialize(writer)
-
-                            writer.endObject()
-                        })
-                        .header("Content-Encoding", "gzip")
-                        .build()
-        ).waitForResponse().use {
+            writer.endObject()
+        }.use {
             it.assertSuccess()
         }
     }
@@ -384,30 +342,22 @@ class HttpServerApi(private val endpointWithoutSlashAtEnd: String): ServerApi {
     private suspend fun registerChildDeviceInternal(
         registerToken: String, childDeviceInfo: NewDeviceInfo, deviceName: String, skipClientLevel: Boolean
     ): AddDeviceResponse {
-        return httpClient.newCall(
-                Request.Builder()
-                        .url("$endpointWithoutSlashAtEnd/child/add-device")
-                        .post(createJsonRequestBody {
-                            writer ->
+        return postJsonRequest("child/add-device") { writer ->
+            writer.beginObject()
 
-                            writer.beginObject()
+            writer.name(REGISTER_TOKEN).value(registerToken)
 
-                            writer.name(REGISTER_TOKEN).value(registerToken)
+            writer.name(CHILD_DEVICE)
+            childDeviceInfo.serialize(writer)
 
-                            writer.name(CHILD_DEVICE)
-                            childDeviceInfo.serialize(writer)
+            writer.name(DEVICE_NAME).value(deviceName)
 
-                            writer.name(DEVICE_NAME).value(deviceName)
+            if (!skipClientLevel) {
+                writer.name(CLIENT_LEVEL).value(ClientDataStatus.CLIENT_LEVEL_VALUE)
+            }
 
-                            if (!skipClientLevel) {
-                                writer.name(CLIENT_LEVEL).value(ClientDataStatus.CLIENT_LEVEL_VALUE)
-                            }
-
-                            writer.endObject()
-                        })
-                        .header("Content-Encoding", "gzip")
-                        .build()
-        ).waitForResponse().use {
+            writer.endObject()
+        }.use {
             it.assertSuccess()
 
             val body = it.body!!
@@ -425,13 +375,7 @@ class HttpServerApi(private val endpointWithoutSlashAtEnd: String): ServerApi {
     }
 
     override suspend fun pushChanges(request: ActionUploadRequest): ActionUploadResponse {
-        httpClient.newCall(
-                Request.Builder()
-                        .url("$endpointWithoutSlashAtEnd/sync/push-actions")
-                        .post(createJsonRequestBody{ request.serialize(it) })
-                        .header("Content-Encoding", "gzip")
-                        .build()
-        ).waitForResponse().use {
+        postJsonRequest("sync/push-actions") { request.serialize(it) }.use {
             it.assertSuccess()
 
             val body = it.body!!
@@ -443,24 +387,16 @@ class HttpServerApi(private val endpointWithoutSlashAtEnd: String): ServerApi {
     }
 
     override suspend fun pullChanges(deviceAuthToken: String, status: ClientDataStatus): ServerDataStatus {
-        httpClient.newCall(
-                Request.Builder()
-                        .url("$endpointWithoutSlashAtEnd/sync/pull-status")
-                        .post(createJsonRequestBody {
-                            writer ->
+        postJsonRequest("sync/pull-status") { writer ->
+            writer.beginObject()
 
-                            writer.beginObject()
+            writer.name(DEVICE_AUTH_TOKEN).value(deviceAuthToken)
 
-                            writer.name(DEVICE_AUTH_TOKEN).value(deviceAuthToken)
+            writer.name(STATUS)
+            status.serialize(writer)
 
-                            writer.name(STATUS)
-                            status.serialize(writer)
-
-                            writer.endObject()
-                        })
-                        .header("Content-Encoding", "gzip")
-                        .build()
-        ).waitForResponse().use {
+            writer.endObject()
+        }.use {
             it.assertSuccess()
 
             val body = it.body!!
@@ -472,23 +408,15 @@ class HttpServerApi(private val endpointWithoutSlashAtEnd: String): ServerApi {
     }
 
     override suspend fun createAddDeviceToken(deviceAuthToken: String, parentUserId: String, parentPasswordSecondHash: String): CreateAddDeviceTokenResponse {
-        httpClient.newCall(
-                Request.Builder()
-                        .url("$endpointWithoutSlashAtEnd/parent/create-add-device-token")
-                        .post(createJsonRequestBody {
-                            writer ->
+        postJsonRequest("parent/create-add-device-token") { writer ->
+            writer.beginObject()
 
-                            writer.beginObject()
+            writer.name(DEVICE_AUTH_TOKEN).value(deviceAuthToken)
+            writer.name(PARENT_ID).value(parentUserId)
+            writer.name(PARENT_PASSWORD_SECOND_HASH).value(parentPasswordSecondHash)
 
-                            writer.name(DEVICE_AUTH_TOKEN).value(deviceAuthToken)
-                            writer.name(PARENT_ID).value(parentUserId)
-                            writer.name(PARENT_PASSWORD_SECOND_HASH).value(parentPasswordSecondHash)
-
-                            writer.endObject()
-                        })
-                        .header("Content-Encoding", "gzip")
-                        .build()
-        ).waitForResponse().use {
+            writer.endObject()
+        }.use {
             it.assertSuccess()
 
             val body = it.body!!
@@ -500,24 +428,14 @@ class HttpServerApi(private val endpointWithoutSlashAtEnd: String): ServerApi {
     }
 
     override suspend fun canDoPurchase(deviceAuthToken: String): CanDoPurchaseStatus {
-        httpClient.newCall(
-                Request.Builder()
-                        .url("$endpointWithoutSlashAtEnd/purchase/can-do-purchase")
-                        .post(createJsonRequestBody {
-                            writer ->
+        postJsonRequest("purchase/can-do-purchase") { writer ->
+            writer.beginObject()
 
-                            writer.beginObject()
+            writer.name(DEVICE_AUTH_TOKEN).value(deviceAuthToken)
+            writer.name("type").value("googleplay")
 
-                            writer.name(DEVICE_AUTH_TOKEN).value(deviceAuthToken)
-                            writer.name("type").value("googleplay")
-
-                            writer.endObject()
-                        })
-                        .header("Content-Encoding", "gzip")
-                        .build()
-        ).waitForResponse().use {
-            response ->
-
+            writer.endObject()
+        }.use { response ->
             response.assertSuccess()
 
             return Threads.network.executeAndWait {
@@ -529,23 +447,15 @@ class HttpServerApi(private val endpointWithoutSlashAtEnd: String): ServerApi {
     }
 
     override suspend fun finishPurchaseByGooglePlay(receipt: String, signature: String, deviceAuthToken: String) {
-        httpClient.newCall(
-                Request.Builder()
-                        .url("$endpointWithoutSlashAtEnd/purchase/finish-purchase-by-google-play")
-                        .post(createJsonRequestBody {
-                            writer ->
+        postJsonRequest("purchase/finish-purchase-by-google-play") { writer ->
+            writer.beginObject()
 
-                            writer.beginObject()
+            writer.name("receipt").value(receipt)
+            writer.name("signature").value(signature)
+            writer.name(DEVICE_AUTH_TOKEN).value(deviceAuthToken)
 
-                            writer.name("receipt").value(receipt)
-                            writer.name("signature").value(signature)
-                            writer.name(DEVICE_AUTH_TOKEN).value(deviceAuthToken)
-
-                            writer.endObject()
-                        })
-                        .header("Content-Encoding", "gzip")
-                        .build()
-        ).waitForResponse().use {
+            writer.endObject()
+        }.use {
             response ->
 
             response.assertSuccess()
@@ -553,42 +463,24 @@ class HttpServerApi(private val endpointWithoutSlashAtEnd: String): ServerApi {
     }
 
     override suspend fun linkParentMailAddress(mailAuthToken: String, deviceAuthToken: String, parentUserId: String, secondPasswordHash: String) {
-        httpClient.newCall(
-                Request.Builder()
-                        .url("$endpointWithoutSlashAtEnd/parent/link-mail-address")
-                        .post(createJsonRequestBody {
-                            writer ->
+        postJsonRequest("parent/link-mail-address") { writer ->
+            writer.beginObject()
 
-                            writer.beginObject()
+            writer.name(MAIL_AUTH_TOKEN).value(mailAuthToken)
+            writer.name(DEVICE_AUTH_TOKEN).value(deviceAuthToken)
+            writer.name(PARENT_USER_ID).value(parentUserId)
+            writer.name(PARENT_PASSWORD_SECOND_HASH).value(secondPasswordHash)
 
-                            writer.name(MAIL_AUTH_TOKEN).value(mailAuthToken)
-                            writer.name(DEVICE_AUTH_TOKEN).value(deviceAuthToken)
-                            writer.name(PARENT_USER_ID).value(parentUserId)
-                            writer.name(PARENT_PASSWORD_SECOND_HASH).value(secondPasswordHash)
-
-                            writer.endObject()
-                        })
-                        .header("Content-Encoding", "gzip")
-                        .build()
-        ).waitForResponse().use {
-            response ->
-
+            writer.endObject()
+        }.use { response ->
             response.assertSuccess()
         }
     }
 
     override suspend fun updatePrimaryDevice(request: UpdatePrimaryDeviceRequest): UpdatePrimaryDeviceResponse {
-        httpClient.newCall(
-                Request.Builder()
-                        .url("$endpointWithoutSlashAtEnd/child/update-primary-device")
-                        .post(createJsonRequestBody { writer ->
-                            request.serialize(writer)
-                        })
-                        .header("Content-Encoding", "gzip")
-                        .build()
-        ).waitForResponse().use {
-            response ->
-
+        postJsonRequest("child/update-primary-device") {
+            request.serialize(it)
+        }.use { response ->
             response.assertSuccess()
 
             return Threads.network.executeAndWait {
@@ -600,19 +492,13 @@ class HttpServerApi(private val endpointWithoutSlashAtEnd: String): ServerApi {
     }
 
     override suspend fun requestSignOutAtPrimaryDevice(deviceAuthToken: String) {
-        httpClient.newCall(
-                Request.Builder()
-                        .url("$endpointWithoutSlashAtEnd/child/logout-at-primary-device")
-                        .post(createJsonRequestBody { writer ->
-                            writer.beginObject()
+        postJsonRequest("child/logout-at-primary-device") { writer ->
+            writer.beginObject()
 
-                            writer.name(DEVICE_AUTH_TOKEN).value(deviceAuthToken)
+            writer.name(DEVICE_AUTH_TOKEN).value(deviceAuthToken)
 
-                            writer.endObject()
-                        })
-                        .header("Content-Encoding", "gzip")
-                        .build()
-        ).waitForResponse().use { response ->
+            writer.endObject()
+        }.use { response ->
             response.assertSuccess()
 
             return Threads.network.executeAndWait {
@@ -624,58 +510,34 @@ class HttpServerApi(private val endpointWithoutSlashAtEnd: String): ServerApi {
     }
 
     override suspend fun reportDeviceRemoved(deviceAuthToken: String) {
-        httpClient.newCall(
-                Request.Builder()
-                        .url("$endpointWithoutSlashAtEnd/sync/report-removed")
-                        .post(createJsonRequestBody { writer ->
-                            writer.beginObject()
-                            writer.name(DEVICE_AUTH_TOKEN).value(deviceAuthToken)
-                            writer.endObject()
-                        })
-                        .header("Content-Encoding", "gzip")
-                        .build()
-        ).waitForResponse().use {
-            response ->
-
+        postJsonRequest("sync/report-removed") { writer ->
+            writer.beginObject()
+            writer.name(DEVICE_AUTH_TOKEN).value(deviceAuthToken)
+            writer.endObject()
+        }.use { response ->
             response.assertSuccess()
         }
     }
 
     override suspend fun removeDevice(deviceAuthToken: String, parentUserId: String, parentPasswordSecondHash: String, deviceId: String) {
-        httpClient.newCall(
-                Request.Builder()
-                        .url("$endpointWithoutSlashAtEnd/parent/remove-device")
-                        .post(createJsonRequestBody { writer ->
-                            writer.beginObject()
-                            writer.name(DEVICE_AUTH_TOKEN).value(deviceAuthToken)
-                            writer.name(PARENT_USER_ID).value(parentUserId)
-                            writer.name(PARENT_PASSWORD_SECOND_HASH).value(parentPasswordSecondHash)
-                            writer.name(DEVICE_ID).value(deviceId)
-                            writer.endObject()
-                        })
-                        .header("Content-Encoding", "gzip")
-                        .build()
-        ).waitForResponse().use {
-            response ->
-
+        postJsonRequest("parent/remove-device") { writer ->
+            writer.beginObject()
+            writer.name(DEVICE_AUTH_TOKEN).value(deviceAuthToken)
+            writer.name(PARENT_USER_ID).value(parentUserId)
+            writer.name(PARENT_PASSWORD_SECOND_HASH).value(parentPasswordSecondHash)
+            writer.name(DEVICE_ID).value(deviceId)
+            writer.endObject()
+        }.use { response ->
             response.assertSuccess()
         }
     }
 
     override suspend fun isDeviceRemoved(deviceAuthToken: String): Boolean {
-        httpClient.newCall(
-                Request.Builder()
-                        .url("$endpointWithoutSlashAtEnd/sync/is-device-removed")
-                        .post(createJsonRequestBody { writer ->
-                            writer.beginObject()
-                            writer.name(DEVICE_AUTH_TOKEN).value(deviceAuthToken)
-                            writer.endObject()
-                        })
-                        .header("Content-Encoding", "gzip")
-                        .build()
-        ).waitForResponse().use {
-            response ->
-
+        postJsonRequest("sync/is-device-removed") { writer ->
+            writer.beginObject()
+            writer.name(DEVICE_AUTH_TOKEN).value(deviceAuthToken)
+            writer.endObject()
+        }.use { response ->
             response.assertSuccess()
 
             return Threads.network.executeAndWait {
@@ -701,20 +563,14 @@ class HttpServerApi(private val endpointWithoutSlashAtEnd: String): ServerApi {
         parentUserId: String,
         parentPasswordSecondHash: String
     ): String {
-        httpClient.newCall(
-            Request.Builder()
-                .url("$endpointWithoutSlashAtEnd/parent/create-identity-token")
-                .post(createJsonRequestBody { writer ->
-                    writer.beginObject()
-                    writer.name(DEVICE_AUTH_TOKEN).value(deviceAuthToken)
-                    writer.name(PARENT_USER_ID).value(parentUserId)
-                    writer.name(PARENT_PASSWORD_SECOND_HASH).value(parentPasswordSecondHash)
-                    writer.name("purpose").value("purchase")
-                    writer.endObject()
-                })
-                .header("Content-Encoding", "gzip")
-                .build()
-        ).waitForResponse().use { response ->
+        postJsonRequest("parent/create-identity-token") { writer ->
+            writer.beginObject()
+            writer.name(DEVICE_AUTH_TOKEN).value(deviceAuthToken)
+            writer.name(PARENT_USER_ID).value(parentUserId)
+            writer.name(PARENT_PASSWORD_SECOND_HASH).value(parentPasswordSecondHash)
+            writer.name("purpose").value("purchase")
+            writer.endObject()
+        }.use { response ->
             response.assertSuccess()
 
             return Threads.network.executeAndWait {
@@ -733,5 +589,18 @@ class HttpServerApi(private val endpointWithoutSlashAtEnd: String): ServerApi {
                 token!!
             }
         }
+    }
+
+    private suspend fun postJsonRequest(
+        path: String,
+        requestBody: (writer: JsonWriter) -> Unit
+    ): Response {
+        return httpClient.newCall(
+            Request.Builder()
+                .url("$endpointWithoutSlashAtEnd/$path")
+                .post(createJsonRequestBody(requestBody))
+                .header("Content-Encoding", "gzip")
+                .build()
+        ).waitForResponse()
     }
 }
