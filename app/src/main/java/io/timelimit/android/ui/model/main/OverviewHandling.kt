@@ -34,17 +34,13 @@ import io.timelimit.android.livedata.map
 import io.timelimit.android.logic.AppLogic
 import io.timelimit.android.sync.actions.ReviewChildTaskAction
 import io.timelimit.android.sync.actions.apply.ApplyActionUtil
-import io.timelimit.android.ui.model.ActivityCommand
-import io.timelimit.android.ui.model.AuthenticationModelApi
-import io.timelimit.android.ui.model.Screen
-import io.timelimit.android.ui.model.State
+import io.timelimit.android.ui.model.*
 import kotlinx.coroutines.*
 import kotlinx.coroutines.channels.SendChannel
 import kotlinx.coroutines.flow.*
 import kotlinx.coroutines.flow.distinctUntilChanged
 import kotlinx.coroutines.sync.Mutex
 import java.util.*
-import kotlin.coroutines.CoroutineContext
 
 object OverviewHandling {
     fun processState(
@@ -165,6 +161,30 @@ object OverviewHandling {
                             parent.authentication,
                             logic
                         )
+                    }
+                }
+            },
+            openUser = { user ->
+                launch {
+                    when (user.type) {
+                        UserType.Child -> {
+                            if (user.viewingNeedsAuthentication) {
+                                val currentUserId = logic.deviceEntry.asFlow().first()?.currentUserId
+
+                                if (currentUserId != user.id) {
+                                    authentication.doParentAuthentication() ?: return@launch
+                                }
+                            }
+
+                            stateLive.update { state ->
+                                if (state is State.Overview) State.ManageChild.Main(state, user.id, fromRedirect = false)
+                                else state
+                            }
+                        }
+                        UserType.Parent -> stateLive.update { state ->
+                            if (state is State.Overview) State.ManageParent.Main(state, user.id)
+                            else state
+                        }
                     }
                 }
             }
@@ -349,7 +369,8 @@ object OverviewHandling {
         val addDevice: () -> Unit,
         val skipTaskReview: (TaskToReview) -> Unit,
         val reviewReject: (TaskToReview) -> Unit,
-        val reviewAccept: (TaskToReview) -> Unit
+        val reviewAccept: (TaskToReview) -> Unit,
+        val openUser: (UserItem) -> Unit
     )
     data class IntroFlags(
         val showSetupOption: Boolean,

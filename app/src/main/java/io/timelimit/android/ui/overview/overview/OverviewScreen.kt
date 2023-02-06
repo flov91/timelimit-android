@@ -227,7 +227,7 @@ fun OverviewScreen(
         }
 
         item (key = Pair("header", "users")) { ListCommon.SectionHeader(stringResource(R.string.overview_header_users), Modifier.animateItemPlacement()) }
-        items(screen.users.list, key = { Pair("user", it.id) }) { UserItem(it, executeCommand) }
+        items(screen.users.list, key = { Pair("user", it.id) }) { UserItem(it, screen.actions) }
         if (screen.users.canAdd) item (key = Pair("header", "user.create")) {
             ListCommon.ActionListItem(
                 icon = Icons.Default.Add,

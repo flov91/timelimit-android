@@ -27,42 +27,23 @@ import androidx.compose.material.icons.filled.Security
 import androidx.compose.material.icons.filled.Settings
 import androidx.compose.runtime.Composable
 import androidx.compose.ui.Modifier
-import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.unit.dp
 import io.timelimit.android.R
 import io.timelimit.android.data.model.UserType
-import io.timelimit.android.ui.MainActivity
-import io.timelimit.android.ui.model.UpdateStateCommand
 import io.timelimit.android.ui.model.main.OverviewHandling
 
 @OptIn(ExperimentalFoundationApi::class)
 @Composable
 fun LazyItemScope.UserItem(
     user: OverviewHandling.UserItem,
-    executeCommand: (UpdateStateCommand) -> Unit
+    actions: OverviewHandling.Actions
 ) {
-    // TODO: implement this without dependency on MainActivity
-    val activity = LocalContext.current as MainActivity
-
     ListCardCommon.Card(
         Modifier
             .animateItemPlacement()
             .padding(horizontal = 8.dp)
-            .clickable(
-                onClick = {
-                    when (user.type) {
-                        UserType.Child -> {
-                            if (!user.viewingNeedsAuthentication || activity.getActivityViewModel().isParentOrChildAuthenticated(user.id)) {
-                                executeCommand(UpdateStateCommand.Overview.ManageChild(user.id))
-                            } else {
-                                activity.showAuthenticationScreen()
-                            }
-                        }
-                        UserType.Parent -> executeCommand(UpdateStateCommand.Overview.ManageParent(user.id))
-                    }
-                }
-            )
+            .clickable(onClick = { actions.openUser(user) })
     ) {
         ListCardCommon.TextWithIcon(
             icon = Icons.Default.AccountCircle,

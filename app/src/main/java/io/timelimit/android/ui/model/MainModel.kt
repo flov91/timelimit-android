@@ -21,6 +21,7 @@ import androidx.lifecycle.AndroidViewModel
 import androidx.lifecycle.asFlow
 import androidx.lifecycle.viewModelScope
 import io.timelimit.android.BuildConfig
+import io.timelimit.android.data.model.UserType
 import io.timelimit.android.logic.DefaultAppLogic
 import io.timelimit.android.ui.main.ActivityViewModel
 import io.timelimit.android.ui.model.launch.LaunchHandling
@@ -50,7 +51,7 @@ class MainModel(application: Application): AndroidViewModel(application) {
                 else null
             }
 
-        override val authenticatedParentOrSelfLimitAdding: Flow<AuthenticationModelApi.ParentOrChild?> =
+        override val authenticatedParentOrCurrentChild: Flow<AuthenticationModelApi.ParentOrChild?> =
             activityModel.authenticatedUserOrChild.asFlow().map { pair ->
                 if (pair != null) AuthenticationModelApi.ParentOrChild(pair.second, pair.first)
                 else null
@@ -64,6 +65,18 @@ class MainModel(application: Application): AndroidViewModel(application) {
             authenticationScreenClosed.firstOrNull()
 
             return authenticatedParentOnly.firstOrNull()
+        }
+
+        override suspend fun doParentOrChildAuthentication(childId: String): AuthenticationModelApi.ParentOrChild? {
+            authenticatedParentOrCurrentChild.firstOrNull()?.let {
+                if (it.user.type == UserType.Parent || it.user.id == childId) return it
+            }
+
+            triggerAuthenticationScreen()
+
+            authenticationScreenClosed.firstOrNull()
+
+            return authenticatedParentOrCurrentChild.firstOrNull()
         }
 
         override fun triggerAuthenticationScreen() {

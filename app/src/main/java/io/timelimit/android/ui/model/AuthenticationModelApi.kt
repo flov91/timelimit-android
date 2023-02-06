@@ -21,10 +21,11 @@ import kotlinx.coroutines.flow.Flow
 
 interface AuthenticationModelApi {
     val authenticatedParentOnly: Flow<Parent?>
-    val authenticatedParentOrSelfLimitAdding: Flow<ParentOrChild?>
+    val authenticatedParentOrCurrentChild: Flow<ParentOrChild?>
 
     fun triggerAuthenticationScreen()
     suspend fun doParentAuthentication(): Parent?
+    suspend fun doParentOrChildAuthentication(childId: String): ParentOrChild?
 
     data class Parent(
         val user: User,
