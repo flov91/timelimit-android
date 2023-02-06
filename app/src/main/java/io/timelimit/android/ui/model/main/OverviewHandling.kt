@@ -92,13 +92,19 @@ object OverviewHandling {
                 }
             },
             skipTaskReview = { task ->
-                stateLive.update { oldState ->
-                    if (oldState is State.Overview) oldState.copy(
-                        state = oldState.state.copy(
-                            hiddenTaskIds = oldState.state.hiddenTaskIds + task.task.childTask.taskId
-                        )
-                    )
-                    else oldState
+                scope.launch {
+                    lock.tryWithLock {
+                        if (authentication.doParentAuthentication() != null) {
+                            stateLive.update { oldState ->
+                                if (oldState is State.Overview) oldState.copy(
+                                    state = oldState.state.copy(
+                                        hiddenTaskIds = oldState.state.hiddenTaskIds + task.task.childTask.taskId
+                                    )
+                                )
+                                else oldState
+                            }
+                        }
+                    }
                 }
             }
         )

@@ -28,7 +28,6 @@ import io.timelimit.android.ui.model.main.OverviewHandling
 import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.Job
 import kotlinx.coroutines.cancel
-import kotlinx.coroutines.channels.BroadcastChannel
 import kotlinx.coroutines.channels.Channel
 import kotlinx.coroutines.channels.ReceiveChannel
 import kotlinx.coroutines.flow.*
@@ -42,7 +41,7 @@ class MainModel(application: Application): AndroidViewModel(application) {
 
     private val logic = DefaultAppLogic.with(application)
     private val activityCommandInternal = Channel<ActivityCommand>()
-    private val authenticationScreenClosed = MutableSharedFlow<Unit>()
+    private val authenticationScreenClosed = MutableSharedFlow<Unit>(extraBufferCapacity = 1)
 
     private val authenticationModelApi = object: AuthenticationModelApi {
         override val authenticatedParentOnly: Flow<AuthenticationModelApi.Parent?> =
@@ -58,6 +57,8 @@ class MainModel(application: Application): AndroidViewModel(application) {
             }
 
         override suspend fun doParentAuthentication(): AuthenticationModelApi.Parent? {
+            authenticatedParentOnly.firstOrNull()?.let { return it }
+
             triggerAuthenticationScreen()
 
             authenticationScreenClosed.firstOrNull()

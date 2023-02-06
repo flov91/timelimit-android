@@ -35,6 +35,7 @@ import io.timelimit.android.ui.MainActivity
 import io.timelimit.android.ui.model.UpdateStateCommand
 import io.timelimit.android.ui.model.main.OverviewHandling
 import io.timelimit.android.ui.payment.RequiresPurchaseDialogFragment
+import io.timelimit.android.ui.util.DateUtil
 import io.timelimit.android.util.TimeTextUtil
 
 @OptIn(ExperimentalFoundationApi::class, ExperimentalMaterialApi::class)
@@ -172,14 +173,24 @@ fun OverviewScreen(
                         style = MaterialTheme.typography.subtitle1
                     )
 
+                    screen.taskToReview.task.childTask.lastGrantTimestamp.let { lastGrantTimestamp ->
+                        if (lastGrantTimestamp != 0L) {
+                            Text(
+                                stringResource(
+                                    R.string.task_review_last_grant,
+                                    DateUtil.formatAbsoluteDate(LocalContext.current, lastGrantTimestamp)
+                                ),
+                                style = MaterialTheme.typography.subtitle1
+                            )
+                        }
+                    }
+
                     Row {
                         val auth = activity.getActivityViewModel()
                         val logic = auth.logic
 
                         TextButton(onClick = {
-                            if (activity.getActivityViewModel().isParentAuthenticated()) {
-                                screen.actions.skipTaskReview(screen.taskToReview)
-                            } else activity.showAuthenticationScreen()
+                            screen.actions.skipTaskReview(screen.taskToReview)
                         }) {
                             Text(stringResource(R.string.generic_skip))
                         }
