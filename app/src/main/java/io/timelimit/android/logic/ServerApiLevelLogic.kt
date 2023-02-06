@@ -15,6 +15,8 @@
  */
 package io.timelimit.android.logic
 
+import io.timelimit.android.async.Threads
+import io.timelimit.android.coroutines.executeAndWait
 import io.timelimit.android.data.Database
 import io.timelimit.android.livedata.liveDataFromNonNullValue
 import io.timelimit.android.livedata.map
@@ -26,6 +28,10 @@ class ServerApiLevelLogic(logic: AppLogic) {
             ServerApiLevelInfo.Offline
         else
             ServerApiLevelInfo.Online(serverLevel = database.config().getServerApiLevelSync())
+
+        private suspend fun getCoroutine(database: Database): ServerApiLevelInfo = Threads.database.executeAndWait {
+            getSync(database)
+        }
     }
 
     private val database = logic.database
@@ -38,6 +44,8 @@ class ServerApiLevelLogic(logic: AppLogic) {
                 ServerApiLevelInfo.Online(serverLevel = apiLevel)
             }
     }
+
+    suspend fun getCoroutine() = getCoroutine(database)
 }
 
 sealed class ServerApiLevelInfo {

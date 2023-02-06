@@ -34,6 +34,7 @@ fun ScreenScaffold(
     screen: Screen?,
     title: String,
     subtitle: String?,
+    snackbarHostState: SnackbarHostState?,
     content: @Composable (PaddingValues) -> Unit,
     executeCommand: (UpdateStateCommand) -> Unit,
     showAuthenticationDialog: (() -> Unit)?
@@ -106,6 +107,7 @@ fun ScreenScaffold(
                 }
             }
         },
+        snackbarHost = { SnackbarHost(snackbarHostState ?: it) },
         content = content
     )
 }

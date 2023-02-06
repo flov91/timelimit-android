@@ -19,4 +19,5 @@ sealed class ActivityCommand {
     object ShowCanNotAddDevicesInLocalModeDialogFragment: ActivityCommand()
     object ShowAddDeviceFragment: ActivityCommand()
     object ShowAuthenticationScreen: ActivityCommand()
+    object ShowMissingPremiumDialog: ActivityCommand()
 }

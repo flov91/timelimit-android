@@ -15,20 +15,23 @@
  */
 package io.timelimit.android.ui.model.main
 
+import androidx.compose.material.SnackbarHostState
 import androidx.lifecycle.asFlow
 import io.timelimit.android.BuildConfig
+import io.timelimit.android.R
 import io.timelimit.android.async.Threads
 import io.timelimit.android.coroutines.executeAndWait
+import io.timelimit.android.data.extensions.getTimezone
 import io.timelimit.android.data.model.Device
 import io.timelimit.android.data.model.HintsToShow
 import io.timelimit.android.data.model.UserType
 import io.timelimit.android.data.model.derived.FullChildTask
+import io.timelimit.android.date.DateInTimezone
 import io.timelimit.android.extensions.tryWithLock
 import io.timelimit.android.extensions.whileTrue
 import io.timelimit.android.integration.platform.RuntimePermissionStatus
 import io.timelimit.android.livedata.map
 import io.timelimit.android.logic.AppLogic
-import io.timelimit.android.logic.ServerApiLevelInfo
 import io.timelimit.android.sync.actions.ReviewChildTaskAction
 import io.timelimit.android.sync.actions.apply.ApplyActionUtil
 import io.timelimit.android.ui.model.ActivityCommand
@@ -51,7 +54,8 @@ object OverviewHandling {
         authentication: AuthenticationModelApi,
         stateLive: MutableStateFlow<State>
     ): Flow<Screen> {
-        val actions: Actions = getActions(logic, scope, activityCommand, authentication, stateLive)
+        val snackbarHostState = SnackbarHostState()
+        val actions: Actions = getActions(logic, scope, activityCommand, authentication, stateLive, snackbarHostState)
         val overviewStateLive: Flow<OverviewState> = stateLive.transform { if (it is State.Overview) emit(it.state) }
         val overviewState2Live: Flow<State.Overview> = stateLive.transform { if (it is State.Overview) emit(it) }
         val overviewScreenLive: Flow<OverviewScreen> = getScreen(logic, actions, overviewStateLive)
@@ -59,7 +63,7 @@ object OverviewHandling {
 
         return hasMatchingStateLive.whileTrue {
             overviewState2Live.combine(overviewScreenLive) { state, overviewScreen ->
-                Screen.OverviewScreen(state, overviewScreen)
+                Screen.OverviewScreen(state, overviewScreen, snackbarHostState)
             }
         }
     }
@@ -69,20 +73,31 @@ object OverviewHandling {
         scope: CoroutineScope,
         activityCommand: SendChannel<ActivityCommand>,
         authentication: AuthenticationModelApi,
-        stateLive: MutableStateFlow<State>
+        stateLive: MutableStateFlow<State>,
+        snackbarHostState: SnackbarHostState
     ): Actions {
         val lock = Mutex()
 
+        fun launch(action: suspend () -> Unit) {
+            scope.launch {
+                try {
+                    action()
+                } catch (ex: Exception) {
+                    snackbarHostState.showSnackbar(logic.context.getString(R.string.error_general))
+                }
+            }
+        }
+
         return Actions(
             hideIntro = {
-                scope.launch {
+                launch {
                     Threads.database.executeAndWait {
                         logic.database.config().setHintsShownSync(HintsToShow.OVERVIEW_INTRODUCTION)
                     }
                 }
             },
             addDevice = {
-                scope.launch {
+                launch {
                     lock.tryWithLock {
                         val isLocalMode = Threads.database.executeAndWait {
                             logic.database.config().getDeviceAuthTokenSync().isEmpty()
@@ -94,7 +109,7 @@ object OverviewHandling {
                 }
             },
             skipTaskReview = { task ->
-                scope.launch {
+                launch {
                     lock.tryWithLock {
                         if (authentication.doParentAuthentication() != null) {
                             stateLive.update { oldState ->
@@ -110,8 +125,7 @@ object OverviewHandling {
                 }
             },
             reviewReject = { task ->
-                // TODO: add error handler to scope
-                scope.launch {
+                launch {
                     lock.tryWithLock {
                         authentication.doParentAuthentication()?.let { parent ->
                             ApplyActionUtil.applyParentAction(
@@ -128,9 +142,30 @@ object OverviewHandling {
                     }
                 }
             },
-            reviewAccept = {
-                scope.launch {
-                    TODO()
+            reviewAccept = { task ->
+                launch {
+                    val parent = authentication.authenticatedParentOnly.first()
+                    val hasPremium = logic.fullVersion.shouldProvideFullVersionFunctions()
+
+                    if (parent == null) authentication.doParentAuthentication()
+                    else if (!hasPremium) activityCommand.send(ActivityCommand.ShowMissingPremiumDialog)
+                    else {
+                        val serverApiLevel = logic.serverApiLevelLogic.getCoroutine()
+                        val child = logic.database.user().getChildUserByIdCoroutine(task.task.childId)
+                        val time = logic.timeApi.getCurrentTimeInMillis()
+                        val day = DateInTimezone.newInstance(time, child.getTimezone()).dayOfEpoch
+
+                        ApplyActionUtil.applyParentAction(
+                            ReviewChildTaskAction(
+                                taskId = task.task.childTask.taskId,
+                                ok = true,
+                                time = time,
+                                day = if (serverApiLevel.hasLevelOrIsOffline(2)) day else null
+                            ),
+                            parent.authentication,
+                            logic
+                        )
+                    }
                 }
             }
         )
@@ -274,37 +309,13 @@ object OverviewHandling {
         }
     }
 
-    @OptIn(ExperimentalCoroutinesApi::class)
-    private fun getTaskToReview(logic: AppLogic, hiddenTaskIdsLive: Flow<Set<String>>): Flow<TaskToReview?> {
-        val pendingTasksLive = logic.database.childTasks().getPendingTasksFlow()
-        val serverApiLevelLive = logic.serverApiLevelLogic.infoLive.asFlow()
-        val hasPremiumLive = logic.fullVersion.shouldProvideFullVersionFunctions.asFlow()
-
-        val taskWithChildLive = pendingTasksLive.combine(hiddenTaskIdsLive) { pendingTasks, hiddenTaskIds ->
+    private fun getTaskToReview(logic: AppLogic, hiddenTaskIdsLive: Flow<Set<String>>): Flow<TaskToReview?> =
+        logic.database.childTasks().getPendingTasksFlow().combine(hiddenTaskIdsLive) { pendingTasks, hiddenTaskIds ->
             pendingTasks
                 .filterNot { hiddenTaskIds.contains(it.childTask.taskId) }
                 .firstOrNull()
-        }.transformLatest {
-            if (it != null) {
-                emitAll(logic.database.user().getChildUserByIdLive(it.childId).asFlow().map { childInfo ->
-                    if (childInfo == null) null
-                    else Pair(it, childInfo.timeZone)
-                })
-            } else emit(null)
+                ?.let { TaskToReview(it) }
         }
-
-        return combine(
-            serverApiLevelLive, hasPremiumLive, taskWithChildLive
-        ) { serverApiLevel, hasPremium, taskWithChild ->
-            if (taskWithChild == null) null
-            else TaskToReview(
-                task = taskWithChild.first,
-                childTimezone = TimeZone.getTimeZone(taskWithChild.second),
-                serverApiLevel = serverApiLevel,
-                hasPremium = hasPremium
-            )
-        }
-    }
 
     data class OverviewState(
         val hiddenTaskIds: Set<String>,
@@ -346,12 +357,7 @@ object OverviewHandling {
         val showServerMessage: String?,
         val showIntro: Boolean
     )
-    data class TaskToReview(
-        val task: FullChildTask,
-        val hasPremium: Boolean,
-        val childTimezone: TimeZone,
-        val serverApiLevel: ServerApiLevelInfo
-    )
+    data class TaskToReview(val task: FullChildTask)
     data class UserItem(
         val id: String,
         val name: String,

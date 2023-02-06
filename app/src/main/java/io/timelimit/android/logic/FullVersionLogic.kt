@@ -15,13 +15,17 @@
  */
 package io.timelimit.android.logic
 
+import androidx.lifecycle.asFlow
 import io.timelimit.android.livedata.ignoreUnchanged
 import io.timelimit.android.livedata.map
 import io.timelimit.android.livedata.or
+import kotlinx.coroutines.flow.first
 
 class FullVersionLogic(logic: AppLogic) {
     private val hasFullVersion = logic.database.config().getFullVersionUntilAsync().map { it != 0L }.ignoreUnchanged()
     val isLocalMode = logic.database.config().getDeviceAuthTokenAsync().map { it == "" }
 
     val shouldProvideFullVersionFunctions = hasFullVersion.or(isLocalMode)
+
+    suspend fun shouldProvideFullVersionFunctions() = shouldProvideFullVersionFunctions.asFlow().first()
 }

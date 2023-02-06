@@ -15,6 +15,7 @@
  */
 package io.timelimit.android.ui.model
 
+import androidx.compose.material.SnackbarHostState
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.outlined.Info
 import io.timelimit.android.R
@@ -34,7 +35,8 @@ sealed class Screen(
 
     class OverviewScreen(
         state: State,
-        val content: OverviewHandling.OverviewScreen
+        val content: OverviewHandling.OverviewScreen,
+        override val snackbarHostState: SnackbarHostState
     ): Screen(
         state,
         listOf(Menu.Icon(
@@ -46,7 +48,10 @@ sealed class Screen(
             R.string.main_tab_uninstall,
             UpdateStateCommand.Overview.Uninstall
         ))
-    ), ScreenWithAuthenticationFab
+    ), ScreenWithAuthenticationFab, ScreenWithSnackbar
 }
 
 interface ScreenWithAuthenticationFab
+interface ScreenWithSnackbar {
+    val snackbarHostState: SnackbarHostState
+}

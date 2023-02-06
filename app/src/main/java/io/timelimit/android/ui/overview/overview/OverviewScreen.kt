@@ -29,12 +29,8 @@ import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.unit.dp
 import io.timelimit.android.R
-import io.timelimit.android.date.DateInTimezone
-import io.timelimit.android.sync.actions.ReviewChildTaskAction
-import io.timelimit.android.ui.MainActivity
 import io.timelimit.android.ui.model.UpdateStateCommand
 import io.timelimit.android.ui.model.main.OverviewHandling
-import io.timelimit.android.ui.payment.RequiresPurchaseDialogFragment
 import io.timelimit.android.ui.util.DateUtil
 import io.timelimit.android.util.TimeTextUtil
 
@@ -45,9 +41,6 @@ fun OverviewScreen(
     executeCommand: (UpdateStateCommand) -> Unit,
     modifier: Modifier = Modifier
 ) {
-    // TODO: implement this without dependency on MainActivity
-    val activity = LocalContext.current as MainActivity
-
     LazyColumn (
         contentPadding = PaddingValues(0.dp, 8.dp),
         verticalArrangement = Arrangement.spacedBy(8.dp),
@@ -186,9 +179,6 @@ fun OverviewScreen(
                     }
 
                     Row {
-                        val auth = activity.getActivityViewModel()
-                        val logic = auth.logic
-
                         TextButton(onClick = {
                             screen.actions.skipTaskReview(screen.taskToReview)
                         }) {
@@ -203,23 +193,7 @@ fun OverviewScreen(
 
                         Spacer(Modifier.width(8.dp))
 
-                        OutlinedButton(onClick = {
-                            if (activity.getActivityViewModel().isParentAuthenticated()) {
-                                if (screen.taskToReview.hasPremium) {
-                                    val time = logic.timeApi.getCurrentTimeInMillis()
-                                    val day = DateInTimezone.newInstance(time, screen.taskToReview.childTimezone).dayOfEpoch
-
-                                    auth.tryDispatchParentAction(
-                                        ReviewChildTaskAction(
-                                            taskId = screen.taskToReview.task.childTask.taskId,
-                                            ok = true,
-                                            time = time,
-                                            day = if (screen.taskToReview.serverApiLevel.hasLevelOrIsOffline(2)) day else null
-                                        )
-                                    )
-                                } else RequiresPurchaseDialogFragment().show(activity.supportFragmentManager)
-                            } else activity.showAuthenticationScreen()
-                        }) {
+                        OutlinedButton(onClick = { screen.actions.reviewAccept(screen.taskToReview) }) {
                             Text(stringResource(R.string.generic_yes))
                         }
                     }

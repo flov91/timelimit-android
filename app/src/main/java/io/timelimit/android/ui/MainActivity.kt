@@ -63,6 +63,7 @@ import io.timelimit.android.ui.manage.device.add.AddDeviceFragment
 import io.timelimit.android.ui.model.*
 import io.timelimit.android.ui.overview.overview.CanNotAddDevicesInLocalModeDialogFragment
 import io.timelimit.android.ui.payment.ActivityPurchaseModel
+import io.timelimit.android.ui.payment.RequiresPurchaseDialogFragment
 import io.timelimit.android.ui.util.SyncStatusModel
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.update
@@ -141,6 +142,7 @@ class MainActivity : AppCompatActivity(), ActivityViewModelHolder, U2fManager.De
                     ActivityCommand.ShowAddDeviceFragment -> AddDeviceFragment().show(supportFragmentManager)
                     ActivityCommand.ShowCanNotAddDevicesInLocalModeDialogFragment -> CanNotAddDevicesInLocalModeDialogFragment().show(supportFragmentManager)
                     ActivityCommand.ShowAuthenticationScreen -> showAuthenticationScreen()
+                    ActivityCommand.ShowMissingPremiumDialog -> RequiresPurchaseDialogFragment().show(supportFragmentManager)
                 }
             }
         }
@@ -276,7 +278,11 @@ class MainActivity : AppCompatActivity(), ActivityViewModelHolder, U2fManager.De
                                     .padding(paddingValues)
                             )
                         },
-                        showAuthenticationDialog = showAuthenticationDialog
+                        showAuthenticationDialog = showAuthenticationDialog,
+                        snackbarHostState = when (screen) {
+                            is ScreenWithSnackbar -> screen.snackbarHostState
+                            else -> null
+                        }
                     )
                 }
             }
