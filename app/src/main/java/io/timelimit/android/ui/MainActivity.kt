@@ -59,11 +59,14 @@ import io.timelimit.android.ui.main.ActivityViewModel
 import io.timelimit.android.ui.main.ActivityViewModelHolder
 import io.timelimit.android.ui.main.AuthenticatedUser
 import io.timelimit.android.ui.main.FragmentWithCustomTitle
+import io.timelimit.android.ui.manage.device.add.AddDeviceFragment
 import io.timelimit.android.ui.model.*
+import io.timelimit.android.ui.overview.overview.CanNotAddDevicesInLocalModeDialogFragment
 import io.timelimit.android.ui.payment.ActivityPurchaseModel
 import io.timelimit.android.ui.util.SyncStatusModel
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.update
+import kotlinx.coroutines.launch
 import java.security.SecureRandom
 
 class MainActivity : AppCompatActivity(), ActivityViewModelHolder, U2fManager.DeviceFoundListener, MainModelActivity {
@@ -132,6 +135,16 @@ class MainActivity : AppCompatActivity(), ActivityViewModelHolder, U2fManager.De
             fragmentIds.addAll(savedInstanceState.getIntegerArrayList(FRAGMENT_IDS_STATE) ?: emptyList())
         }
 
+        lifecycleScope.launch {
+            lifecycle.repeatOnLifecycle(Lifecycle.State.STARTED) {
+                for (message in mainModel.activityCommand) when (message) {
+                    ActivityCommand.ShowAddDeviceFragment -> AddDeviceFragment().show(supportFragmentManager)
+                    ActivityCommand.ShowCanNotAddDevicesInLocalModeDialogFragment -> CanNotAddDevicesInLocalModeDialogFragment().show(supportFragmentManager)
+                    ActivityCommand.ShowAuthenticationScreen -> showAuthenticationScreen()
+                }
+            }
+        }
+
         // init the purchaseModel
         purchaseModel.getApplication<Application>()
 
@@ -155,6 +168,8 @@ class MainActivity : AppCompatActivity(), ActivityViewModelHolder, U2fManager.De
                 fragments.update {
                     it - f.id
                 }
+
+                if (f is NewLoginFragment) mainModel.reportAuthenticationScreenClosed()
 
                 cleanupFragments()
             }
@@ -335,9 +350,7 @@ class MainActivity : AppCompatActivity(), ActivityViewModelHolder, U2fManager.De
         mainModel.execute(UpdateStateCommand.Reset)
     }
 
-    override fun getActivityViewModel(): ActivityViewModel {
-        return ViewModelProviders.of(this).get(ActivityViewModel::class.java)
-    }
+    override fun getActivityViewModel(): ActivityViewModel = mainModel.activityModel
 
     override fun showAuthenticationScreen() {
         if (supportFragmentManager.findFragmentByTag(AUTH_DIALOG_TAG) == null) {

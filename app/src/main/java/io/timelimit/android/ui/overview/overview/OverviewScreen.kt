@@ -28,19 +28,14 @@ import androidx.compose.ui.Modifier
 import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.unit.dp
-import androidx.lifecycle.lifecycleScope
 import io.timelimit.android.R
 import io.timelimit.android.date.DateInTimezone
-import io.timelimit.android.livedata.waitForNonNullValue
-import io.timelimit.android.logic.DefaultAppLogic
 import io.timelimit.android.sync.actions.ReviewChildTaskAction
 import io.timelimit.android.ui.MainActivity
-import io.timelimit.android.ui.manage.device.add.AddDeviceFragment
 import io.timelimit.android.ui.model.UpdateStateCommand
 import io.timelimit.android.ui.model.main.OverviewHandling
 import io.timelimit.android.ui.payment.RequiresPurchaseDialogFragment
 import io.timelimit.android.util.TimeTextUtil
-import kotlinx.coroutines.launch
 
 @OptIn(ExperimentalFoundationApi::class, ExperimentalMaterialApi::class)
 @Composable
@@ -49,6 +44,7 @@ fun OverviewScreen(
     executeCommand: (UpdateStateCommand) -> Unit,
     modifier: Modifier = Modifier
 ) {
+    // TODO: implement this without dependency on MainActivity
     val activity = LocalContext.current as MainActivity
 
     LazyColumn (
@@ -241,25 +237,11 @@ fun OverviewScreen(
             DeviceItem(it, executeCommand)
         }
         if (screen.devices.canAdd) {
-            // TODO: implement this without dependency on MainActivity
             item (key = Pair("devices", "add")) {
                 ListCommon.ActionListItem(
                     icon = Icons.Default.Add,
                     label = stringResource(R.string.add_device),
-                    action = {
-                        activity.lifecycleScope.launch {
-                            val logic = DefaultAppLogic.with(activity)
-
-                            if (logic.database.config().getDeviceAuthTokenAsync()
-                                    .waitForNonNullValue().isEmpty()
-                            ) {
-                                CanNotAddDevicesInLocalModeDialogFragment()
-                                    .show(activity.supportFragmentManager)
-                            } else if (activity.getActivityViewModel().requestAuthenticationOrReturnTrue()) {
-                                AddDeviceFragment().show(activity.supportFragmentManager)
-                            }
-                        }
-                    },
+                    action = screen.actions.addDevice,
                     modifier = Modifier.animateItemPlacement()
                 )
             }

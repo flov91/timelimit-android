@@ -23,21 +23,33 @@ import io.timelimit.android.data.model.Device
 import io.timelimit.android.data.model.HintsToShow
 import io.timelimit.android.data.model.UserType
 import io.timelimit.android.data.model.derived.FullChildTask
+import io.timelimit.android.extensions.tryWithLock
 import io.timelimit.android.extensions.whileTrue
 import io.timelimit.android.integration.platform.RuntimePermissionStatus
 import io.timelimit.android.livedata.map
 import io.timelimit.android.logic.AppLogic
 import io.timelimit.android.logic.ServerApiLevelInfo
+import io.timelimit.android.ui.model.ActivityCommand
+import io.timelimit.android.ui.model.AuthenticationModelApi
 import io.timelimit.android.ui.model.Screen
 import io.timelimit.android.ui.model.State
 import kotlinx.coroutines.*
+import kotlinx.coroutines.channels.SendChannel
 import kotlinx.coroutines.flow.*
 import kotlinx.coroutines.flow.distinctUntilChanged
+import kotlinx.coroutines.sync.Mutex
 import java.util.*
+import kotlin.coroutines.CoroutineContext
 
 object OverviewHandling {
-    fun processState(logic: AppLogic, scope: CoroutineScope, stateLive: MutableStateFlow<State>): Flow<Screen> {
-        val actions: Actions = getActions(logic, scope, stateLive)
+    fun processState(
+        logic: AppLogic,
+        scope: CoroutineScope,
+        activityCommand: SendChannel<ActivityCommand>,
+        authentication: AuthenticationModelApi,
+        stateLive: MutableStateFlow<State>
+    ): Flow<Screen> {
+        val actions: Actions = getActions(logic, scope, activityCommand, authentication, stateLive)
         val overviewStateLive: Flow<OverviewState> = stateLive.transform { if (it is State.Overview) emit(it.state) }
         val overviewState2Live: Flow<State.Overview> = stateLive.transform { if (it is State.Overview) emit(it) }
         val overviewScreenLive: Flow<OverviewScreen> = getScreen(logic, actions, overviewStateLive)
@@ -50,25 +62,47 @@ object OverviewHandling {
         }
     }
 
-    private fun getActions(logic: AppLogic, scope: CoroutineScope, stateLive: MutableStateFlow<State>): Actions = Actions(
-        hideIntro = {
-            scope.launch {
-                Threads.database.executeAndWait {
-                    logic.database.config().setHintsShownSync(HintsToShow.OVERVIEW_INTRODUCTION)
+    private fun getActions(
+        logic: AppLogic,
+        scope: CoroutineScope,
+        activityCommand: SendChannel<ActivityCommand>,
+        authentication: AuthenticationModelApi,
+        stateLive: MutableStateFlow<State>
+    ): Actions {
+        val lock = Mutex()
+
+        return Actions(
+            hideIntro = {
+                scope.launch {
+                    Threads.database.executeAndWait {
+                        logic.database.config().setHintsShownSync(HintsToShow.OVERVIEW_INTRODUCTION)
+                    }
+                }
+            },
+            addDevice = {
+                scope.launch {
+                    lock.tryWithLock {
+                        val isLocalMode = Threads.database.executeAndWait {
+                            logic.database.config().getDeviceAuthTokenSync().isEmpty()
+                        }
+
+                        if (isLocalMode) activityCommand.send(ActivityCommand.ShowCanNotAddDevicesInLocalModeDialogFragment)
+                        else if (authentication.doParentAuthentication() != null) activityCommand.send(ActivityCommand.ShowAddDeviceFragment)
+                    }
+                }
+            },
+            skipTaskReview = { task ->
+                stateLive.update { oldState ->
+                    if (oldState is State.Overview) oldState.copy(
+                        state = oldState.state.copy(
+                            hiddenTaskIds = oldState.state.hiddenTaskIds + task.task.childTask.taskId
+                        )
+                    )
+                    else oldState
                 }
             }
-        },
-        skipTaskReview = { task ->
-            stateLive.update { oldState ->
-                if (oldState is State.Overview) oldState.copy(
-                    state = oldState.state.copy(
-                        hiddenTaskIds = oldState.state.hiddenTaskIds + task.task.childTask.taskId
-                    )
-                )
-                else oldState
-            }
-        }
-    )
+        )
+    }
 
     private fun getScreen(logic: AppLogic, actions: Actions, state: Flow<OverviewState>): Flow<OverviewScreen> {
         val introLive = getIntroFlags(logic)
@@ -269,6 +303,7 @@ object OverviewHandling {
     )
     data class Actions(
         val hideIntro: () -> Unit,
+        val addDevice: () -> Unit,
         val skipTaskReview: (TaskToReview) -> Unit
     )
     data class IntroFlags(

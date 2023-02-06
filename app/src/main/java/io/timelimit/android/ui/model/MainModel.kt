@@ -18,11 +18,19 @@ package io.timelimit.android.ui.model
 import android.app.Application
 import android.util.Log
 import androidx.lifecycle.AndroidViewModel
+import androidx.lifecycle.asFlow
 import androidx.lifecycle.viewModelScope
 import io.timelimit.android.BuildConfig
 import io.timelimit.android.logic.DefaultAppLogic
+import io.timelimit.android.ui.main.ActivityViewModel
 import io.timelimit.android.ui.model.launch.LaunchHandling
 import io.timelimit.android.ui.model.main.OverviewHandling
+import kotlinx.coroutines.CoroutineScope
+import kotlinx.coroutines.Job
+import kotlinx.coroutines.cancel
+import kotlinx.coroutines.channels.BroadcastChannel
+import kotlinx.coroutines.channels.Channel
+import kotlinx.coroutines.channels.ReceiveChannel
 import kotlinx.coroutines.flow.*
 
 class MainModel(application: Application): AndroidViewModel(application) {
@@ -30,15 +38,48 @@ class MainModel(application: Application): AndroidViewModel(application) {
         private const val LOG_TAG = "MainModel"
     }
 
-    private val logic = DefaultAppLogic.with(application)
+    val activityModel = ActivityViewModel(application)
 
+    private val logic = DefaultAppLogic.with(application)
+    private val activityCommandInternal = Channel<ActivityCommand>()
+    private val authenticationScreenClosed = MutableSharedFlow<Unit>()
+
+    private val authenticationModelApi = object: AuthenticationModelApi {
+        override val authenticatedParentOnly: Flow<AuthenticationModelApi.Parent?> =
+            activityModel.authenticatedUser.asFlow().map { pair ->
+                if (pair != null) AuthenticationModelApi.Parent(pair.second, pair.first)
+                else null
+            }
+
+        override val authenticatedParentOrSelfLimitAdding: Flow<AuthenticationModelApi.ParentOrChild?> =
+            activityModel.authenticatedUserOrChild.asFlow().map { pair ->
+                if (pair != null) AuthenticationModelApi.ParentOrChild(pair.second, pair.first)
+                else null
+            }
+
+        override suspend fun doParentAuthentication(): AuthenticationModelApi.Parent? {
+            triggerAuthenticationScreen()
+
+            authenticationScreenClosed.firstOrNull()
+
+            return authenticatedParentOnly.firstOrNull()
+        }
+
+        override fun triggerAuthenticationScreen() {
+            activityCommandInternal.trySend(ActivityCommand.ShowAuthenticationScreen)
+        }
+    }
+
+    val activityCommand: ReceiveChannel<ActivityCommand> = activityCommandInternal
     val state = MutableStateFlow(State.LaunchState as State)
 
     val screen: Flow<Screen> = flow {
         while (true) {
+            val scope = CoroutineScope(viewModelScope.coroutineContext + Job())
+
             when (state.value) {
                 is State.LaunchState -> LaunchHandling.processLaunchState(state, logic)
-                is State.Overview -> emitAll(OverviewHandling.processState(logic, viewModelScope, state))
+                is State.Overview -> emitAll(OverviewHandling.processState(logic, scope, activityCommandInternal, authenticationModelApi, state))
                 is FragmentState -> emitAll(state.transformWhile {
                     if (it is FragmentState && it !is State.Overview) {
                         emit(Screen.FragmentScreen(it, it.toolbarIcons, it.toolbarOptions, it))
@@ -48,6 +89,8 @@ class MainModel(application: Application): AndroidViewModel(application) {
                 })
                 else -> throw IllegalStateException()
             }
+
+            scope.cancel()
         }
     }
 
@@ -59,5 +102,9 @@ class MainModel(application: Application): AndroidViewModel(application) {
                 }
             }
         }
+    }
+
+    fun reportAuthenticationScreenClosed() {
+        authenticationScreenClosed.tryEmit(Unit)
     }
 }
