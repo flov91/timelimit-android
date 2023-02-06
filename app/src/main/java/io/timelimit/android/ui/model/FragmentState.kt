@@ -19,7 +19,7 @@ import android.os.Bundle
 import androidx.fragment.app.Fragment
 
 interface FragmentState {
-    val containerId: Int
+    var containerId: Int?
     val fragmentClass: Class<out Fragment>
     val arguments: Bundle get() = Bundle()
     val toolbarIcons: List<Menu.Icon> get() = emptyList()

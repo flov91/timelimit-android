@@ -30,7 +30,8 @@ sealed class Screen(
         state: State,
         toolbarIcons: List<Menu.Icon>,
         toolbarOptions: List<Menu.Dropdown>,
-        val fragment: FragmentState
+        val fragment: FragmentState,
+        val containerId: Int
     ): Screen(state, toolbarIcons, toolbarOptions)
 
     class OverviewScreen(

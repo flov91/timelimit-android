@@ -80,6 +80,7 @@ class MainModel(application: Application): AndroidViewModel(application) {
 
     val activityCommand: ReceiveChannel<ActivityCommand> = activityCommandInternal
     val state = MutableStateFlow(State.LaunchState as State)
+    var nextFragmentId = 1
 
     val screen: Flow<Screen> = flow {
         while (true) {
@@ -90,7 +91,9 @@ class MainModel(application: Application): AndroidViewModel(application) {
                 is State.Overview -> emitAll(OverviewHandling.processState(logic, scope, activityCommandInternal, authenticationModelApi, state))
                 is FragmentState -> emitAll(state.transformWhile {
                     if (it is FragmentState && it !is State.Overview) {
-                        emit(Screen.FragmentScreen(it, it.toolbarIcons, it.toolbarOptions, it))
+                        if (it.containerId == null) it.containerId = nextFragmentId++
+
+                        emit(Screen.FragmentScreen(it, it.toolbarIcons, it.toolbarOptions, it, it.containerId!!))
 
                         true
                     } else false

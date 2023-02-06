@@ -79,6 +79,7 @@ class MainActivity : AppCompatActivity(), ActivityViewModelHolder, U2fManager.De
         private const val EXTRA_AUTH_HANDOVER = "authHandover"
         private const val MAIN_MODEL_STATE = "mainModelState"
         private const val FRAGMENT_IDS_STATE = "fragmentIds"
+        private const val NEXT_FRAGMENT_ID = "nextFragmentId"
 
         private var authHandover: Triple<Long, Long, AuthenticatedUser>? = null
 
@@ -134,6 +135,7 @@ class MainActivity : AppCompatActivity(), ActivityViewModelHolder, U2fManager.De
         if (savedInstanceState != null) {
             mainModel.state.value = savedInstanceState.getSerializable(MAIN_MODEL_STATE) as State
             fragmentIds.addAll(savedInstanceState.getIntegerArrayList(FRAGMENT_IDS_STATE) ?: emptyList())
+            mainModel.nextFragmentId = savedInstanceState.getInt(NEXT_FRAGMENT_ID)
         }
 
         lifecycleScope.launch {
@@ -294,6 +296,7 @@ class MainActivity : AppCompatActivity(), ActivityViewModelHolder, U2fManager.De
 
         outState.putSerializable(MAIN_MODEL_STATE, mainModel.state.value)
         outState.putIntegerArrayList(FRAGMENT_IDS_STATE, ArrayList(fragmentIds))
+        outState.putInt(NEXT_FRAGMENT_ID, mainModel.nextFragmentId)
     }
 
     override fun onStart() {
