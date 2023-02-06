@@ -242,7 +242,7 @@ class MainActivity : AppCompatActivity(), ActivityViewModelHolder, U2fManager.De
 
                             if (isOpening) Transition.openScreen
                             else if (isClosing) Transition.closeScreen
-                            else Transition.none
+                            else Transition.swap
                         }
                     }
                 ) { screen ->
