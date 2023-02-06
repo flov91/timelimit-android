@@ -29,6 +29,8 @@ import io.timelimit.android.integration.platform.RuntimePermissionStatus
 import io.timelimit.android.livedata.map
 import io.timelimit.android.logic.AppLogic
 import io.timelimit.android.logic.ServerApiLevelInfo
+import io.timelimit.android.sync.actions.ReviewChildTaskAction
+import io.timelimit.android.sync.actions.apply.ApplyActionUtil
 import io.timelimit.android.ui.model.ActivityCommand
 import io.timelimit.android.ui.model.AuthenticationModelApi
 import io.timelimit.android.ui.model.Screen
@@ -105,6 +107,30 @@ object OverviewHandling {
                             }
                         }
                     }
+                }
+            },
+            reviewReject = { task ->
+                // TODO: add error handler to scope
+                scope.launch {
+                    lock.tryWithLock {
+                        authentication.doParentAuthentication()?.let { parent ->
+                            ApplyActionUtil.applyParentAction(
+                                ReviewChildTaskAction(
+                                    taskId = task.task.childTask.taskId,
+                                    ok = false,
+                                    time = logic.timeApi.getCurrentTimeInMillis(),
+                                    day = null
+                                ),
+                                parent.authentication,
+                                logic
+                            )
+                        }
+                    }
+                }
+            },
+            reviewAccept = {
+                scope.launch {
+                    TODO()
                 }
             }
         )
@@ -310,7 +336,9 @@ object OverviewHandling {
     data class Actions(
         val hideIntro: () -> Unit,
         val addDevice: () -> Unit,
-        val skipTaskReview: (TaskToReview) -> Unit
+        val skipTaskReview: (TaskToReview) -> Unit,
+        val reviewReject: (TaskToReview) -> Unit,
+        val reviewAccept: (TaskToReview) -> Unit
     )
     data class IntroFlags(
         val showSetupOption: Boolean,

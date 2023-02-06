@@ -200,6 +200,18 @@ object ApplyActionUtil {
 
     suspend fun applyParentAction(
         action: ParentAction,
+        authentication: ApplyActionParentAuthentication,
+        logic: AppLogic
+    ) = applyParentAction(
+        action = action,
+        database = logic.database,
+        authentication = authentication,
+        syncUtil = logic.syncUtil,
+        platformIntegration = logic.platformIntegration
+    )
+
+    suspend fun applyParentAction(
+        action: ParentAction,
         database: Database,
         authentication: ApplyActionParentAuthentication,
         syncUtil: SyncUtil,

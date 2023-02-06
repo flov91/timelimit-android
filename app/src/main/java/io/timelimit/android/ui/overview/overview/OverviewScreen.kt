@@ -197,18 +197,7 @@ fun OverviewScreen(
 
                         Spacer(Modifier.weight(1.0f))
 
-                        OutlinedButton(onClick = {
-                            if (activity.getActivityViewModel().isParentAuthenticated()) {
-                                auth.tryDispatchParentAction(
-                                    ReviewChildTaskAction(
-                                        taskId = screen.taskToReview.task.childTask.taskId,
-                                        ok = false,
-                                        time = logic.timeApi.getCurrentTimeInMillis(),
-                                        day = null
-                                    )
-                                )
-                            } else activity.showAuthenticationScreen()
-                        }) {
+                        OutlinedButton(onClick = { screen.actions.reviewReject(screen.taskToReview) }) {
                             Text(stringResource(R.string.generic_no))
                         }
 
