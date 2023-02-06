@@ -49,6 +49,7 @@ import io.timelimit.android.ui.manage.parent.password.restore.RestoreParentPassw
 import io.timelimit.android.ui.manage.parent.password.restore.RestoreParentPasswordFragmentArgs
 import io.timelimit.android.ui.manage.parent.u2fkey.ManageParentU2FKeyFragment
 import io.timelimit.android.ui.manage.parent.u2fkey.ManageParentU2FKeyFragmentArgs
+import io.timelimit.android.ui.model.diagnose.DeviceOwnerHandling
 import io.timelimit.android.ui.model.main.OverviewHandling
 import io.timelimit.android.ui.overview.uninstall.UninstallFragment
 import io.timelimit.android.ui.parentmode.ParentModeFragment
@@ -236,6 +237,7 @@ sealed class State (val previous: State?): Serializable {
         class Crypto(previous: Main): FragmentStateLegacy(previous, DiagnoseCryptoFragment::class.java)
         class ForegroundApp(previous: Main): FragmentStateLegacy(previous, DiagnoseForegroundAppFragment::class.java)
         class Sync(previous: Main): FragmentStateLegacy(previous, DiagnoseSyncFragment::class.java)
+        data class DeviceOwner(val previousMain: Main, val details: DeviceOwnerHandling.OwnerState = DeviceOwnerHandling.OwnerState()): State(previousMain)
     }
     object Setup {
         class SetupTerms: FragmentStateLegacy(previous = null, fragmentClass = SetupTermsFragment::class.java)

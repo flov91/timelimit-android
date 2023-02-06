@@ -22,6 +22,7 @@ import androidx.lifecycle.viewModelScope
 import io.timelimit.android.data.model.UserType
 import io.timelimit.android.logic.DefaultAppLogic
 import io.timelimit.android.ui.main.ActivityViewModel
+import io.timelimit.android.ui.model.diagnose.DeviceOwnerHandling
 import io.timelimit.android.ui.model.launch.LaunchHandling
 import io.timelimit.android.ui.model.main.OverviewHandling
 import kotlinx.coroutines.CoroutineScope
@@ -89,6 +90,7 @@ class MainModel(application: Application): AndroidViewModel(application) {
             when (state.value) {
                 is State.LaunchState -> LaunchHandling.processLaunchState(state, logic)
                 is State.Overview -> emitAll(OverviewHandling.processState(logic, scope, activityCommandInternal, authenticationModelApi, state))
+                is State.DiagnoseScreen.DeviceOwner -> emitAll(DeviceOwnerHandling.processState(logic, scope, authenticationModelApi, state))
                 is FragmentState -> emitAll(state.transformWhile {
                     if (it is FragmentState && it !is State.Overview) {
                         if (it.containerId == null) it.containerId = nextFragmentId++

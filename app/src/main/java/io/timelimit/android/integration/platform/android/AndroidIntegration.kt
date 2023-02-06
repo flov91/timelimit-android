@@ -844,4 +844,6 @@ class AndroidIntegration(context: Context): PlatformIntegration(maximumProtectio
                 .build()
         )
     }
+
+    override val deviceOwner: DeviceOwnerApi = AndroidDeviceOwnerApi(deviceAdmin, policyManager)
 }
