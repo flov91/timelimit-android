@@ -15,10 +15,28 @@
  */
 package io.timelimit.android.ui.model
 
+import android.util.Log
+import io.timelimit.android.BuildConfig
 import io.timelimit.android.ui.model.main.OverviewHandling
+import kotlinx.coroutines.flow.MutableStateFlow
+import kotlinx.coroutines.flow.update
 
 sealed class UpdateStateCommand {
+    companion object {
+        private const val LOG_TAG = "UpdateStateCommand"
+    }
+
     abstract fun transform(state: State): State?
+
+    fun applyTo(state: MutableStateFlow<State>) {
+        state.update { oldState ->
+            transform(oldState) ?: oldState.also {
+                if (BuildConfig.DEBUG) {
+                    Log.d(LOG_TAG, "$this.transform() did not transform state")
+                }
+            }
+        }
+    }
 
     object Reset: UpdateStateCommand() {
         override fun transform(state: State) = State.LaunchState

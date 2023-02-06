@@ -19,6 +19,8 @@ import androidx.compose.foundation.ExperimentalFoundationApi
 import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.lazy.LazyItemScope
+import androidx.compose.foundation.lazy.LazyListScope
+import androidx.compose.foundation.lazy.items
 import androidx.compose.material.MaterialTheme
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.filled.*
@@ -28,24 +30,50 @@ import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.unit.dp
 import io.timelimit.android.BuildConfig
 import io.timelimit.android.R
-import io.timelimit.android.ui.model.UpdateStateCommand
 import io.timelimit.android.ui.model.main.OverviewHandling
+
+@OptIn(ExperimentalFoundationApi::class)
+fun LazyListScope.deviceItems(screen: OverviewHandling.OverviewScreen) {
+    item (key = Pair("devices", "header")) {
+        ListCommon.SectionHeader(stringResource(R.string.overview_header_devices), Modifier.animateItemPlacement())
+    }
+
+    items(screen.devices.list, key = { Pair("device", it.device.id) }) {
+        DeviceItem(it, screen.actions.openDevice)
+    }
+
+    if (screen.devices.canAdd) {
+        item (key = Pair("devices", "add")) {
+            ListCommon.ActionListItem(
+                icon = Icons.Default.Add,
+                label = stringResource(R.string.add_device),
+                action = screen.actions.addDevice,
+                modifier = Modifier.animateItemPlacement()
+            )
+        }
+    }
+
+    if (screen.devices.canShowMore != null) {
+        item (key = Pair("devices", "more")) {
+            ListCommon.ShowMoreItem(
+                modifier = Modifier.animateItemPlacement(),
+                action = { screen.actions.showMoreDevices(screen.devices.canShowMore) }
+            )
+        }
+    }
+}
 
 @OptIn(ExperimentalFoundationApi::class)
 @Composable
 fun LazyItemScope.DeviceItem(
     item: OverviewHandling.DeviceItem,
-    executeCommand: (UpdateStateCommand) -> Unit
+    openAction: (OverviewHandling.DeviceItem) -> Unit
 ) {
     ListCardCommon.Card(
         Modifier
             .animateItemPlacement()
             .padding(horizontal = 8.dp)
-            .clickable(
-                onClick = {
-                    executeCommand(UpdateStateCommand.Overview.ManageDevice(item.device.id))
-                }
-            )
+            .clickable(onClick = { openAction(item) })
     ) {
         ListCardCommon.TextWithIcon(
             icon = Icons.Default.Smartphone,

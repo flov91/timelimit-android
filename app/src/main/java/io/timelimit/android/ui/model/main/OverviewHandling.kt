@@ -40,7 +40,6 @@ import kotlinx.coroutines.channels.SendChannel
 import kotlinx.coroutines.flow.*
 import kotlinx.coroutines.flow.distinctUntilChanged
 import kotlinx.coroutines.sync.Mutex
-import java.util.*
 
 object OverviewHandling {
     fun processState(
@@ -102,6 +101,11 @@ object OverviewHandling {
                         if (isLocalMode) activityCommand.send(ActivityCommand.ShowCanNotAddDevicesInLocalModeDialogFragment)
                         else if (authentication.doParentAuthentication() != null) activityCommand.send(ActivityCommand.ShowAddDeviceFragment)
                     }
+                }
+            },
+            addUser = {
+                launch {
+                    UpdateStateCommand.Overview.AddUser.applyTo(stateLive)
                 }
             },
             skipTaskReview = { task ->
@@ -176,16 +180,30 @@ object OverviewHandling {
                                 }
                             }
 
-                            stateLive.update { state ->
-                                if (state is State.Overview) State.ManageChild.Main(state, user.id, fromRedirect = false)
-                                else state
-                            }
+                            UpdateStateCommand.Overview.ManageChild(user.id).applyTo(stateLive)
                         }
-                        UserType.Parent -> stateLive.update { state ->
-                            if (state is State.Overview) State.ManageParent.Main(state, user.id)
-                            else state
-                        }
+                        UserType.Parent -> UpdateStateCommand.Overview.ManageParent(user.id).applyTo(stateLive)
                     }
+                }
+            },
+            openDevice = { device ->
+                launch {
+                    UpdateStateCommand.Overview.ManageDevice(device.device.id).applyTo(stateLive)
+                }
+            },
+            setupDevice = {
+                launch {
+                    UpdateStateCommand.Overview.SetupDevice.applyTo(stateLive)
+                }
+            },
+            showMoreDevices = {
+                launch {
+                    UpdateStateCommand.Overview.ShowMoreDevices(it).applyTo(stateLive)
+                }
+            },
+            showMoreUsers = {
+                launch {
+                    UpdateStateCommand.Overview.ShowAllUsers.applyTo(stateLive)
                 }
             }
         )
@@ -367,10 +385,15 @@ object OverviewHandling {
     data class Actions(
         val hideIntro: () -> Unit,
         val addDevice: () -> Unit,
+        val addUser: () -> Unit,
         val skipTaskReview: (TaskToReview) -> Unit,
         val reviewReject: (TaskToReview) -> Unit,
         val reviewAccept: (TaskToReview) -> Unit,
-        val openUser: (UserItem) -> Unit
+        val openUser: (UserItem) -> Unit,
+        val openDevice: (DeviceItem) -> Unit,
+        val setupDevice: () -> Unit,
+        val showMoreDevices: (OverviewState.DeviceList) -> Unit,
+        val showMoreUsers: () -> Unit
     )
     data class IntroFlags(
         val showSetupOption: Boolean,

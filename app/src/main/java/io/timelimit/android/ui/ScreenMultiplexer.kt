@@ -32,7 +32,7 @@ fun ScreenMultiplexer(
 ) {
     when (screen) {
         null -> {/* nothing to do */ }
-        is Screen.OverviewScreen -> OverviewScreen(screen.content, executeCommand, modifier = modifier)
+        is Screen.OverviewScreen -> OverviewScreen(screen.content, modifier = modifier)
         is Screen.FragmentScreen -> FragmentScreen(screen, fragmentManager, fragmentIds, modifier = modifier)
     }
 }

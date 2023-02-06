@@ -19,12 +19,11 @@ import androidx.compose.foundation.ExperimentalFoundationApi
 import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.lazy.LazyItemScope
+import androidx.compose.foundation.lazy.LazyListScope
+import androidx.compose.foundation.lazy.items
 import androidx.compose.material.MaterialTheme
 import androidx.compose.material.icons.Icons
-import androidx.compose.material.icons.filled.AccountCircle
-import androidx.compose.material.icons.filled.AlarmOff
-import androidx.compose.material.icons.filled.Security
-import androidx.compose.material.icons.filled.Settings
+import androidx.compose.material.icons.filled.*
 import androidx.compose.runtime.Composable
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.res.stringResource
@@ -32,6 +31,31 @@ import androidx.compose.ui.unit.dp
 import io.timelimit.android.R
 import io.timelimit.android.data.model.UserType
 import io.timelimit.android.ui.model.main.OverviewHandling
+
+@OptIn(ExperimentalFoundationApi::class)
+fun LazyListScope.userItems(screen: OverviewHandling.OverviewScreen) {
+    item (key = Pair("users", "header")) {
+        ListCommon.SectionHeader(stringResource(R.string.overview_header_users), Modifier.animateItemPlacement())
+    }
+
+    items(screen.users.list, key = { Pair("user", it.id) }) { UserItem(it, screen.actions) }
+
+    if (screen.users.canAdd) item (key = Pair("users", "create")) {
+        ListCommon.ActionListItem(
+            icon = Icons.Default.Add,
+            label = stringResource(R.string.add_user_title),
+            action = screen.actions.addUser,
+            modifier = Modifier.animateItemPlacement()
+        )
+    }
+
+    if (screen.users.canShowMore) item (key = Pair("users", "more")) {
+        ListCommon.ShowMoreItem (
+            modifier = Modifier.animateItemPlacement(),
+            action = screen.actions.showMoreUsers
+        )
+    }
+}
 
 @OptIn(ExperimentalFoundationApi::class)
 @Composable

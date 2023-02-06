@@ -16,11 +16,9 @@
 package io.timelimit.android.ui.model
 
 import android.app.Application
-import android.util.Log
 import androidx.lifecycle.AndroidViewModel
 import androidx.lifecycle.asFlow
 import androidx.lifecycle.viewModelScope
-import io.timelimit.android.BuildConfig
 import io.timelimit.android.data.model.UserType
 import io.timelimit.android.logic.DefaultAppLogic
 import io.timelimit.android.ui.main.ActivityViewModel
@@ -34,10 +32,6 @@ import kotlinx.coroutines.channels.ReceiveChannel
 import kotlinx.coroutines.flow.*
 
 class MainModel(application: Application): AndroidViewModel(application) {
-    companion object {
-        private const val LOG_TAG = "MainModel"
-    }
-
     val activityModel = ActivityViewModel(application)
 
     private val logic = DefaultAppLogic.with(application)
@@ -109,13 +103,7 @@ class MainModel(application: Application): AndroidViewModel(application) {
     }
 
     fun execute(command: UpdateStateCommand) {
-        state.update { oldState ->
-            command.transform(oldState) ?: oldState.also {
-                if (BuildConfig.DEBUG) {
-                    Log.d(LOG_TAG, "execute($command) did not transform state")
-                }
-            }
-        }
+        command.applyTo(state)
     }
 
     fun reportAuthenticationScreenClosed() {
