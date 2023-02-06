@@ -1,5 +1,5 @@
 /*
- * TimeLimit Copyright <C> 2019 - 2022 Jonas Lochmann
+ * TimeLimit Copyright <C> 2019 - 2023 Jonas Lochmann
  *
  * This program is free software: you can redistribute it and/or modify
  * it under the terms of the GNU General Public License as published by
@@ -21,13 +21,15 @@ import io.timelimit.android.data.model.*
 import io.timelimit.android.integration.platform.NewPermissionStatusConverter
 import io.timelimit.android.integration.platform.ProtectionLevelConverter
 import io.timelimit.android.integration.platform.RuntimePermissionStatusConverter
+import kotlinx.coroutines.flow.Flow
 
 @Dao
 @TypeConverters(
         NetworkTimeAdapter::class,
         ProtectionLevelConverter::class,
         RuntimePermissionStatusConverter::class,
-        NewPermissionStatusConverter::class
+        NewPermissionStatusConverter::class,
+        UserTypeConverter::class
 )
 abstract class DeviceDao {
     @Query("SELECT * FROM device WHERE id = :deviceId")
@@ -44,6 +46,9 @@ abstract class DeviceDao {
 
     @Query("SELECT * FROM device")
     abstract fun getAllDevicesSync(): List<Device>
+
+    @Query("SELECT device.*, user.name AS current_user_name, user.type AS current_user_type FROM device LEFT JOIN user ON (user.id = device.current_user_id)")
+    abstract fun getAllDevicesWithUserInfoFlow(): Flow<List<DeviceWithUserInfo>>
 
     @Insert
     abstract fun addDeviceSync(device: Device)
@@ -116,4 +121,13 @@ data class DeviceDetailDataBase(
     val appBaseVersion: String?,
     @ColumnInfo(name = "app_diff_version")
     val appDiffVersion: String?
+)
+
+data class DeviceWithUserInfo (
+    @Embedded
+    val device: Device,
+    @ColumnInfo(name = "current_user_name")
+    val currentUserName: String?,
+    @ColumnInfo(name = "current_user_type")
+    val currentUserType: UserType?
 )

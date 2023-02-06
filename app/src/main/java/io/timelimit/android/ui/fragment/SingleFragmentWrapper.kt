@@ -1,5 +1,5 @@
 /*
- * TimeLimit Copyright <C> 2019 - 2021 Jonas Lochmann
+ * TimeLimit Copyright <C> 2019 - 2023 Jonas Lochmann
  *
  * This program is free software: you can redistribute it and/or modify
  * it under the terms of the GNU General Public License as published by
@@ -20,8 +20,6 @@ import android.view.LayoutInflater
 import android.view.View
 import android.view.ViewGroup
 import androidx.fragment.app.Fragment
-import androidx.navigation.NavController
-import androidx.navigation.Navigation
 import io.timelimit.android.R
 import io.timelimit.android.databinding.SingleFragmentWrapperBinding
 import io.timelimit.android.livedata.liveDataFromNonNullValue
@@ -30,14 +28,9 @@ import io.timelimit.android.ui.main.AuthenticationFab
 
 abstract class SingleFragmentWrapper: Fragment() {
     val activity: ActivityViewModelHolder by lazy { getActivity() as ActivityViewModelHolder }
-    private lateinit var navController: NavController
     protected lateinit var binding: SingleFragmentWrapperBinding
 
-    protected val navigation get() = navController
-
     override fun onCreateView(inflater: LayoutInflater, container: ViewGroup?, savedInstanceState: Bundle?): View? {
-        navController = Navigation.findNavController(container!!)
-
         binding = SingleFragmentWrapperBinding.inflate(inflater, container, false)
 
         AuthenticationFab.manageAuthenticationFab(

@@ -1,5 +1,5 @@
 /*
- * TimeLimit Copyright <C> 2019 - 2022 Jonas Lochmann
+ * TimeLimit Copyright <C> 2019 - 2023 Jonas Lochmann
  *
  * This program is free software: you can redistribute it and/or modify
  * it under the terms of the GNU General Public License as published by
@@ -33,21 +33,20 @@ import androidx.lifecycle.LiveData
 import androidx.lifecycle.MutableLiveData
 import androidx.lifecycle.Observer
 import androidx.lifecycle.observe
-import androidx.navigation.Navigation
 import io.timelimit.android.R
 import io.timelimit.android.coroutines.runAsync
 import io.timelimit.android.data.IdGenerator
 import io.timelimit.android.data.model.AppRecommendation
 import io.timelimit.android.data.model.UserType
 import io.timelimit.android.databinding.FragmentSetupDeviceBinding
-import io.timelimit.android.extensions.safeNavigate
 import io.timelimit.android.livedata.*
 import io.timelimit.android.logic.DefaultAppLogic
 import io.timelimit.android.ui.main.ActivityViewModelHolder
 import io.timelimit.android.ui.main.FragmentWithCustomTitle
 import io.timelimit.android.ui.manage.device.manage.advanced.ManageDeviceBackgroundSync
+import io.timelimit.android.ui.model.UpdateStateCommand
+import io.timelimit.android.ui.model.execute
 import io.timelimit.android.ui.mustread.MustReadFragment
-import io.timelimit.android.ui.overview.main.MainFragmentDirections
 import io.timelimit.android.ui.setup.SetupNetworkTimeVerification
 import io.timelimit.android.ui.update.UpdateConsentCard
 import io.timelimit.android.ui.view.NotifyPermissionCard
@@ -121,7 +120,6 @@ class SetupDeviceFragment : Fragment(), FragmentWithCustomTitle {
         val binding = FragmentSetupDeviceBinding.inflate(inflater, container, false)
         val logic = DefaultAppLogic.with(requireContext())
         val activity = activity as ActivityViewModelHolder
-        val navigation = Navigation.findNavController(container!!)
 
         binding.needsParent.authBtn.setOnClickListener {
             activity.showAuthenticationScreen()
@@ -147,13 +145,7 @@ class SetupDeviceFragment : Fragment(), FragmentWithCustomTitle {
 
                             val ownDeviceId = logic.deviceId.waitForNullableValue()!!
 
-                            navigation.popBackStack()
-                            navigation.safeNavigate(
-                                    MainFragmentDirections.actionOverviewFragmentToManageDeviceFragment(
-                                            ownDeviceId
-                                    ),
-                                    R.id.overviewFragment
-                            )
+                            requireActivity().execute(UpdateStateCommand.ManageDevice.EnterFromDeviceSetup(ownDeviceId))
                         }
                     }
                     SetupDeviceModelStatus.Working -> { /* nothing to do */ }

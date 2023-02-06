@@ -1,5 +1,5 @@
 /*
- * TimeLimit Copyright <C> 2019 - 2020 Jonas Lochmann
+ * TimeLimit Copyright <C> 2019 - 2023 Jonas Lochmann
  *
  * This program is free software: you can redistribute it and/or modify
  * it under the terms of the GNU General Public License as published by
@@ -24,7 +24,6 @@ import androidx.fragment.app.Fragment
 import androidx.lifecycle.LiveData
 import androidx.lifecycle.Observer
 import androidx.lifecycle.ViewModelProviders
-import androidx.navigation.Navigation
 import io.timelimit.android.R
 import io.timelimit.android.data.model.User
 import io.timelimit.android.databinding.RestoreParentPasswordFragmentBinding
@@ -34,6 +33,8 @@ import io.timelimit.android.logic.DefaultAppLogic
 import io.timelimit.android.ui.authentication.AuthenticateByMailFragment
 import io.timelimit.android.ui.authentication.AuthenticateByMailFragmentListener
 import io.timelimit.android.ui.main.FragmentWithCustomTitle
+import io.timelimit.android.ui.model.UpdateStateCommand
+import io.timelimit.android.ui.model.execute
 
 class RestoreParentPasswordFragment : Fragment(), AuthenticateByMailFragmentListener, FragmentWithCustomTitle {
     companion object {
@@ -56,7 +57,6 @@ class RestoreParentPasswordFragment : Fragment(), AuthenticateByMailFragmentList
 
     override fun onCreateView(inflater: LayoutInflater, container: ViewGroup?, savedInstanceState: Bundle?): View? {
         val binding = RestoreParentPasswordFragmentBinding.inflate(inflater, container, false)
-        val navigation = Navigation.findNavController(container!!)
 
         model.status.observe(this, Observer {
             status ->
@@ -74,14 +74,14 @@ class RestoreParentPasswordFragment : Fragment(), AuthenticateByMailFragmentList
                 RestoreParentPasswordStatus.NetworkError -> {
                     Toast.makeText(context!!, R.string.error_network, Toast.LENGTH_SHORT).show()
 
-                    navigation.popBackStack()
+                    requireActivity().execute(UpdateStateCommand.ManageParent.LeaveRestorePassword)
 
                     null
                 }
                 RestoreParentPasswordStatus.Done -> {
                     Toast.makeText(context!!, R.string.manage_parent_change_password_toast_success, Toast.LENGTH_SHORT).show()
 
-                    navigation.popBackStack()
+                    requireActivity().execute(UpdateStateCommand.ManageParent.LeaveRestorePassword)
 
                     null
                 }

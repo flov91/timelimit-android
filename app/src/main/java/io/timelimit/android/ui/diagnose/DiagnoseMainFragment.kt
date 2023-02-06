@@ -1,5 +1,5 @@
 /*
- * TimeLimit Copyright <C> 2019 - 2022 Jonas Lochmann
+ * TimeLimit Copyright <C> 2019 - 2023 Jonas Lochmann
  *
  * This program is free software: you can redistribute it and/or modify
  * it under the terms of the GNU General Public License as published by
@@ -22,72 +22,50 @@ import android.view.ViewGroup
 import androidx.fragment.app.Fragment
 import androidx.lifecycle.LiveData
 import androidx.lifecycle.Observer
-import androidx.navigation.Navigation
 import io.timelimit.android.R
 import io.timelimit.android.databinding.FragmentDiagnoseMainBinding
-import io.timelimit.android.extensions.safeNavigate
 import io.timelimit.android.livedata.liveDataFromNonNullValue
 import io.timelimit.android.livedata.liveDataFromNullableValue
 import io.timelimit.android.logic.DefaultAppLogic
 import io.timelimit.android.ui.main.ActivityViewModelHolder
 import io.timelimit.android.ui.main.AuthenticationFab
 import io.timelimit.android.ui.main.FragmentWithCustomTitle
+import io.timelimit.android.ui.model.UpdateStateCommand
+import io.timelimit.android.ui.model.execute
 
 class DiagnoseMainFragment : Fragment(), FragmentWithCustomTitle {
     override fun onCreateView(inflater: LayoutInflater, container: ViewGroup?, savedInstanceState: Bundle?): View {
         val binding = FragmentDiagnoseMainBinding.inflate(inflater, container, false)
-        val navigation = Navigation.findNavController(container!!)
         val logic = DefaultAppLogic.with(requireContext())
         val activity: ActivityViewModelHolder = activity as ActivityViewModelHolder
         val auth = activity.getActivityViewModel()
 
         binding.diagnoseClockButton.setOnClickListener {
-            navigation.safeNavigate(
-                    DiagnoseMainFragmentDirections.actionDiagnoseMainFragmentToDiagnoseClockFragment(),
-                    R.id.diagnoseMainFragment
-            )
+            requireActivity().execute(UpdateStateCommand.Diagnose.Clock)
         }
 
         binding.diagnoseConnectionButton.setOnClickListener {
-            navigation.safeNavigate(
-                    DiagnoseMainFragmentDirections.actionDiagnoseMainFragmentToDiagnoseConnectionFragment(),
-                    R.id.diagnoseMainFragment
-            )
+            requireActivity().execute(UpdateStateCommand.Diagnose.Connection)
         }
 
         binding.diagnoseSyncButton.setOnClickListener {
-            navigation.safeNavigate(
-                    DiagnoseMainFragmentDirections.actionDiagnoseMainFragmentToDiagnoseSyncFragment(),
-                    R.id.diagnoseMainFragment
-            )
+            requireActivity().execute(UpdateStateCommand.Diagnose.Sync)
         }
 
         binding.diagnoseCryButton.setOnClickListener {
-            navigation.safeNavigate(
-                DiagnoseMainFragmentDirections.actionDiagnoseMainFragmentToDiagnoseCryptoFragment(),
-                R.id.diagnoseMainFragment
-            )
+            requireActivity().execute(UpdateStateCommand.Diagnose.Crypto)
         }
 
         binding.diagnoseBatteryButton.setOnClickListener {
-            navigation.safeNavigate(
-                    DiagnoseMainFragmentDirections.actionDiagnoseMainFragmentToDiagnoseBatteryFragment(),
-                    R.id.diagnoseMainFragment
-            )
+            requireActivity().execute(UpdateStateCommand.Diagnose.Battery)
         }
 
         binding.diagnoseFgaButton.setOnClickListener {
-            navigation.safeNavigate(
-                    DiagnoseMainFragmentDirections.actionDiagnoseMainFragmentToDiagnoseForegroundAppFragment(),
-                    R.id.diagnoseMainFragment
-            )
+            requireActivity().execute(UpdateStateCommand.Diagnose.ForegroundApp)
         }
 
         binding.diagnoseExfButton.setOnClickListener {
-            navigation.safeNavigate(
-                    DiagnoseMainFragmentDirections.actionDiagnoseMainFragmentToDiagnoseExperimentalFlagFragment(),
-                    R.id.diagnoseMainFragment
-            )
+            requireActivity().execute(UpdateStateCommand.Diagnose.ExperimentalFlags)
         }
 
         logic.backgroundTaskLogic.lastLoopException.observe(this, Observer { ex ->
@@ -108,10 +86,7 @@ class DiagnoseMainFragment : Fragment(), FragmentWithCustomTitle {
         }
 
         binding.diagnoseExitReasonsButton.setOnClickListener {
-            navigation.safeNavigate(
-                DiagnoseMainFragmentDirections.actionDiagnoseMainFragmentToDiagnoseExitReasonFragment(),
-                R.id.diagnoseMainFragment
-            )
+            requireActivity().execute(UpdateStateCommand.Diagnose.ExitReasons)
         }
 
         AuthenticationFab.manageAuthenticationFab(

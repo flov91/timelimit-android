@@ -1,5 +1,5 @@
 /*
- * TimeLimit Copyright <C> 2019 - 2020 Jonas Lochmann
+ * TimeLimit Copyright <C> 2019 - 2023 Jonas Lochmann
  *
  * This program is free software: you can redistribute it and/or modify
  * it under the terms of the GNU General Public License as published by
@@ -21,11 +21,11 @@ import android.view.LayoutInflater
 import android.view.View
 import android.view.ViewGroup
 import androidx.fragment.app.Fragment
-import androidx.navigation.Navigation
 import io.timelimit.android.R
 import io.timelimit.android.databinding.SetupHelpInfoFragmentBinding
-import io.timelimit.android.extensions.safeNavigate
 import io.timelimit.android.ui.help.HelpDialogFragment
+import io.timelimit.android.ui.model.UpdateStateCommand
+import io.timelimit.android.ui.model.execute
 
 class SetupHelpInfoFragment: Fragment() {
     override fun onCreateView(inflater: LayoutInflater, container: ViewGroup?, savedInstanceState: Bundle?): View? {
@@ -41,10 +41,7 @@ class SetupHelpInfoFragment: Fragment() {
         }
 
         binding.nextButton.setOnClickListener {
-            Navigation.findNavController(view!!).safeNavigate(
-                    SetupHelpInfoFragmentDirections.actionSetupHelpInfoFragmentToSetupSelectModeFragment(),
-                    R.id.setupHelpInfoFragment
-            )
+            requireActivity().execute(UpdateStateCommand.Setup.SelectMode)
         }
 
         return binding.root

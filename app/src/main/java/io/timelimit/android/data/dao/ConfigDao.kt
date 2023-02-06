@@ -1,5 +1,5 @@
 /*
- * TimeLimit Copyright <C> 2019 - 2022 Jonas Lochmann
+ * TimeLimit Copyright <C> 2019 - 2023 Jonas Lochmann
  *
  * This program is free software: you can redistribute it and/or modify
  * it under the terms of the GNU General Public License as published by
@@ -32,6 +32,8 @@ import io.timelimit.android.livedata.ignoreUnchanged
 import io.timelimit.android.livedata.map
 import io.timelimit.android.sync.network.ServerDhKey
 import io.timelimit.android.update.UpdateStatus
+import kotlinx.coroutines.flow.Flow
+import kotlinx.coroutines.flow.map
 import java.io.StringWriter
 
 @Dao
@@ -59,6 +61,13 @@ abstract class ConfigDao {
     @Query("SELECT * FROM config WHERE id = :key")
     protected abstract suspend fun getRowCoroutine(key: ConfigurationItemType): ConfigurationItem?
 
+    @Query("SELECT * FROM config WHERE id = :key")
+    protected abstract fun getRowFlow(key: ConfigurationItemType): Flow<ConfigurationItem?>
+
+    private fun getValueOfKeyFlow(key: ConfigurationItemType): Flow<String?> {
+        return getRowFlow(key).map { it?.value }
+    }
+
     private suspend fun getValueOfKeyCoroutine(key: ConfigurationItemType): String? {
         return getRowCoroutine(key)?.value
     }
@@ -79,6 +88,10 @@ abstract class ConfigDao {
 
     fun getOwnDeviceId(): LiveData<String?> {
         return getValueOfKeyAsync(ConfigurationItemType.OwnDeviceId)
+    }
+
+    fun getOwnDeviceIdFlow(): Flow<String?> {
+        return getValueOfKeyFlow(ConfigurationItemType.OwnDeviceId)
     }
 
     fun getOwnDeviceIdSync(): String? {
@@ -213,6 +226,7 @@ abstract class ConfigDao {
 
     fun setServerMessage(message: String?) = updateValueSync(ConfigurationItemType.ServerMessage, message ?: "")
     fun getServerMessage() = getValueOfKeyAsync(ConfigurationItemType.ServerMessage).map { if (it.isNullOrBlank()) null else it }
+    fun getServerMessageFlow() = getValueOfKeyFlow(ConfigurationItemType.ServerMessage).map { if (it.isNullOrBlank()) null else it }
 
     fun getCustomServerUrlSync() = getValueOfKeySync(ConfigurationItemType.CustomServerUrl) ?: ""
     fun getCustomServerUrlAsync() = getValueOfKeyAsync(ConfigurationItemType.CustomServerUrl).map { it ?: "" }

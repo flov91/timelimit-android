@@ -1,5 +1,5 @@
 /*
- * TimeLimit Copyright <C> 2019 - 2021 Jonas Lochmann
+ * TimeLimit Copyright <C> 2019 - 2023 Jonas Lochmann
  *
  * This program is free software: you can redistribute it and/or modify
  * it under the terms of the GNU General Public License as published by
@@ -16,14 +16,10 @@
 package io.timelimit.android.ui.manage.child
 
 import android.os.Bundle
-import android.view.Menu
-import android.view.MenuInflater
-import android.view.MenuItem
 import android.view.View
 import androidx.fragment.app.Fragment
 import com.google.android.material.snackbar.Snackbar
 import io.timelimit.android.R
-import io.timelimit.android.extensions.safeNavigate
 import io.timelimit.android.livedata.map
 import io.timelimit.android.ui.fragment.ChildFragmentWrapper
 import io.timelimit.android.ui.main.FragmentWithCustomTitle
@@ -47,56 +43,6 @@ class ManageChildFragment : ChildFragmentWrapper(), FragmentWithCustomTitle {
         if (savedInstanceState == null && params.fromRedirect) {
             Snackbar.make(binding.coordinator, R.string.manage_child_redirected_toast, Snackbar.LENGTH_LONG).show()
         }
-    }
-
-    override fun onCreateOptionsMenu(menu: Menu, inflater: MenuInflater) {
-        super.onCreateOptionsMenu(menu, inflater)
-
-        inflater.inflate(R.menu.fragment_manage_child_menu, menu)
-    }
-
-    override fun onOptionsItemSelected(item: MenuItem): Boolean = when (item.itemId) {
-        R.id.menu_manage_child_apps -> {
-            navigation.safeNavigate(
-                    ManageChildFragmentDirections.actionManageChildFragmentToChildAppsFragmentWrapper(childId = childId),
-                    R.id.manageChildFragment
-            )
-
-            true
-        }
-        R.id.menu_manage_child_advanced -> {
-            navigation.safeNavigate(
-                    ManageChildFragmentDirections.actionManageChildFragmentToChildAdvancedFragmentWrapper(childId = childId),
-                    R.id.manageChildFragment
-            )
-
-            true
-        }
-        R.id.menu_manage_child_phone -> {
-            navigation.safeNavigate(
-                    ManageChildFragmentDirections.actionManageChildFragmentToContactsFragment(),
-                    R.id.manageChildFragment
-            )
-
-            true
-        }
-        R.id.menu_manage_child_usage_history -> {
-            navigation.safeNavigate(
-                    ManageChildFragmentDirections.actionManageChildFragmentToChildUsageHistoryFragmentWrapper(childId = childId),
-                    R.id.manageChildFragment
-            )
-
-            true
-        }
-        R.id.menu_manage_child_tasks -> {
-            navigation.safeNavigate(
-                    ManageChildFragmentDirections.actionManageChildFragmentToManageChildTasksFragment(childId = childId),
-                    R.id.manageChildFragment
-            )
-
-            true
-        }
-        else -> super.onOptionsItemSelected(item)
     }
 
     override fun getCustomTitle() = child.map { "${it?.name} < ${getString(R.string.main_tab_overview)}" as String? }

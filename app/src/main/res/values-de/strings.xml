@@ -32,6 +32,8 @@
     <string name="generic_show_details">Details anzeigen</string>
     <string name="generic_accept">Akzeptieren</string>
     <string name="generic_reject">Ablehnen</string>
+    <string name="generic_menu">Menü</string>
+    <string name="generic_back">Zurück</string>
 
     <string name="generic_swipe_to_dismiss">Sie können diesen Hinweis entfernen, indem Sie ihn zur Seite wischen</string>
     <string name="generic_runtime_permission_rejected">Berechtigung abgelehnt; Sie können die Berechtigungen in den Systemeinstellungen verwalten</string>
@@ -126,6 +128,7 @@
     </string>
     <string name="annoy_unlock_dialog_action">Entsperren</string>
 
+    <string name="authentication_action">Anmelden</string>
     <string name="authentication_required_overlay_title">Melden Sie sich an, um Einstellungen zu ändern</string>
     <string name="authentication_required_overlay_text">Die Einstellungen werden wieder gesperrt, wenn Sie TimeLimit verlassen</string>
 
@@ -1195,6 +1198,8 @@
         \n\nBei den Benutzern können Sie die erlaubten Apps und die Zeitbeschränkungen wählen.
     </string>
 
+    <string name="overview_device_item_name">Name</string>
+    <string name="overview_device_item_user_name">aktueller Benutzer</string>
     <string name="overview_device_item_manipulation">An diesem Gerät wurden Manipulationen durchgeführt</string>
     <string name="overview_device_item_missing_permission">An diesem Gerät wurde eine erforderliche Berechtigung nicht gewährt</string>
     <string name="overview_device_item_uninstall">TimeLimit wurde auf diesem Gerät deinstalliert</string>
@@ -1202,10 +1207,12 @@
     <string name="overview_device_item_connected">Verbunden</string>
     <string name="overview_device_item_older_version">verwendet eine ältere TimeLimit-Version</string>
 
+    <string name="overview_user_item_name">Name</string>
     <string name="overview_user_item_temporarily_blocked">vorübergehend gesperrt</string>
     <string name="overview_user_item_temporarily_blocked_until">gesperrt bis %s</string>
     <string name="overview_user_item_temporarily_disabled">Zeitbegrenzungen vorübergehend deaktiviert</string>
     <string name="overview_user_item_temporarily_disabled_until">Zeitbegrenzungen deaktiviert bis %s</string>
+    <string name="overview_user_item_role">Rolle</string>
     <string name="overview_user_item_role_child">wird eingeschränkt</string>
     <string name="overview_user_item_role_parent">kann Einstellungen ändern</string>
 

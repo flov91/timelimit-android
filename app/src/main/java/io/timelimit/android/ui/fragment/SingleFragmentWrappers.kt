@@ -1,5 +1,5 @@
 /*
- * TimeLimit Copyright <C> 2019 - 2020 Jonas Lochmann
+ * TimeLimit Copyright <C> 2019 - 2023 Jonas Lochmann
  *
  * This program is free software: you can redistribute it and/or modify
  * it under the terms of the GNU General Public License as published by
@@ -17,8 +17,8 @@
 package io.timelimit.android.ui.fragment
 
 import androidx.fragment.app.Fragment
-import io.timelimit.android.R
-import io.timelimit.android.extensions.safeNavigate
+import io.timelimit.android.ui.model.UpdateStateCommand
+import io.timelimit.android.ui.model.execute
 import io.timelimit.android.ui.overview.about.AboutFragment
 import io.timelimit.android.ui.overview.about.AboutFragmentParentHandlers
 
@@ -27,23 +27,14 @@ class AboutFragmentWrapped: SingleFragmentWrapper(), AboutFragmentParentHandlers
     override fun createChildFragment(): Fragment = AboutFragment()
 
     override fun onShowDiagnoseScreen() {
-        navigation.safeNavigate(
-                AboutFragmentWrappedDirections.actionAboutFragmentWrappedToDiagnoseMainFragment(),
-                R.id.aboutFragmentWrapped
-        )
+        requireActivity().execute(UpdateStateCommand.About.Diagnose)
     }
 
     override fun onShowPurchaseScreen() {
-        navigation.safeNavigate(
-                AboutFragmentWrappedDirections.actionAboutFragmentWrappedToPurchaseFragment(),
-                R.id.aboutFragmentWrapped
-        )
+        requireActivity().execute(UpdateStateCommand.About.Purchase)
     }
 
     override fun onShowStayAwesomeScreen() {
-        navigation.safeNavigate(
-                AboutFragmentWrappedDirections.actionAboutFragmentWrappedToStayAwesomeFragment(),
-                R.id.aboutFragmentWrapped
-        )
+        requireActivity().execute(UpdateStateCommand.About.StayAwesome)
     }
 }

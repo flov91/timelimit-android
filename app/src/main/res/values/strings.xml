@@ -35,6 +35,8 @@
     <string name="generic_show_details">Show details</string>
     <string name="generic_accept">Accept</string>
     <string name="generic_reject">Reject</string>
+    <string name="generic_menu">Menu</string>
+    <string name="generic_back">Back</string>
 
     <string name="generic_swipe_to_dismiss">Swipe to the side to remove this message</string>
     <string name="generic_runtime_permission_rejected">Permission rejected; You can manage permissions in the system settings</string>
@@ -170,6 +172,7 @@
     </string>
     <string name="annoy_unlock_dialog_action">Unlock</string>
 
+    <string name="authentication_action">Authenticate</string>
     <string name="authentication_required_overlay_title">Sign in to change settings</string>
     <string name="authentication_required_overlay_text">The settings will be locked again when you leave TimeLimit</string>
 
@@ -1239,6 +1242,8 @@
         \n\nUnder users, you can configure the allowed Apps and time limits.
     </string>
 
+    <string name="overview_device_item_name">Name</string>
+    <string name="overview_device_item_user_name">current User</string>
     <string name="overview_device_item_manipulation">There was a manipulation on this device</string>
     <string name="overview_device_item_missing_permission">A required permission was not granted on this device</string>
     <string name="overview_device_item_uninstall">TimeLimit was uninstalled at this device</string>
@@ -1246,10 +1251,12 @@
     <string name="overview_device_item_connected">Connected</string>
     <string name="overview_device_item_older_version">uses an older TimeLimit version</string>
 
+    <string name="overview_user_item_name">Name</string>
     <string name="overview_user_item_temporarily_blocked">temporarily blocked</string>
     <string name="overview_user_item_temporarily_blocked_until">temporarily blocked until %s</string>
     <string name="overview_user_item_temporarily_disabled">Time limits temporarily disabled</string>
     <string name="overview_user_item_temporarily_disabled_until">Time limits temporarily disabled until %s</string>
+    <string name="overview_user_item_role">Role</string>
     <string name="overview_user_item_role_child">is restricted</string>
     <string name="overview_user_item_role_parent">can change settings</string>
 

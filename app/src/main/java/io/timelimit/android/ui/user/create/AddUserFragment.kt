@@ -1,5 +1,5 @@
 /*
- * TimeLimit Copyright <C> 2019 - 2021 Jonas Lochmann
+ * TimeLimit Copyright <C> 2019 - 2023 Jonas Lochmann
  *
  * This program is free software: you can redistribute it and/or modify
  * it under the terms of the GNU General Public License as published by
@@ -24,7 +24,6 @@ import androidx.lifecycle.LiveData
 import androidx.lifecycle.MutableLiveData
 import androidx.lifecycle.Observer
 import androidx.lifecycle.ViewModelProviders
-import androidx.navigation.Navigation
 import com.google.android.material.snackbar.Snackbar
 import io.timelimit.android.R
 import io.timelimit.android.data.model.UserType
@@ -33,6 +32,8 @@ import io.timelimit.android.livedata.*
 import io.timelimit.android.ui.main.ActivityViewModel
 import io.timelimit.android.ui.main.ActivityViewModelHolder
 import io.timelimit.android.ui.main.FragmentWithCustomTitle
+import io.timelimit.android.ui.model.UpdateStateCommand
+import io.timelimit.android.ui.model.execute
 
 class AddUserFragment : Fragment(), FragmentWithCustomTitle {
     companion object {
@@ -47,7 +48,6 @@ class AddUserFragment : Fragment(), FragmentWithCustomTitle {
 
     override fun onCreateView(inflater: LayoutInflater, container: ViewGroup?,  savedInstanceState: Bundle?): View? {
         val binding = FragmentAddUserBinding.inflate(inflater, container, false)
-        val navigation = Navigation.findNavController(container!!)
 
         // user type
 
@@ -121,7 +121,8 @@ class AddUserFragment : Fragment(), FragmentWithCustomTitle {
                     }
                     AddUserModelStatus.Done -> {
                         Snackbar.make(binding.root, R.string.add_user_confirmation_done, Snackbar.LENGTH_SHORT).show()
-                        navigation.popBackStack()
+
+                        requireActivity().execute(UpdateStateCommand.AddUser.Leave)
 
                         binding.flipper.displayedChild = PAGE_WAIT
                     }

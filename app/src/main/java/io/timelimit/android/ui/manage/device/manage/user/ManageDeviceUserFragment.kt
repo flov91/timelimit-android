@@ -1,5 +1,5 @@
 /*
- * TimeLimit Copyright <C> 2019 - 2021 Jonas Lochmann
+ * TimeLimit Copyright <C> 2019 - 2023 Jonas Lochmann
  *
  * This program is free software: you can redistribute it and/or modify
  * it under the terms of the GNU General Public License as published by
@@ -24,7 +24,6 @@ import android.widget.RadioButton
 import androidx.fragment.app.Fragment
 import androidx.lifecycle.LiveData
 import androidx.lifecycle.Observer
-import androidx.navigation.Navigation
 import io.timelimit.android.R
 import io.timelimit.android.data.model.Device
 import io.timelimit.android.databinding.ManageDeviceUserFragmentBinding
@@ -40,6 +39,8 @@ import io.timelimit.android.ui.main.ActivityViewModelHolder
 import io.timelimit.android.ui.main.AuthenticationFab
 import io.timelimit.android.ui.main.FragmentWithCustomTitle
 import io.timelimit.android.ui.manage.device.manage.defaultuser.ManageDeviceDefaultUser
+import io.timelimit.android.ui.model.UpdateStateCommand
+import io.timelimit.android.ui.model.execute
 
 class ManageDeviceUserFragment : Fragment(), FragmentWithCustomTitle {
     private val activity: ActivityViewModelHolder by lazy { getActivity() as ActivityViewModelHolder }
@@ -51,7 +52,6 @@ class ManageDeviceUserFragment : Fragment(), FragmentWithCustomTitle {
     }
 
     override fun onCreateView(inflater: LayoutInflater, container: ViewGroup?, savedInstanceState: Bundle?): View? {
-        val navigation = Navigation.findNavController(container!!)
         val binding = ManageDeviceUserFragmentBinding.inflate(inflater, container, false)
         val userEntries = logic.database.user().getAllUsersLive()
 
@@ -137,7 +137,7 @@ class ManageDeviceUserFragment : Fragment(), FragmentWithCustomTitle {
             device ->
 
             if (device == null) {
-                navigation.popBackStack(R.id.overviewFragment, false)
+                requireActivity().execute(UpdateStateCommand.ManageDevice.Leave)
             }
         })
 

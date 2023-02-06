@@ -48,6 +48,7 @@ android {
         buildConfigField 'int', 'minimumRecommendServerVersion', '5'
     }
     buildFeatures {
+        compose true
         viewBinding true
     }
 
@@ -151,6 +152,10 @@ android {
     kotlinOptions {
         jvmTarget = "1.8"
     }
+
+    composeOptions {
+        kotlinCompilerExtensionVersion = "1.4.0-alpha02"
+    }
 }
 
 wire {
@@ -170,6 +175,9 @@ dependencies {
     implementation 'androidx.cardview:cardview:1.0.0'
     implementation 'androidx.gridlayout:gridlayout:1.0.0'
     implementation "com.google.android.material:material:1.7.0"
+    implementation 'androidx.compose.material:material:1.3.1'
+    implementation 'androidx.activity:activity-compose:1.6.1'
+    implementation 'androidx.compose.material:material-icons-extended:1.3.1'
     implementation 'androidx.fragment:fragment-ktx:1.5.5'
 
     implementation "androidx.navigation:navigation-fragment-ktx:$nav_version"

@@ -1,5 +1,5 @@
 /*
- * TimeLimit Copyright <C> 2019 Jonas Lochmann
+ * TimeLimit Copyright <C> 2019 - 2023 Jonas Lochmann
  *
  * This program is free software: you can redistribute it and/or modify
  * it under the terms of the GNU General Public License as published by
@@ -23,7 +23,6 @@ import androidx.fragment.app.Fragment
 import androidx.lifecycle.LiveData
 import androidx.lifecycle.Observer
 import androidx.lifecycle.ViewModelProviders
-import androidx.navigation.Navigation
 import io.timelimit.android.R
 import io.timelimit.android.data.model.User
 import io.timelimit.android.databinding.LinkParentMailFragmentBinding
@@ -32,6 +31,8 @@ import io.timelimit.android.logic.DefaultAppLogic
 import io.timelimit.android.ui.authentication.AuthenticateByMailFragment
 import io.timelimit.android.ui.authentication.AuthenticateByMailFragmentListener
 import io.timelimit.android.ui.main.FragmentWithCustomTitle
+import io.timelimit.android.ui.model.UpdateStateCommand
+import io.timelimit.android.ui.model.execute
 
 class LinkParentMailFragment : Fragment(), AuthenticateByMailFragmentListener, FragmentWithCustomTitle {
     companion object {
@@ -57,7 +58,6 @@ class LinkParentMailFragment : Fragment(), AuthenticateByMailFragmentListener, F
 
     override fun onCreateView(inflater: LayoutInflater, container: ViewGroup?, savedInstanceState: Bundle?): View? {
         val binding = LinkParentMailFragmentBinding.inflate(inflater, container, false)
-        val navigation = Navigation.findNavController(container!!)
 
         model.status.observe(this, Observer {
             status ->
@@ -66,7 +66,7 @@ class LinkParentMailFragment : Fragment(), AuthenticateByMailFragmentListener, F
                 LinkParentMailViewModelStatus.WaitForAuthentication -> binding.flipper.displayedChild = PAGE_LOGIN
                 LinkParentMailViewModelStatus.WaitForConfirmationWithPassword -> binding.flipper.displayedChild = PAGE_READY
                 LinkParentMailViewModelStatus.ShouldLeaveScreen -> {
-                    navigation.popBackStack()
+                    requireActivity().execute(UpdateStateCommand.ManageParent.LeaveLinkMail)
 
                     null
                 }

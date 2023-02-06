@@ -1,5 +1,5 @@
 /*
- * TimeLimit Copyright <C> 2019 - 2022 Jonas Lochmann
+ * TimeLimit Copyright <C> 2019 - 2023 Jonas Lochmann
  *
  * This program is free software: you can redistribute it and/or modify
  * it under the terms of the GNU General Public License as published by
@@ -28,16 +28,15 @@ import android.view.View
 import android.view.ViewGroup
 import android.widget.Toast
 import androidx.fragment.app.Fragment
-import androidx.navigation.NavController
-import androidx.navigation.Navigation
 import io.timelimit.android.BuildConfig
 import io.timelimit.android.R
 import io.timelimit.android.async.Threads
 import io.timelimit.android.coroutines.executeAndWait
 import io.timelimit.android.coroutines.runAsync
 import io.timelimit.android.databinding.FragmentSetupSelectModeBinding
-import io.timelimit.android.extensions.safeNavigate
 import io.timelimit.android.logic.DefaultAppLogic
+import io.timelimit.android.ui.model.UpdateStateCommand
+import io.timelimit.android.ui.model.execute
 import io.timelimit.android.ui.setup.parentmode.SetupParentmodeDialogFragment
 import io.timelimit.android.ui.setup.privacy.PrivacyInfoDialogFragment
 
@@ -49,7 +48,6 @@ class SetupSelectModeFragment : Fragment() {
         private const val REQUEST_SETUP_PARENT_MODE = 3
     }
 
-    private lateinit var navigation: NavController
     private lateinit var binding: FragmentSetupSelectModeBinding
 
     override fun onCreateView(inflater: LayoutInflater, container: ViewGroup?, savedInstanceState: Bundle?): View? {
@@ -61,13 +59,8 @@ class SetupSelectModeFragment : Fragment() {
     override fun onViewCreated(view: View, savedInstanceState: Bundle?) {
         super.onViewCreated(view, savedInstanceState)
 
-        navigation = Navigation.findNavController(view)
-
         binding.btnLocalMode.setOnClickListener {
-            navigation.safeNavigate(
-                    SetupSelectModeFragmentDirections.actionSetupSelectModeFragmentToSetupDevicePermissionsFragment(),
-                    R.id.setupSelectModeFragment
-            )
+            requireActivity().execute(UpdateStateCommand.Setup.DevicePermissions)
         }
 
         binding.btnParentMode.setOnClickListener {
@@ -131,15 +124,9 @@ class SetupSelectModeFragment : Fragment() {
 
         if (resultCode == Activity.RESULT_OK) {
             if (requestCode == REQ_SETUP_CONNECTED_CHILD) {
-                navigation.safeNavigate(
-                        SetupSelectModeFragmentDirections.actionSetupSelectModeFragmentToSetupRemoteChildFragment(),
-                        R.id.setupSelectModeFragment
-                )
+                requireActivity().execute(UpdateStateCommand.Setup.RemoteChild)
             } else if (requestCode == REQ_SETUP_CONNECTED_PARENT) {
-                navigation.safeNavigate(
-                        SetupSelectModeFragmentDirections.actionSetupSelectModeFragmentToSetupParentModeFragment(),
-                        R.id.setupSelectModeFragment
-                )
+                requireActivity().execute(UpdateStateCommand.Setup.ParentMode)
             }
         }
     }

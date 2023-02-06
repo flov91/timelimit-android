@@ -1,5 +1,5 @@
 /*
- * TimeLimit Copyright <C> 2019 - 2022 Jonas Lochmann
+ * TimeLimit Copyright <C> 2019 - 2023 Jonas Lochmann
  *
  * This program is free software: you can redistribute it and/or modify
  * it under the terms of the GNU General Public License as published by
@@ -20,15 +20,14 @@ import android.view.LayoutInflater
 import android.view.View
 import android.view.ViewGroup
 import androidx.fragment.app.Fragment
-import androidx.navigation.Navigation
-import io.timelimit.android.R
 import io.timelimit.android.async.Threads
 import io.timelimit.android.databinding.FragmentSetupDevicePermissionsBinding
-import io.timelimit.android.extensions.safeNavigate
 import io.timelimit.android.integration.platform.SystemPermission
 import io.timelimit.android.logic.AppLogic
 import io.timelimit.android.logic.DefaultAppLogic
 import io.timelimit.android.ui.manage.device.manage.permission.PermissionInfoHelpDialog
+import io.timelimit.android.ui.model.UpdateStateCommand
+import io.timelimit.android.ui.model.execute
 
 class SetupDevicePermissionsFragment : Fragment() {
     private val logic: AppLogic by lazy { DefaultAppLogic.with(context!!) }
@@ -45,8 +44,6 @@ class SetupDevicePermissionsFragment : Fragment() {
     }
 
     override fun onCreateView(inflater: LayoutInflater, container: ViewGroup?, savedInstanceState: Bundle?): View? {
-        val navigation = Navigation.findNavController(container!!)
-
         binding = FragmentSetupDevicePermissionsBinding.inflate(inflater, container, false)
 
         binding.handlers = object: SetupDevicePermissionsHandlers {
@@ -71,11 +68,7 @@ class SetupDevicePermissionsFragment : Fragment() {
             }
 
             override fun gotoNextStep() {
-                navigation.safeNavigate(
-                        SetupDevicePermissionsFragmentDirections
-                                .actionSetupDevicePermissionsFragmentToSetupLocalModeFragment(),
-                        R.id.setupDevicePermissionsFragment
-                )
+                requireActivity().execute(UpdateStateCommand.Setup.LocalMode)
             }
 
             override fun helpUsageStatsAccess() {

@@ -1,5 +1,5 @@
 /*
- * TimeLimit Copyright <C> 2019 - 2022 Jonas Lochmann
+ * TimeLimit Copyright <C> 2019 - 2023 Jonas Lochmann
  *
  * This program is free software: you can redistribute it and/or modify
  * it under the terms of the GNU General Public License as published by
@@ -22,16 +22,13 @@ import android.view.ViewGroup
 import androidx.fragment.app.Fragment
 import androidx.fragment.app.viewModels
 import androidx.lifecycle.Observer
-import androidx.navigation.Navigation
 import androidx.recyclerview.widget.ItemTouchHelper
 import androidx.recyclerview.widget.LinearLayoutManager
 import androidx.recyclerview.widget.RecyclerView
-import io.timelimit.android.R
 import io.timelimit.android.async.Threads
 import io.timelimit.android.data.model.Category
 import io.timelimit.android.data.model.HintsToShow
 import io.timelimit.android.databinding.RecyclerFragmentBinding
-import io.timelimit.android.extensions.safeNavigate
 import io.timelimit.android.logic.AppLogic
 import io.timelimit.android.logic.DefaultAppLogic
 import io.timelimit.android.sync.actions.UpdateCategoryDisableLimitsAction
@@ -41,10 +38,11 @@ import io.timelimit.android.ui.consent.SyncAppListConsentDialogFragment
 import io.timelimit.android.ui.main.ActivityViewModel
 import io.timelimit.android.ui.main.getActivityViewModel
 import io.timelimit.android.ui.manage.child.ManageChildFragmentArgs
-import io.timelimit.android.ui.manage.child.ManageChildFragmentDirections
 import io.timelimit.android.ui.manage.child.category.create.CreateCategoryDialogFragment
 import io.timelimit.android.ui.manage.child.category.specialmode.SetCategorySpecialModeFragment
 import io.timelimit.android.ui.manage.child.category.specialmode.SpecialModeDialogMode
+import io.timelimit.android.ui.model.UpdateStateCommand
+import io.timelimit.android.ui.model.execute
 
 class ManageChildCategoriesFragment : Fragment() {
     companion object {
@@ -69,17 +67,13 @@ class ManageChildCategoriesFragment : Fragment() {
         super.onViewCreated(view, savedInstanceState)
 
         val adapter = Adapter()
-        val navigation = Navigation.findNavController(view)
 
         adapter.handlers = object: Handlers {
             override fun onCategoryClicked(category: Category) {
-                navigation.safeNavigate(
-                        ManageChildFragmentDirections.actionManageChildFragmentToManageCategoryFragment(
-                                params.childId,
-                                category.id
-                        ),
-                        R.id.manageChildFragment
-                )
+                requireActivity().execute(UpdateStateCommand.ManageChild.Category(
+                    childId = params.childId,
+                    categoryId = category.id
+                ))
             }
 
             override fun onCreateCategoryClicked() {

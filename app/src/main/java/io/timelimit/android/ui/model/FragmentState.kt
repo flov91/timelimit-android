@@ -1,5 +1,5 @@
 /*
- * TimeLimit Copyright <C> 2019 Jonas Lochmann
+ * TimeLimit Copyright <C> 2019 - 2023 Jonas Lochmann
  *
  * This program is free software: you can redistribute it and/or modify
  * it under the terms of the GNU General Public License as published by
@@ -13,13 +13,15 @@
  * You should have received a copy of the GNU General Public License
  * along with this program. If not, see <https://www.gnu.org/licenses/>.
  */
-package io.timelimit.android.extensions
+package io.timelimit.android.ui.model
 
-import androidx.navigation.NavController
-import androidx.navigation.NavDirections
+import android.os.Bundle
+import androidx.fragment.app.Fragment
 
-fun NavController.safeNavigate(directions: NavDirections, currentScreen: Int) {
-    if (this.currentDestination?.id == currentScreen) {
-        navigate(directions)
-    }
+interface FragmentState {
+    val containerId: Int
+    val fragmentClass: Class<out Fragment>
+    val arguments: Bundle get() = Bundle()
+    val toolbarIcons: List<Menu.Icon> get() = emptyList()
+    val toolbarOptions: List<Menu.Dropdown> get() = emptyList()
 }

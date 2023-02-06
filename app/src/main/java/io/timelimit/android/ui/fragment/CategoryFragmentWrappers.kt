@@ -27,6 +27,8 @@ import io.timelimit.android.livedata.switchMap
 import io.timelimit.android.ui.main.FragmentWithCustomTitle
 import io.timelimit.android.ui.manage.category.blocked_times.BlockedTimeAreasFragment
 import io.timelimit.android.ui.manage.category.settings.CategorySettingsFragment
+import io.timelimit.android.ui.model.UpdateStateCommand
+import io.timelimit.android.ui.model.execute
 
 abstract class CategoryFragmentWrapper: SingleFragmentWrapper(), FragmentWithCustomTitle {
     abstract val childId: String
@@ -44,7 +46,7 @@ abstract class CategoryFragmentWrapper: SingleFragmentWrapper(), FragmentWithCus
         super.onViewCreated(view, savedInstanceState)
 
         category.observe(viewLifecycleOwner) {
-            if (it == null) navigation.popBackStack()
+            if (it == null) requireActivity().execute(UpdateStateCommand.ManageChild.LeaveCategory)
         }
     }
 

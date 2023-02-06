@@ -1,5 +1,5 @@
 /*
- * TimeLimit Copyright <C> 2019 - 2022 Jonas Lochmann
+ * TimeLimit Copyright <C> 2019 - 2023 Jonas Lochmann
  *
  * This program is free software: you can redistribute it and/or modify
  * it under the terms of the GNU General Public License as published by
@@ -25,13 +25,11 @@ import androidx.lifecycle.LiveData
 import androidx.lifecycle.Observer
 import androidx.lifecycle.ViewModelProviders
 import androidx.lifecycle.switchMap
-import androidx.navigation.Navigation
 import io.timelimit.android.R
 import io.timelimit.android.crypto.Curve25519
 import io.timelimit.android.crypto.HexString
 import io.timelimit.android.data.model.Device
 import io.timelimit.android.databinding.FragmentManageDeviceBinding
-import io.timelimit.android.extensions.safeNavigate
 import io.timelimit.android.livedata.*
 import io.timelimit.android.logic.AppLogic
 import io.timelimit.android.logic.DefaultAppLogic
@@ -42,6 +40,8 @@ import io.timelimit.android.ui.main.AuthenticationFab
 import io.timelimit.android.ui.main.FragmentWithCustomTitle
 import io.timelimit.android.ui.manage.device.manage.feature.ManageDeviceFeaturesFragment
 import io.timelimit.android.ui.manage.device.manage.permission.ManageDevicePermissionsFragment
+import io.timelimit.android.ui.model.UpdateStateCommand
+import io.timelimit.android.ui.model.execute
 
 class ManageDeviceFragment : Fragment(), FragmentWithCustomTitle {
     private val activity: ActivityViewModelHolder by lazy { getActivity() as ActivityViewModelHolder }
@@ -52,8 +52,7 @@ class ManageDeviceFragment : Fragment(), FragmentWithCustomTitle {
         logic.database.device().getDeviceById(args.deviceId)
     }
 
-    override fun onCreateView(inflater: LayoutInflater, container: ViewGroup?, savedInstanceState: Bundle?): View? {
-        val navigation = Navigation.findNavController(container!!)
+    override fun onCreateView(inflater: LayoutInflater, container: ViewGroup?, savedInstanceState: Bundle?): View {
         val binding = FragmentManageDeviceBinding.inflate(inflater, container, false)
         val userEntries = logic.database.user().getAllUsersLive()
 
@@ -82,39 +81,19 @@ class ManageDeviceFragment : Fragment(), FragmentWithCustomTitle {
 
         binding.handlers = object: ManageDeviceFragmentHandlers {
             override fun showUserScreen() {
-                navigation.safeNavigate(
-                        ManageDeviceFragmentDirections.actionManageDeviceFragmentToManageDeviceUserFragment(
-                                deviceId = args.deviceId
-                        ),
-                        R.id.manageDeviceFragment
-                )
+                requireActivity().execute(UpdateStateCommand.ManageDevice.User(args.deviceId))
             }
 
             override fun showPermissionsScreen() {
-                navigation.safeNavigate(
-                        ManageDeviceFragmentDirections.actionManageDeviceFragmentToManageDevicePermissionsFragment(
-                                deviceId = args.deviceId
-                        ),
-                        R.id.manageDeviceFragment
-                )
+                requireActivity().execute(UpdateStateCommand.ManageDevice.Permissions(args.deviceId))
             }
 
             override fun showFeaturesScreen() {
-                navigation.safeNavigate(
-                        ManageDeviceFragmentDirections.actionManageDeviceFragmentToManageDeviceFeaturesFragment(
-                                deviceId = args.deviceId
-                        ),
-                        R.id.manageDeviceFragment
-                )
+                requireActivity().execute(UpdateStateCommand.ManageDevice.Features(args.deviceId))
             }
 
             override fun showManageScreen() {
-                navigation.safeNavigate(
-                        ManageDeviceFragmentDirections.actionManageDeviceFragmentToManageDeviceAdvancedFragment(
-                                deviceId = args.deviceId
-                        ),
-                        R.id.manageDeviceFragment
-                )
+                requireActivity().execute(UpdateStateCommand.ManageDevice.Advanced(args.deviceId))
             }
 
             override fun showAuthenticationScreen() {
@@ -126,7 +105,7 @@ class ManageDeviceFragment : Fragment(), FragmentWithCustomTitle {
             device ->
 
             if (device == null) {
-                navigation.popBackStack()
+                requireActivity().execute(UpdateStateCommand.ManageDevice.Leave)
             } else {
                 val now = RealTime.newInstance()
                 logic.realTimeLogic.getRealTime(now)

@@ -13,22 +13,14 @@
  * You should have received a copy of the GNU General Public License
  * along with this program. If not, see <https://www.gnu.org/licenses/>.
  */
+package io.timelimit.android.ui.model
 
-package io.timelimit.android.data.model.derived
+import android.app.Activity
 
-import androidx.room.ColumnInfo
-import androidx.room.Embedded
-import io.timelimit.android.data.model.ChildTask
+interface MainModelActivity {
+    fun execute(command: UpdateStateCommand)
+}
 
-data class FullChildTask(
-        @Embedded
-        val childTask: ChildTask,
-        @ColumnInfo(name = "category_title")
-        val categoryTitle: String,
-        @ColumnInfo(name = "child_id")
-        val childId: String,
-        @ColumnInfo(name = "child_name")
-        val childName: String,
-        @ColumnInfo(name = "child_timezone")
-        val childTimezone: String
-)
+fun Activity.execute(command: UpdateStateCommand) {
+    (this as MainModelActivity).execute(command)
+}

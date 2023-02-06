@@ -1,5 +1,5 @@
 /*
- * TimeLimit Copyright <C> 2019 - 2022 Jonas Lochmann
+ * TimeLimit Copyright <C> 2019 - 2023 Jonas Lochmann
  *
  * This program is free software: you can redistribute it and/or modify
  * it under the terms of the GNU General Public License as published by
@@ -24,11 +24,9 @@ import androidx.fragment.app.Fragment
 import androidx.lifecycle.LiveData
 import androidx.lifecycle.Observer
 import androidx.lifecycle.ViewModelProviders
-import androidx.navigation.Navigation
 import io.timelimit.android.R
 import io.timelimit.android.data.model.User
 import io.timelimit.android.databinding.FragmentManageParentBinding
-import io.timelimit.android.extensions.safeNavigate
 import io.timelimit.android.livedata.liveDataFromNonNullValue
 import io.timelimit.android.livedata.map
 import io.timelimit.android.logic.AppLogic
@@ -40,6 +38,8 @@ import io.timelimit.android.ui.manage.child.advanced.timezone.UserTimezoneView
 import io.timelimit.android.ui.manage.parent.delete.DeleteParentView
 import io.timelimit.android.ui.manage.parent.key.ManageUserKeyView
 import io.timelimit.android.ui.manage.parent.limitlogin.ParentLimitLoginView
+import io.timelimit.android.ui.model.UpdateStateCommand
+import io.timelimit.android.ui.model.execute
 
 class ManageParentFragment : Fragment(), FragmentWithCustomTitle {
     private val activity: ActivityViewModelHolder by lazy { getActivity() as ActivityViewModelHolder }
@@ -50,7 +50,6 @@ class ManageParentFragment : Fragment(), FragmentWithCustomTitle {
 
     override fun onCreateView(inflater: LayoutInflater, container: ViewGroup?, savedInstanceState: Bundle?): View? {
         val binding = FragmentManageParentBinding.inflate(inflater, container, false)
-        val navigation = Navigation.findNavController(container!!)
         val model = ViewModelProviders.of(this).get(ManageParentModel::class.java)
 
         AuthenticationFab.manageAuthenticationFab(
@@ -83,9 +82,7 @@ class ManageParentFragment : Fragment(), FragmentWithCustomTitle {
             parentUser.observe(this, Observer {
                 user ->
 
-                if (user == null) {
-                    navigation.popBackStack()
-                }
+                if (user == null) requireActivity().execute(UpdateStateCommand.ManageParent.Leave)
             })
         }
 
@@ -140,45 +137,21 @@ class ManageParentFragment : Fragment(), FragmentWithCustomTitle {
 
         binding.handlers = object: ManageParentFragmentHandlers {
             override fun onChangePasswordClicked() {
-                navigation.safeNavigate(
-                        ManageParentFragmentDirections.
-                                actionManageParentFragmentToChangeParentPasswordFragment(
-                                        params.parentId
-                                ),
-                        R.id.manageParentFragment
-                )
+                requireActivity().execute(UpdateStateCommand.ManageParent.ChangePassword)
             }
 
             override fun onRestorePasswordClicked() {
-                navigation.safeNavigate(
-                        ManageParentFragmentDirections.
-                                actionManageParentFragmentToRestoreParentPasswordFragment(
-                                        params.parentId
-                                ),
-                        R.id.manageParentFragment
-                )
+                requireActivity().execute(UpdateStateCommand.ManageParent.RestorePassword)
             }
 
             override fun onLinkMailClicked() {
                 if (activity.getActivityViewModel().requestAuthenticationOrReturnTrue()) {
-                    navigation.safeNavigate(
-                        ManageParentFragmentDirections.
-                        actionManageParentFragmentToLinkParentMailFragment(
-                            params.parentId
-                        ),
-                        R.id.manageParentFragment
-                    )
+                    requireActivity().execute(UpdateStateCommand.ManageParent.LinkMail)
                 }
             }
 
             override fun onManageU2FClicked() {
-                navigation.safeNavigate(
-                    ManageParentFragmentDirections.
-                    actionManageParentFragmentToManageParentU2FKeyFragment(
-                        params.parentId
-                    ),
-                    R.id.manageParentFragment
-                )
+                requireActivity().execute(UpdateStateCommand.ManageParent.U2F)
             }
         }
 

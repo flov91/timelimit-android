@@ -13,22 +13,26 @@
  * You should have received a copy of the GNU General Public License
  * along with this program. If not, see <https://www.gnu.org/licenses/>.
  */
+package io.timelimit.android.extensions
 
-package io.timelimit.android.data.model.derived
+import io.timelimit.android.util.Option
+import kotlinx.coroutines.ExperimentalCoroutinesApi
+import kotlinx.coroutines.flow.*
 
-import androidx.room.ColumnInfo
-import androidx.room.Embedded
-import io.timelimit.android.data.model.ChildTask
+fun <T> Flow<T?>.takeWhileNotNull(): Flow<T> = this.transformWhile { value ->
+    if (value != null) {
+        emit(value)
 
-data class FullChildTask(
-        @Embedded
-        val childTask: ChildTask,
-        @ColumnInfo(name = "category_title")
-        val categoryTitle: String,
-        @ColumnInfo(name = "child_id")
-        val childId: String,
-        @ColumnInfo(name = "child_name")
-        val childName: String,
-        @ColumnInfo(name = "child_timezone")
-        val childTimezone: String
-)
+        true
+    } else false
+}
+
+@OptIn(ExperimentalCoroutinesApi::class)
+fun <T> Flow<Boolean>.whileTrue(producer: suspend () -> Flow<T>): Flow<T> =
+    distinctUntilChanged()
+        .transformLatest {
+            if (it) emitAll(producer().map { Option.Some(it) })
+            else emit(null)
+        }
+        .takeWhileNotNull()
+        .map { it.value }

@@ -1,0 +1,395 @@
+/*
+ * TimeLimit Copyright <C> 2019 - 2023 Jonas Lochmann
+ *
+ * This program is free software: you can redistribute it and/or modify
+ * it under the terms of the GNU General Public License as published by
+ * the Free Software Foundation version 3 of the License.
+ *
+ * This program is distributed in the hope that it will be useful,
+ * but WITHOUT ANY WARRANTY; without even the implied warranty of
+ * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+ * GNU General Public License for more details.
+ *
+ * You should have received a copy of the GNU General Public License
+ * along with this program. If not, see <https://www.gnu.org/licenses/>.
+ */
+package io.timelimit.android.ui.model
+
+import io.timelimit.android.ui.model.main.OverviewHandling
+
+sealed class UpdateStateCommand {
+    abstract fun transform(state: State): State?
+
+    object Reset: UpdateStateCommand() {
+        override fun transform(state: State) = State.LaunchState
+    }
+    object BackToPreviousScreen: UpdateStateCommand() {
+        override fun transform(state: State): State? = state.previous
+    }
+    object Launch {
+        object LaunchOverview: UpdateStateCommand() {
+            override fun transform(state: State): State? =
+                if (state is State.LaunchState) State.Overview()
+                else null
+        }
+        class LaunchChild(val childId: String): UpdateStateCommand() {
+            override fun transform(state: State): State? =
+                if (state is State.LaunchState) State.ManageChild.Main(
+                    childId = childId,
+                    fromRedirect = true,
+                    previous = State.Overview()
+                )
+                else null
+        }
+        object LaunchDeviceSetup: UpdateStateCommand() {
+            override fun transform(state: State): State? =
+                if (state is State.LaunchState) State.SetupDevice(State.Overview())
+                else null
+        }
+
+        object LaunchTerms: UpdateStateCommand() {
+            override fun transform(state: State): State? =
+                if (state is State.LaunchState) State.Setup.SetupTerms()
+                else null
+        }
+        object LaunchParentMode: UpdateStateCommand() {
+            override fun transform(state: State): State? =
+                if (state is State.LaunchState) State.ParentMode()
+                else null
+        }
+    }
+
+    object Overview {
+        object LaunchAbout: UpdateStateCommand() {
+            override fun transform(state: State): State? =
+                if (state is State.Overview) State.About(state)
+                else null
+        }
+        object AddUser: UpdateStateCommand() {
+            override fun transform(state: State): State? =
+                if (state is State.Overview) State.AddUser(state)
+                else null
+        }
+        data class ManageChild(val childId: String): UpdateStateCommand() {
+            override fun transform(state: State): State? =
+                if (state is State.Overview) State.ManageChild.Main(state, childId, fromRedirect = false)
+                else null
+        }
+        data class ManageParent(val childId: String): UpdateStateCommand() {
+            override fun transform(state: State): State? =
+                if (state is State.Overview) State.ManageParent.Main(state, childId)
+                else null
+        }
+        data class ManageDevice(val childId: String): UpdateStateCommand() {
+            override fun transform(state: State): State? =
+                if (state is State.Overview) State.ManageDevice.Main(state, childId)
+                else null
+        }
+        object SetupDevice: UpdateStateCommand() {
+            override fun transform(state: State): State? =
+                if (state is State.Overview) State.SetupDevice(state)
+                else null
+        }
+
+        object Uninstall: UpdateStateCommand() {
+            override fun transform(state: State): State? =
+                if (state is State.Overview) State.Uninstall(state)
+                else null
+        }
+
+        object ShowAllUsers: UpdateStateCommand() {
+            override fun transform(state: State): State? =
+                if (state is State.Overview) state.copy(
+                    state = state.state.copy(showAllUsers = true)
+                )
+                else null
+        }
+
+        class ShowMoreDevices(val deviceList: OverviewHandling.OverviewState.DeviceList): UpdateStateCommand() {
+            override fun transform(state: State): State? =
+                if (state is State.Overview) state.copy(
+                    state = state.state.copy(visibleDevices = deviceList)
+                )
+                else null
+        }
+    }
+    object About {
+        object Diagnose: UpdateStateCommand() {
+            override fun transform(state: State): State? =
+                if (state is State.About) State.DiagnoseScreen.Main(state)
+                else null
+        }
+
+        object Purchase: UpdateStateCommand() {
+            override fun transform(state: State): State? =
+                if (state is State.About) State.Purchase.Purchase(state)
+                else null
+        }
+
+        object StayAwesome: UpdateStateCommand() {
+            override fun transform(state: State): State? =
+                if (state is State.About) State.Purchase.StayAwesome(state)
+                else null
+        }
+    }
+    object AddUser {
+        object Leave: UpdateStateCommand() {
+            override fun transform(state: State): State? =
+                if (state is State.AddUser) state.previous
+                else null
+        }
+    }
+
+    object ManageDevice {
+        data class User(val childId: String): UpdateStateCommand() {
+            override fun transform(state: State): State? =
+                if (state is State.ManageDevice.Main) State.ManageDevice.User(state, childId)
+                else null
+        }
+        data class Permissions(val childId: String): UpdateStateCommand() {
+            override fun transform(state: State): State? =
+                if (state is State.ManageDevice.Main) State.ManageDevice.Permissions(state, childId)
+                else null
+        }
+        data class Features(val childId: String): UpdateStateCommand() {
+            override fun transform(state: State): State? =
+                if (state is State.ManageDevice.Main) State.ManageDevice.Features(state, childId)
+                else null
+        }
+        data class Advanced(val childId: String): UpdateStateCommand() {
+            override fun transform(state: State): State? =
+                if (state is State.ManageDevice.Main) State.ManageDevice.Advanced(state, childId)
+                else null
+        }
+        object Leave: UpdateStateCommand() {
+            override fun transform(state: State): State? =
+                if (state is State.ManageDevice) when (state) {
+                    is State.ManageDevice.Main -> state.previousOverview
+                    is State.ManageDevice.User -> state.previousMain.previousOverview
+                    is State.ManageDevice.Permissions -> state.previousMain.previousOverview
+                    is State.ManageDevice.Features -> state.previousMain.previousOverview
+                    is State.ManageDevice.Advanced -> state.previousMain.previousOverview
+                }
+                else null
+        }
+        class EnterFromDeviceSetup(val deviceId: String): UpdateStateCommand() {
+            override fun transform(state: State): State? =
+                if (state is State.SetupDevice) State.ManageDevice.Main(
+                    deviceId = deviceId,
+                    previousOverview = state.previousOverview
+                )
+                else null
+        }
+    }
+    object ManageChild {
+        object Apps: UpdateStateCommand() {
+            override fun transform(state: State): State? =
+                if (state is State.ManageChild.Main) State.ManageChild.Apps(state)
+                else null
+        }
+        object Advanced: UpdateStateCommand() {
+            override fun transform(state: State): State? =
+                if (state is State.ManageChild.Main) State.ManageChild.Advanced(state)
+                else null
+        }
+        object Contacts: UpdateStateCommand() {
+            override fun transform(state: State): State? =
+                if (state is State.ManageChild.Main) State.ManageChild.Contacts(state)
+                else null
+        }
+        object UsageHistory: UpdateStateCommand() {
+            override fun transform(state: State): State? =
+                if (state is State.ManageChild.Main) State.ManageChild.UsageHistory(state)
+                else null
+        }
+        object Tasks: UpdateStateCommand() {
+            override fun transform(state: State): State? =
+                if (state is State.ManageChild.Main) State.ManageChild.Tasks(state)
+                else null
+        }
+
+        class Category(val childId: String, val categoryId: String): UpdateStateCommand() {
+            override fun transform(state: State): State? =
+                if (state is State.ManageChild.Main && state.childId == childId) State.ManageChild.ManageCategory.Main(previousChild = state, categoryId = categoryId)
+                else null
+        }
+
+        object BlockedTimes: UpdateStateCommand() {
+            override fun transform(state: State): State? =
+                if (state is State.ManageChild.ManageCategory.Main) State.ManageChild.ManageCategory.BlockedTimes(state)
+                else null
+        }
+
+        object CategoryAdvanced: UpdateStateCommand() {
+            override fun transform(state: State): State? =
+                if (state is State.ManageChild.ManageCategory.Main) State.ManageChild.ManageCategory.Advanced(state)
+                else null
+        }
+
+        object LeaveCategory: UpdateStateCommand() {
+            override fun transform(state: State): State? =
+                if (state is State.ManageChild.ManageCategory) when (state) {
+                    is State.ManageChild.ManageCategory.Main -> state.previous
+                    is State.ManageChild.ManageCategory.Advanced -> state.previousCategory.previous
+                    is State.ManageChild.ManageCategory.BlockedTimes -> state.previousCategory.previous
+                }
+                else null
+        }
+
+        object LeaveChild: UpdateStateCommand() {
+            override fun transform(state: State): State? =
+                if (state is State.ManageChild) when (state) {
+                    is State.ManageChild.Main -> state.previous
+                    is State.ManageChild.Apps -> state.previousChild.previous
+                    is State.ManageChild.Advanced -> state.previousChild.previous
+                    is State.ManageChild.Contacts -> state.previousChild.previous
+                    is State.ManageChild.Tasks -> state.previousChild.previous
+                    is State.ManageChild.UsageHistory -> state.previousChild.previous
+                    is State.ManageChild.ManageCategory.Main -> state.previousChild.previous
+                    is State.ManageChild.ManageCategory.Advanced -> state.previousCategory.previousChild.previous
+                    is State.ManageChild.ManageCategory.BlockedTimes -> state.previousCategory.previousChild.previous
+                }
+                else null
+        }
+    }
+    object ManageParent {
+        object ChangePassword: UpdateStateCommand() {
+            override fun transform(state: State): State? =
+                if (state is State.ManageParent.Main) State.ManageParent.ChangePassword(state)
+                else null
+        }
+        object RestorePassword: UpdateStateCommand() {
+            override fun transform(state: State): State? =
+                if (state is State.ManageParent.Main) State.ManageParent.RestorePassword(state)
+                else null
+        }
+        object LinkMail: UpdateStateCommand() {
+            override fun transform(state: State): State? =
+                if (state is State.ManageParent.Main) State.ManageParent.LinkMail(state)
+                else null
+        }
+        object U2F: UpdateStateCommand() {
+            override fun transform(state: State): State? =
+                if (state is State.ManageParent.Main) State.ManageParent.U2F(state)
+                else null
+        }
+        object Leave: UpdateStateCommand() {
+            override fun transform(state: State): State? =
+                if (state is State.ManageParent) when (state) {
+                    is State.ManageParent.Main -> state.previous
+                    is State.ManageParent.ChangePassword -> state.previousParent.previous
+                    is State.ManageParent.U2F -> state.previousParent.previous
+                    is State.ManageParent.LinkMail -> state.previousParent.previous
+                    is State.ManageParent.RestorePassword -> state.previousParent.previous
+                }
+                else null
+        }
+
+        object LeaveRestorePassword: UpdateStateCommand() {
+            override fun transform(state: State): State? =
+                if (state is State.ManageParent.RestorePassword) state.previous
+                else null
+        }
+
+        object LeaveChangePassword: UpdateStateCommand() {
+            override fun transform(state: State): State? =
+                if (state is State.ManageParent.ChangePassword) state.previous
+                else null
+        }
+
+        object LeaveLinkMail: UpdateStateCommand() {
+            override fun transform(state: State): State? =
+                if (state is State.ManageParent.LinkMail) state.previous
+                else null
+        }
+    }
+    object Diagnose {
+        object Battery: UpdateStateCommand() {
+            override fun transform(state: State): State? =
+                if (state is State.DiagnoseScreen.Main) State.DiagnoseScreen.Battery(state)
+                else null
+        }
+        object Clock: UpdateStateCommand() {
+            override fun transform(state: State): State? =
+                if (state is State.DiagnoseScreen.Main) State.DiagnoseScreen.Clock(state)
+                else null
+        }
+        object Connection: UpdateStateCommand() {
+            override fun transform(state: State): State? =
+                if (state is State.DiagnoseScreen.Main) State.DiagnoseScreen.Connection(state)
+                else null
+        }
+        object Crypto: UpdateStateCommand() {
+            override fun transform(state: State): State? =
+                if (state is State.DiagnoseScreen.Main) State.DiagnoseScreen.Crypto(state)
+                else null
+        }
+        object ExperimentalFlags: UpdateStateCommand() {
+            override fun transform(state: State): State? =
+                if (state is State.DiagnoseScreen.Main) State.DiagnoseScreen.ExperimentalFlags(state)
+                else null
+        }
+        object ExitReasons: UpdateStateCommand() {
+            override fun transform(state: State): State? =
+                if (state is State.DiagnoseScreen.Main) State.DiagnoseScreen.ExitReasons(state)
+                else null
+        }
+        object ForegroundApp: UpdateStateCommand() {
+            override fun transform(state: State): State? =
+                if (state is State.DiagnoseScreen.Main) State.DiagnoseScreen.ForegroundApp(state)
+                else null
+        }
+        object Sync: UpdateStateCommand() {
+            override fun transform(state: State): State? =
+                if (state is State.DiagnoseScreen.Main) State.DiagnoseScreen.Sync(state)
+                else null
+        }
+    }
+    object Setup {
+        object Help: UpdateStateCommand() {
+            override fun transform(state: State): State? =
+                if (state is State.Setup.SetupTerms) State.Setup.SetupHelpInfo(state)
+                else null
+        }
+
+        object SelectMode: UpdateStateCommand() {
+            override fun transform(state: State): State? =
+                if (state is State.Setup.SetupHelpInfo) State.Setup.SelectMode(state)
+                else null
+        }
+
+        object DevicePermissions: UpdateStateCommand() {
+            override fun transform(state: State): State? =
+                if (state is State.Setup.SelectMode) State.Setup.DevicePermissions(state)
+                else null
+        }
+
+        object LocalMode: UpdateStateCommand() {
+            override fun transform(state: State): State? =
+                if (state is State.Setup.DevicePermissions) State.Setup.LocalMode(state)
+                else null
+        }
+
+        object RemoteChild: UpdateStateCommand() {
+            override fun transform(state: State): State? =
+                if (state is State.Setup.SelectMode) State.Setup.RemoteChild(state)
+                else null
+        }
+
+        object ParentMode: UpdateStateCommand() {
+            override fun transform(state: State): State? =
+                if (state is State.Setup.SelectMode) State.Setup.ParentMode(state)
+                else null
+        }
+    }
+
+    class RecoverPassword(val parentId: String): UpdateStateCommand() {
+        override fun transform(state: State): State? =
+            state.find { it is State.Overview }?.let { overview ->
+                State.ManageParent.Main(
+                    parentId = parentId,
+                    previous = overview as State.Overview
+                )
+            }
+    }
+}

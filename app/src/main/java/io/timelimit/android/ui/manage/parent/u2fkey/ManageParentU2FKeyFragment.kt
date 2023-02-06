@@ -1,5 +1,5 @@
 /*
- * TimeLimit Copyright <C> 2019 - 2022 Jonas Lochmann
+ * TimeLimit Copyright <C> 2019 - 2023 Jonas Lochmann
  *
  * This program is free software: you can redistribute it and/or modify
  * it under the terms of the GNU General Public License as published by
@@ -22,7 +22,6 @@ import android.view.LayoutInflater
 import android.view.View
 import android.view.ViewGroup
 import androidx.fragment.app.viewModels
-import androidx.navigation.Navigation
 import io.timelimit.android.R
 import io.timelimit.android.databinding.ManageParentU2fKeyFragmentBinding
 import io.timelimit.android.livedata.liveDataFromNonNullValue
@@ -31,12 +30,13 @@ import io.timelimit.android.ui.main.*
 import io.timelimit.android.ui.manage.parent.u2fkey.add.AddU2FDialogFragment
 import io.timelimit.android.ui.manage.parent.u2fkey.remove.RemoveU2FKeyDialogFragment
 import io.timelimit.android.ui.manage.parent.u2fkey.remove.U2FRequiresPasswordForRemovalDialogFragment
+import io.timelimit.android.ui.model.UpdateStateCommand
+import io.timelimit.android.ui.model.execute
 
 class ManageParentU2FKeyFragment : Fragment(), FragmentWithCustomTitle {
     val model: ManageParentU2FKeyModel by viewModels()
 
     override fun onCreateView(inflater: LayoutInflater, container: ViewGroup?, savedInstanceState: Bundle?): View {
-        val navigation = Navigation.findNavController(container!!)
         val params = ManageParentU2FKeyFragmentArgs.fromBundle(requireArguments())
         val binding = ManageParentU2fKeyFragmentBinding.inflate(inflater, container, false)
         val activityModel = getActivityViewModel(requireActivity())
@@ -93,7 +93,9 @@ class ManageParentU2FKeyFragment : Fragment(), FragmentWithCustomTitle {
             }
         }
 
-        model.user.observe(viewLifecycleOwner) { if (it == null) navigation.popBackStack(R.id.overviewFragment, false) }
+        model.user.observe(viewLifecycleOwner) {
+            if (it == null) requireActivity().execute(UpdateStateCommand.ManageParent.Leave)
+        }
 
         model.listItems.observe(viewLifecycleOwner) { adapter.items = it }
 

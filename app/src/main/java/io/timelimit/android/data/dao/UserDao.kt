@@ -21,6 +21,7 @@ import androidx.room.Insert
 import androidx.room.Query
 import androidx.room.Update
 import io.timelimit.android.data.model.User
+import kotlinx.coroutines.flow.Flow
 
 @Dao
 abstract class UserDao {
@@ -44,6 +45,9 @@ abstract class UserDao {
 
     @Query("SELECT * FROM user ORDER by type DESC, name ASC")
     abstract fun getAllUsersLive(): LiveData<List<User>>
+
+    @Query("SELECT * FROM user ORDER by type DESC, name ASC")
+    abstract fun getAllUsersFlow(): Flow<List<User>>
 
     @Query("SELECT * FROM user")
     abstract fun getAllUsersSync(): List<User>

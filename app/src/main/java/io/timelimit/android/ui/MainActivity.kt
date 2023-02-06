@@ -1,5 +1,5 @@
 /*
- * TimeLimit Copyright <C> 2019 - 2022 Jonas Lochmann
+ * TimeLimit Copyright <C> 2019 - 2023 Jonas Lochmann
  *
  * This program is free software: you can redistribute it and/or modify
  * it under the terms of the GNU General Public License as published by
@@ -20,48 +20,61 @@ import android.content.Context
 import android.content.Intent
 import android.os.Bundle
 import android.os.SystemClock
-import android.view.MenuItem
+import android.util.Log
+import androidx.activity.compose.BackHandler
+import androidx.activity.compose.setContent
 import androidx.activity.viewModels
 import androidx.appcompat.app.AppCompatActivity
-import androidx.fragment.app.DialogFragment
+import androidx.compose.animation.AnimatedContent
+import androidx.compose.animation.ExperimentalAnimationApi
+import androidx.compose.animation.core.updateTransition
+import androidx.compose.foundation.background
+import androidx.compose.foundation.layout.fillMaxSize
+import androidx.compose.foundation.layout.padding
+import androidx.compose.runtime.collectAsState
+import androidx.compose.runtime.getValue
+import androidx.compose.ui.Modifier
+import androidx.compose.ui.graphics.Color
+import androidx.compose.ui.res.stringResource
 import androidx.fragment.app.Fragment
 import androidx.fragment.app.FragmentManager
-import androidx.lifecycle.MutableLiveData
-import androidx.lifecycle.Observer
-import androidx.lifecycle.Transformations
-import androidx.lifecycle.ViewModelProviders
-import androidx.navigation.NavController
-import androidx.navigation.NavDestination
-import androidx.navigation.fragment.NavHostFragment
+import androidx.lifecycle.*
 import io.timelimit.android.Application
+import io.timelimit.android.BuildConfig
 import io.timelimit.android.R
 import io.timelimit.android.data.IdGenerator
+import io.timelimit.android.data.model.UserType
 import io.timelimit.android.extensions.showSafe
 import io.timelimit.android.integration.platform.android.NotificationChannels
 import io.timelimit.android.livedata.ignoreUnchanged
 import io.timelimit.android.livedata.liveDataFromNullableValue
 import io.timelimit.android.livedata.map
-import io.timelimit.android.livedata.switchMap
 import io.timelimit.android.logic.DefaultAppLogic
 import io.timelimit.android.u2f.U2fManager
 import io.timelimit.android.u2f.protocol.U2FDevice
+import io.timelimit.android.ui.animation.Transition
 import io.timelimit.android.ui.login.AuthTokenLoginProcessor
 import io.timelimit.android.ui.login.NewLoginFragment
 import io.timelimit.android.ui.main.ActivityViewModel
 import io.timelimit.android.ui.main.ActivityViewModelHolder
 import io.timelimit.android.ui.main.AuthenticatedUser
 import io.timelimit.android.ui.main.FragmentWithCustomTitle
-import io.timelimit.android.ui.manage.parent.ManageParentFragmentArgs
+import io.timelimit.android.ui.model.*
 import io.timelimit.android.ui.payment.ActivityPurchaseModel
 import io.timelimit.android.ui.util.SyncStatusModel
+import kotlinx.coroutines.flow.MutableStateFlow
+import kotlinx.coroutines.flow.update
 import java.security.SecureRandom
 
-class MainActivity : AppCompatActivity(), ActivityViewModelHolder, U2fManager.DeviceFoundListener {
+class MainActivity : AppCompatActivity(), ActivityViewModelHolder, U2fManager.DeviceFoundListener, MainModelActivity {
     companion object {
+        private const val LOG_TAG = "MainActivity"
         private const val AUTH_DIALOG_TAG = "adt"
         const val ACTION_USER_OPTIONS = "OPEN_USER_OPTIONS"
         const val EXTRA_USER_ID = "userId"
         private const val EXTRA_AUTH_HANDOVER = "authHandover"
+        private const val MAIN_MODEL_STATE = "mainModelState"
+        private const val FRAGMENT_IDS_STATE = "fragmentIds"
 
         private var authHandover: Triple<Long, Long, AuthenticatedUser>? = null
 
@@ -95,7 +108,8 @@ class MainActivity : AppCompatActivity(), ActivityViewModelHolder, U2fManager.De
         }
     }
 
-    private val currentNavigatorFragment = MutableLiveData<Fragment?>()
+    private val mainModel by viewModels<MainModel>()
+    private var fragmentIds = mutableSetOf<Int>()
     private val syncModel: SyncStatusModel by lazy {
         ViewModelProviders.of(this).get(SyncStatusModel::class.java)
     }
@@ -103,76 +117,48 @@ class MainActivity : AppCompatActivity(), ActivityViewModelHolder, U2fManager.De
     override var ignoreStop: Boolean = false
     override val showPasswordRecovery: Boolean = true
 
+    @OptIn(ExperimentalAnimationApi::class)
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
-        setContentView(R.layout.activity_main)
+
+        supportActionBar!!.hide()
 
         U2fManager.setupActivity(this)
 
         NotificationChannels.createNotificationChannels(getSystemService(Context.NOTIFICATION_SERVICE) as NotificationManager, this)
 
-        if (savedInstanceState == null) {
-            NavHostFragment.create(R.navigation.nav_graph).let { navhost ->
-                supportFragmentManager.beginTransaction()
-                        .replace(R.id.nav_host, navhost)
-                        .setPrimaryNavigationFragment(navhost)
-                        .commitNow()
-            }
+        if (savedInstanceState != null) {
+            mainModel.state.value = savedInstanceState.getSerializable(MAIN_MODEL_STATE) as State
+            fragmentIds.addAll(savedInstanceState.getIntegerArrayList(FRAGMENT_IDS_STATE) ?: emptyList())
         }
 
         // init the purchaseModel
         purchaseModel.getApplication<Application>()
 
-        // prepare livedata
-        val customTitle = currentNavigatorFragment.switchMap {
-            if (it != null && it is FragmentWithCustomTitle) {
-                it.getCustomTitle()
-            } else {
-                liveDataFromNullableValue(null as String?)
-            }
-        }.ignoreUnchanged()
-
-        val title = Transformations.map(customTitle) {
-            if (it == null) {
-                getString(R.string.app_name)
-            } else {
-                it
-            }
-        }
-
-        // up button
-        getNavController().addOnDestinationChangedListener(object: NavController.OnDestinationChangedListener {
-            override fun onDestinationChanged(controller: NavController, destination: NavDestination, arguments: Bundle?) {
-                supportActionBar!!.setDisplayHomeAsUpEnabled(controller.previousBackStackEntry != null)
-            }
-        })
-
         // init if not yet done
         DefaultAppLogic.with(this)
 
-        val fragmentContainer = supportFragmentManager.findFragmentById(R.id.nav_host)!!
-        val fragmentContainerManager = fragmentContainer.childFragmentManager
+        val fragments = MutableStateFlow(emptyMap<Int, Fragment>())
 
-        fragmentContainerManager.registerFragmentLifecycleCallbacks(object: FragmentManager.FragmentLifecycleCallbacks() {
+        supportFragmentManager.registerFragmentLifecycleCallbacks(object: FragmentManager.FragmentLifecycleCallbacks() {
             override fun onFragmentStarted(fm: FragmentManager, f: Fragment) {
                 super.onFragmentStarted(fm, f)
 
-                if (!(f is DialogFragment)) {
-                    currentNavigatorFragment.value = f
+                fragments.update {
+                    it + Pair(f.id, f)
                 }
             }
 
             override fun onFragmentStopped(fm: FragmentManager, f: Fragment) {
                 super.onFragmentStopped(fm, f)
 
-                if (currentNavigatorFragment.value === f) {
-                    currentNavigatorFragment.value = null
+                fragments.update {
+                    it - f.id
                 }
+
+                cleanupFragments()
             }
         }, false)
-
-        title.observe(this, Observer { setTitle(it) })
-        syncModel.statusText.observe(this, Observer { supportActionBar!!.subtitle = it })
 
         handleParameters(intent)
 
@@ -180,37 +166,113 @@ class MainActivity : AppCompatActivity(), ActivityViewModelHolder, U2fManager.De
         val hasParentKey = getActivityViewModel().logic.database.config().getParentModeKeyLive().map { it != null }.ignoreUnchanged()
 
         hasDeviceId.observe(this) {
-            val rootDestination = getNavController().backQueue.getOrNull(1)?.destination?.id
+            val rootDestination = mainModel.state.value.first()
 
             if (!it) getActivityViewModel().logOut()
 
             if (
-                it && rootDestination != R.id.overviewFragment ||
-                !it && rootDestination == R.id.overviewFragment
+                it && rootDestination !is State.Overview ||
+                !it && rootDestination is State.Overview
             ) {
                 restartContent()
             }
         }
 
         hasParentKey.observe(this) {
-            val rootDestination = getNavController().backQueue.getOrNull(1)?.destination?.id
+            val rootDestination = mainModel.state.value.first()
 
             if (
-                it && rootDestination != R.id.parentModeFragment ||
-                !it && rootDestination == R.id.parentModeFragment
+                it && rootDestination !is State.ParentMode ||
+                !it && rootDestination is State.ParentMode
             ) {
                 restartContent()
             }
         }
+
+        setContent {
+            Theme {
+                val screenLive by mainModel.screen.collectAsState(initial = null)
+                val subtitleLive by syncModel.statusText.asFlow().collectAsState(initial = null)
+
+                val isAuthenticated by getActivityViewModel().authenticatedUser
+                    .map { it?.second?.type == UserType.Parent }
+                    .asFlow().collectAsState(initial = false)
+
+                BackHandler(enabled = screenLive?.state?.previous != null) {
+                    execute(UpdateStateCommand.BackToPreviousScreen)
+                }
+
+                updateTransition(
+                    targetState = screenLive,
+                    label = "AnimatedContent"
+                ).AnimatedContent(
+                    modifier = Modifier.background(Color.Black),
+                    contentKey = { screen ->
+                        when (screen) {
+                            is Screen.FragmentScreen -> screen.fragment.containerId
+                            is Screen.OverviewScreen -> "overview"
+                            null -> null
+                        }
+                    },
+                    transitionSpec = {
+                        val from = initialState
+                        val to = targetState
+
+                        if (from == null || to == null) Transition.none
+                        else {
+                            val isOpening = to.state.hasPrevious(from.state)
+                            val isClosing = from.state.hasPrevious(to.state)
+
+                            if (isOpening) Transition.openScreen
+                            else if (isClosing) Transition.closeScreen
+                            else Transition.none
+                        }
+                    }
+                ) { screen ->
+                    val showAuthenticationDialog =
+                        if (screen is ScreenWithAuthenticationFab && !isAuthenticated) ::showAuthenticationScreen
+                        else null
+
+                    val fragmentsLive by fragments.collectAsState()
+
+                    val customTitle by when (screen) {
+                        is Screen.FragmentScreen -> {
+                            when (val fragment = fragmentsLive[screen.fragment.containerId]) {
+                                is FragmentWithCustomTitle -> fragment.getCustomTitle()
+                                else -> liveDataFromNullableValue(null)
+                            }
+                        }
+                        else -> liveDataFromNullableValue(null)
+                    }.asFlow().collectAsState(initial = null)
+
+                    ScreenScaffold(
+                        screen = screen,
+                        title = customTitle ?: stringResource(R.string.app_name),
+                        subtitle = subtitleLive,
+                        executeCommand = ::execute,
+                        content = { paddingValues ->
+                            ScreenMultiplexer(
+                                screen = screen,
+                                executeCommand = ::execute,
+                                fragmentManager = supportFragmentManager,
+                                fragmentIds = fragmentIds,
+                                modifier = Modifier
+                                    .fillMaxSize()
+                                    .padding(paddingValues)
+                            )
+                        },
+                        showAuthenticationDialog = showAuthenticationDialog
+                    )
+                }
+            }
+        }
     }
 
-    override fun onOptionsItemSelected(item: MenuItem) = when {
-        item.itemId == android.R.id.home -> {
-            onBackPressed()
+    override fun onSaveInstanceState(outState: Bundle) {
+        super.onSaveInstanceState(outState)
 
-            true
-        }
-        else -> super.onOptionsItemSelected(item)
+        outState.putSerializable(MAIN_MODEL_STATE, mainModel.state.value)
+        outState.putIntegerArrayList(FRAGMENT_IDS_STATE, ArrayList(fragmentIds))
     }
 
     override fun onStart() {
@@ -252,17 +314,7 @@ class MainActivity : AppCompatActivity(), ActivityViewModelHolder, U2fManager.De
             val valid = userId != null && try { IdGenerator.assertIdValid(userId); true } catch (ex: IllegalArgumentException) {false}
 
             if (userId != null && valid) {
-                getNavController().popBackStack(R.id.overviewFragment, true)
-                getNavController().handleDeepLink(
-                        getNavController().createDeepLink()
-                                .setDestination(R.id.manageParentFragment)
-                                .setArguments(ManageParentFragmentArgs(userId).toBundle())
-                                .createTaskStackBuilder()
-                                .intents
-                                .first()
-                )
-
-                return true
+                execute(UpdateStateCommand.RecoverPassword(userId))
             }
         }
 
@@ -277,45 +329,51 @@ class MainActivity : AppCompatActivity(), ActivityViewModelHolder, U2fManager.De
         }
 
         if (handleParameters(intent)) return
-
-        // at these screens, some users restart the App
-        // if they want to continue after opening the mail
-        // because they don't understand how to use the list of running Apps ...
-        // Due to that, on the relevant screens, the App does not
-        // go back to the start when opening it again
-        val isImportantScreen = when (getNavController().currentDestination?.id) {
-            R.id.setupParentModeFragment -> true
-            R.id.restoreParentPasswordFragment -> true
-            R.id.linkParentMailFragment -> true
-            else -> false
-        }
-
-        if (!isImportantScreen) restartContent()
     }
 
     private fun restartContent() {
-        while (getNavController().popBackStack()) {/* do nothing */}
-
-        getNavController().clearBackStack(R.id.launchFragment)
-        getNavController().navigate(R.id.launchFragment)
+        mainModel.execute(UpdateStateCommand.Reset)
     }
 
     override fun getActivityViewModel(): ActivityViewModel {
         return ViewModelProviders.of(this).get(ActivityViewModel::class.java)
     }
 
-    private fun getNavHostFragment(): NavHostFragment {
-        return supportFragmentManager.findFragmentById(R.id.nav_host) as NavHostFragment
-    }
-
-    private fun getNavController(): NavController {
-        return getNavHostFragment().navController
-    }
-
     override fun showAuthenticationScreen() {
         if (supportFragmentManager.findFragmentByTag(AUTH_DIALOG_TAG) == null) {
             NewLoginFragment().showSafe(supportFragmentManager, AUTH_DIALOG_TAG)
         }
+    }
+
+    private fun cleanupFragments() {
+        fragmentIds
+            .filter { fragmentId ->
+                var v = mainModel.state.value as State?
+
+                while (v != null) {
+                    if (v is FragmentState && v.containerId == fragmentId) return@filter false
+
+                    v = v.previous
+                }
+
+                true
+            }
+            .map { supportFragmentManager.findFragmentById(it) }
+            .filterNotNull()
+            .filter { it.isDetached }
+            .forEach {
+                if (BuildConfig.DEBUG) {
+                    Log.d(LOG_TAG, "remove fragment $it")
+                }
+
+                val id = it.id
+
+                supportFragmentManager.beginTransaction()
+                    .remove(it)
+                    .commitAllowingStateLoss()
+
+                fragmentIds.remove(id)
+            }
     }
 
     override fun onResume() {
@@ -331,4 +389,6 @@ class MainActivity : AppCompatActivity(), ActivityViewModelHolder, U2fManager.De
     }
 
     override fun onDeviceFound(device: U2FDevice) = AuthTokenLoginProcessor.process(device, getActivityViewModel())
+
+    override fun execute(command: UpdateStateCommand) = mainModel.execute(command)
 }

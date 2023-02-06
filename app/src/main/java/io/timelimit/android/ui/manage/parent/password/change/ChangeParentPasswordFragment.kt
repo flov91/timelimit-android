@@ -1,5 +1,5 @@
 /*
- * TimeLimit Copyright <C> 2019 - 2020 Jonas Lochmann
+ * TimeLimit Copyright <C> 2019 - 2023 Jonas Lochmann
  *
  * This program is free software: you can redistribute it and/or modify
  * it under the terms of the GNU General Public License as published by
@@ -24,7 +24,6 @@ import androidx.fragment.app.Fragment
 import androidx.lifecycle.LiveData
 import androidx.lifecycle.Observer
 import androidx.lifecycle.ViewModelProviders
-import androidx.navigation.Navigation
 import com.google.android.material.snackbar.Snackbar
 import io.timelimit.android.R
 import io.timelimit.android.data.model.User
@@ -33,6 +32,8 @@ import io.timelimit.android.livedata.map
 import io.timelimit.android.logic.AppLogic
 import io.timelimit.android.logic.DefaultAppLogic
 import io.timelimit.android.ui.main.FragmentWithCustomTitle
+import io.timelimit.android.ui.model.UpdateStateCommand
+import io.timelimit.android.ui.model.execute
 
 class ChangeParentPasswordFragment : Fragment(), FragmentWithCustomTitle {
     val logic: AppLogic by lazy { DefaultAppLogic.with(context!!) }
@@ -46,14 +47,13 @@ class ChangeParentPasswordFragment : Fragment(), FragmentWithCustomTitle {
     }
 
     override fun onCreateView(inflater: LayoutInflater, container: ViewGroup?, savedInstanceState: Bundle?): View? {
-        val navigation = Navigation.findNavController(container!!)
         val binding = ChangeParentPasswordFragmentBinding.inflate(inflater, container, false)
 
         parentUser.observe(this, Observer {
             parentUser ->
 
             if (parentUser == null) {
-                navigation.popBackStack(R.id.overviewFragment, false)
+                requireActivity().execute(UpdateStateCommand.ManageParent.Leave)
             }
         })
 
@@ -104,7 +104,7 @@ class ChangeParentPasswordFragment : Fragment(), FragmentWithCustomTitle {
                 ChangeParentPasswordViewModelStatus.Done -> {
                     Toast.makeText(context!!, R.string.manage_parent_change_password_toast_success, Toast.LENGTH_SHORT).show()
 
-                    navigation.popBackStack()
+                    requireActivity().execute(UpdateStateCommand.ManageParent.LeaveChangePassword)
 
                     null
                 }

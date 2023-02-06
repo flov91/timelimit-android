@@ -26,6 +26,8 @@ import io.timelimit.android.ui.manage.category.usagehistory.UsageHistoryFragment
 import io.timelimit.android.ui.manage.child.advanced.ManageChildAdvancedFragment
 import io.timelimit.android.ui.manage.child.apps.ChildAppsFragment
 import io.timelimit.android.ui.manage.child.tasks.ManageChildTasksFragment
+import io.timelimit.android.ui.model.UpdateStateCommand
+import io.timelimit.android.ui.model.execute
 
 abstract class ChildFragmentWrapper: SingleFragmentWrapper() {
     abstract val childId: String
@@ -37,7 +39,7 @@ abstract class ChildFragmentWrapper: SingleFragmentWrapper() {
         super.onViewCreated(view, savedInstanceState)
 
         child.observe(viewLifecycleOwner) {
-            if (it == null) navigation.popBackStack()
+            if (it == null) requireActivity().execute(UpdateStateCommand.ManageChild.LeaveChild)
         }
     }
 }

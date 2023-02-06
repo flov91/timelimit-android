@@ -1,5 +1,5 @@
 /*
- * TimeLimit Copyright <C> 2019 - 2020 Jonas Lochmann
+ * TimeLimit Copyright <C> 2019 - 2023 Jonas Lochmann
  *
  * This program is free software: you can redistribute it and/or modify
  * it under the terms of the GNU General Public License as published by
@@ -23,11 +23,11 @@ import android.view.View
 import android.view.ViewGroup
 import androidx.fragment.app.Fragment
 import androidx.lifecycle.Observer
-import androidx.navigation.Navigation
 import io.timelimit.android.R
 import io.timelimit.android.databinding.FragmentSetupTermsBinding
-import io.timelimit.android.extensions.safeNavigate
 import io.timelimit.android.logic.DefaultAppLogic
+import io.timelimit.android.ui.model.UpdateStateCommand
+import io.timelimit.android.ui.model.execute
 import io.timelimit.android.ui.obsolete.ObsoleteDialogFragment
 import io.timelimit.android.ui.setup.customserver.SelectCustomServerDialogFragment
 
@@ -66,9 +66,6 @@ class SetupTermsFragment : Fragment() {
     }
 
     private fun acceptTerms() {
-        Navigation.findNavController(view!!).safeNavigate(
-                SetupTermsFragmentDirections.actionSetupTermsFragmentToSetupHelpInfoFragment(),
-                R.id.setupTermsFragment
-        )
+        requireActivity().execute(UpdateStateCommand.Setup.Help)
     }
 }
