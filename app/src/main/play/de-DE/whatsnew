@@ -1,2 +1,3 @@
-- Deklaration des isMonitoringTool-Attributs
-- Gerätenamendatenbank aktualisiert
+- Verbesserung des Geräte-Hinzufügen-Prozesses
+  - Möglichkeit, den Code in die Zwischenablage zu kopieren
+  - Option, den Code als Barcode zu übertragen
