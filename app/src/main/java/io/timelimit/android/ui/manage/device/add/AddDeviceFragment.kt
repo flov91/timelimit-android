@@ -1,5 +1,5 @@
 /*
- * TimeLimit Copyright <C> 2019 Jonas Lochmann
+ * TimeLimit Copyright <C> 2019 - 2023 Jonas Lochmann
  *
  * This program is free software: you can redistribute it and/or modify
  * it under the terms of the GNU General Public License as published by
@@ -16,15 +16,20 @@
 package io.timelimit.android.ui.manage.device.add
 
 
+import android.content.ClipData
+import android.content.ClipboardManager
 import android.os.Bundle
 import android.view.LayoutInflater
 import android.view.View
 import android.view.ViewGroup
+import androidx.core.content.getSystemService
 import androidx.fragment.app.FragmentManager
 import androidx.lifecycle.Observer
 import androidx.lifecycle.ViewModelProviders
 import com.google.android.material.bottomsheet.BottomSheetDialogFragment
 import io.timelimit.android.R
+import io.timelimit.android.barcode.BarcodeMaskDrawable
+import io.timelimit.android.barcode.DataMatrix
 import io.timelimit.android.databinding.FragmentAddDeviceBinding
 import io.timelimit.android.extensions.showSafe
 import io.timelimit.android.ui.main.getActivityViewModel
@@ -34,27 +39,36 @@ class AddDeviceFragment : BottomSheetDialogFragment() {
         private const val DIALOG_TAG = "adf"
     }
 
-    override fun onCreateView(inflater: LayoutInflater, container: ViewGroup?, savedInstanceState: Bundle?): View? {
+    override fun onCreateView(inflater: LayoutInflater, container: ViewGroup?, savedInstanceState: Bundle?): View {
         val binding = FragmentAddDeviceBinding.inflate(inflater, container, false)
         val model = ViewModelProviders.of(this).get(AddDeviceModel::class.java)
+        val clipboardManager = requireContext().getSystemService<ClipboardManager>()!!
+
+        binding.copyToClipboardButton.setOnClickListener {
+            clipboardManager.setPrimaryClip(ClipData.newPlainText("Code", binding.token))
+        }
 
         model.status.observe(this, Observer {
             when (it) {
                 Initializing -> {
                     binding.token = null
                     binding.message = null
+                    binding.barcode.setImageDrawable(null)
                 }
                 Failed -> {
                     binding.token = null
                     binding.message = getString(R.string.error_network)
+                    binding.barcode.setImageDrawable(null)
                 }
                 is ShowingToken -> {
                     binding.token = it.token
                     binding.message = null
+                    binding.barcode.setImageDrawable(BarcodeMaskDrawable(DataMatrix.generate(it.token)))
                 }
                 is DidAddDevice -> {
                     binding.token = null
                     binding.message = getString(R.string.add_device_success, it.deviceName)
+                    binding.barcode.setImageDrawable(null)
                 }
                 TokenExpired -> {
                     dismissAllowingStateLoss()

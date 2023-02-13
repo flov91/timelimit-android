@@ -1,5 +1,5 @@
 <!--
-  TimeLimit Copyright <C> 2019 Jonas Lochmann
+  TimeLimit Copyright <C> 2019 - 2023 Jonas Lochmann
   This program is free software: you can redistribute it and/or modify
   it under the terms of the GNU General Public License as published by
   the Free Software Foundation version 3 of the License.
@@ -45,6 +45,14 @@
             android:layout_width="match_parent"
             android:layout_height="wrap_content" />
 
+        <ImageView
+            android:adjustViewBounds="true"
+            android:id="@+id/barcode"
+            android:layout_gravity="center_horizontal"
+            tools:src="@drawable/banner"
+            android:layout_width="128dp"
+            android:layout_height="wrap_content" />
+
         <TextView
             android:visibility="@{TextUtils.isEmpty(message) ? View.GONE : View.VISIBLE}"
             android:gravity="center_horizontal"
@@ -62,6 +70,15 @@
             android:text="@{token}"
             tools:text="Alphabet Test Zeichenfolge Kopplung Sicherheit Schlüssel"
             android:layout_width="match_parent"
+            android:layout_height="wrap_content" />
+
+        <Button
+            android:visibility="@{TextUtils.isEmpty(token) ? View.GONE : View.VISIBLE}"
+            style="?materialButtonOutlinedStyle"
+            android:id="@+id/copy_to_clipboard_button"
+            android:text="@string/diagnose_sync_copy_to_clipboard"
+            android:layout_gravity="center_horizontal"
+            android:layout_width="wrap_content"
             android:layout_height="wrap_content" />
 
         <TextView
