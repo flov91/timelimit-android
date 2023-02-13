@@ -66,7 +66,7 @@ class HttpServerApi(private val endpointWithoutSlashAtEnd: String): ServerApi {
 
         private val JSON = "application/json; charset=utf-8".toMediaTypeOrNull()
 
-        private fun createJsonRequestBody(
+        private suspend fun createJsonRequestBody(
             serialize: (writer: JsonWriter) -> Unit,
             measureContentLength: Boolean
         ): RequestBody {
@@ -84,7 +84,7 @@ class HttpServerApi(private val endpointWithoutSlashAtEnd: String): ServerApi {
             }
 
             val length =
-                if (measureContentLength) LengthSink().also { write(it) }.length
+                if (measureContentLength) Threads.network.executeAndWait { LengthSink().also { write(it) }.length }
                 else null
 
             return object: RequestBody() {
