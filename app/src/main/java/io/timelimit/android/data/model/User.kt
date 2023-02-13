@@ -210,10 +210,10 @@ object UserTypeJson {
 
 class UserTypeConverter {
     @TypeConverter
-    fun toUserType(value: String) = UserTypeJson.parse(value)
+    fun toUserType(value: String?) = value?.let { UserTypeJson.parse(it) }
 
     @TypeConverter
-    fun toString(value: UserType) = UserTypeJson.serialize(value)
+    fun toString(value: UserType?) = value?.let { UserTypeJson.serialize(it) }
 }
 
 object UserFlags {
