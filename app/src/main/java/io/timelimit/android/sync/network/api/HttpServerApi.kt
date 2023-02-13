@@ -23,12 +23,15 @@ import io.timelimit.android.async.Threads
 import io.timelimit.android.coroutines.executeAndWait
 import io.timelimit.android.coroutines.waitForResponse
 import io.timelimit.android.sync.network.*
+import io.timelimit.android.util.okio.LengthSink
 import okhttp3.MediaType.Companion.toMediaTypeOrNull
 import okhttp3.Request
 import okhttp3.RequestBody
 import okhttp3.Response
+import okhttp3.internal.closeQuietly
 import okio.BufferedSink
 import okio.GzipSink
+import okio.Sink
 import okio.buffer
 import java.io.OutputStreamWriter
 
@@ -63,23 +66,36 @@ class HttpServerApi(private val endpointWithoutSlashAtEnd: String): ServerApi {
 
         private val JSON = "application/json; charset=utf-8".toMediaTypeOrNull()
 
-        private fun createJsonRequestBody(serialize: (writer: JsonWriter) -> Unit) = object: RequestBody() {
-            override fun contentType() = JSON
-            override fun writeTo(sink: BufferedSink) {
+        private fun createJsonRequestBody(
+            serialize: (writer: JsonWriter) -> Unit,
+            measureContentLength: Boolean
+        ): RequestBody {
+            fun write(sink: Sink) {
                 val writer = JsonWriter(
-                        OutputStreamWriter(
-                                GzipSink(sink)
-                                        .buffer().outputStream()
-                        )
+                    OutputStreamWriter(
+                        GzipSink(sink)
+                            .buffer().outputStream()
+                    )
                 )
 
                 serialize(writer)
 
-                writer.flush()
                 writer.close()
+            }
+
+            val length =
+                if (measureContentLength) LengthSink().also { write(it) }.length
+                else null
+
+            return object: RequestBody() {
+                override fun contentType() = JSON
+                override fun writeTo(sink: BufferedSink) = write(sink)
+                override fun contentLength(): Long = length ?: -1
             }
         }
     }
+
+    private var sendContentLength = false
 
     override suspend fun getTimeInMillis(): Long {
         httpClient.newCall(
@@ -595,10 +611,30 @@ class HttpServerApi(private val endpointWithoutSlashAtEnd: String): ServerApi {
         path: String,
         requestBody: (writer: JsonWriter) -> Unit
     ): Response {
+        if (!sendContentLength) {
+            val response = postJsonRequest(path, requestBody, transmitContentLength = false)
+
+            if (response.code != 411) return response
+
+            Threads.network.executeAndWait { response.closeQuietly() }
+
+            sendContentLength = true
+        }
+
+        return postJsonRequest(path, requestBody, transmitContentLength = true)
+    }
+
+    private suspend fun postJsonRequest(
+        path: String,
+        requestBody: (writer: JsonWriter) -> Unit,
+        transmitContentLength: Boolean
+    ): Response {
+        val body = createJsonRequestBody(requestBody, transmitContentLength)
+
         return httpClient.newCall(
             Request.Builder()
                 .url("$endpointWithoutSlashAtEnd/$path")
-                .post(createJsonRequestBody(requestBody))
+                .post(body)
                 .header("Content-Encoding", "gzip")
                 .build()
         ).waitForResponse()

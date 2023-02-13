@@ -1,5 +1,5 @@
 /*
- * TimeLimit Copyright <C> 2019 - 2020 Jonas Lochmann
+ * TimeLimit Copyright <C> 2019 - 2023 Jonas Lochmann
  *
  * This program is free software: you can redistribute it and/or modify
  * it under the terms of the GNU General Public License as published by
@@ -31,7 +31,7 @@ val httpClient: OkHttpClient by lazy {
     if (BuildConfig.DEBUG) {
         builder.addInterceptor (HttpLoggingInterceptor {
             Log.d("HttpClient", it)
-        })
+        }.apply { level = HttpLoggingInterceptor.Level.HEADERS })
     }
 
     builder.build()
