@@ -24,11 +24,6 @@ class Application : Application() {
     // all ids that are harcoded this way are not returned from generateViewId
     init { (0..1024).forEach { _ -> View.generateViewId() } }
 
-    // allocate some view ids for Fragments that are not used for anything else
-    // by running this in the Application class, there is a high chance that these
-    // are always the same ids so that there is no trouble when restoring state
-    val viewIdPool = (0..4).map { View.generateViewId() }
-
     override fun onCreate() {
         super.onCreate()
 

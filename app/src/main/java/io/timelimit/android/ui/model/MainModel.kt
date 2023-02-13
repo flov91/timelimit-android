@@ -19,6 +19,7 @@ import android.app.Application
 import androidx.lifecycle.AndroidViewModel
 import androidx.lifecycle.asFlow
 import androidx.lifecycle.viewModelScope
+import io.timelimit.android.R
 import io.timelimit.android.data.model.UserType
 import io.timelimit.android.logic.DefaultAppLogic
 import io.timelimit.android.ui.main.ActivityViewModel
@@ -33,6 +34,27 @@ import kotlinx.coroutines.channels.ReceiveChannel
 import kotlinx.coroutines.flow.*
 
 class MainModel(application: Application): AndroidViewModel(application) {
+    companion object {
+        private val viewIdPool = setOf(
+            R.id.fragment_01,
+            R.id.fragment_02,
+            R.id.fragment_03,
+            R.id.fragment_04,
+            R.id.fragment_05,
+            R.id.fragment_06,
+            R.id.fragment_07,
+            R.id.fragment_08,
+            R.id.fragment_09,
+            R.id.fragment_10,
+            R.id.fragment_11,
+            R.id.fragment_12,
+            R.id.fragment_13,
+            R.id.fragment_14,
+            R.id.fragment_15,
+            R.id.fragment_16
+        )
+    }
+
     val activityModel = ActivityViewModel(application)
 
     private val logic = DefaultAppLogic.with(application)
@@ -94,7 +116,7 @@ class MainModel(application: Application): AndroidViewModel(application) {
                 is FragmentState -> emitAll(state.transformWhile {
                     if (it is FragmentState && it !is State.Overview) {
                         val containerId = it.containerId ?: run {
-                            ((application as io.timelimit.android.Application).viewIdPool - fragmentIds).firstOrNull()?.also { id ->
+                            (viewIdPool - fragmentIds).firstOrNull()?.also { id ->
                                 it.containerId = id
                             }
                         }
