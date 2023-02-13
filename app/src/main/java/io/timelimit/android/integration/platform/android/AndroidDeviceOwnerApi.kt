@@ -87,9 +87,9 @@ class AndroidDeviceOwnerApi(
         if (VERSION.SDK_INT <= VERSION_CODES.O) throw IllegalStateException()
 
         return delegationList.map { (scope, delegation) ->
-            devicePolicyManager.getDelegatedScopes(componentName, scope).map { packageName ->
+            devicePolicyManager.getDelegatePackages(componentName, scope)?.map { packageName ->
                 Pair(packageName, delegation)
-            }
+            } ?: emptyList()
         }.flatten().groupBy { it.first }.mapValues { entry ->
             entry.value.map { it.second }
         }
