@@ -83,6 +83,7 @@ sealed class State (val previous: State?): Serializable {
             @Transient
             override val arguments = ManageChildFragmentArgs(childId = childId, fromRedirect = fromRedirect).toBundle()
 
+            @Transient
             override val toolbarIcons: List<Menu.Icon> = listOf(
                 Menu.Icon(
                     Icons.Default.DirectionsBike,
@@ -96,6 +97,7 @@ sealed class State (val previous: State?): Serializable {
                 )
             )
 
+            @Transient
             override val toolbarOptions: List<Menu.Dropdown> = listOf(
                 Menu.Dropdown(R.string.child_apps_title, UpdateStateCommand.ManageChild.Apps),
                 Menu.Dropdown(R.string.usage_history_title, UpdateStateCommand.ManageChild.UsageHistory),
@@ -132,6 +134,7 @@ sealed class State (val previous: State?): Serializable {
                     categoryId = categoryId
                 ).toBundle()
 
+                @Transient
                 override val toolbarOptions: List<Menu.Dropdown> = listOf(
                     Menu.Dropdown(R.string.blocked_time_areas, UpdateStateCommand.ManageChild.BlockedTimes),
                     Menu.Dropdown(R.string.category_settings, UpdateStateCommand.ManageChild.CategoryAdvanced)
