@@ -79,7 +79,6 @@ class MainActivity : AppCompatActivity(), ActivityViewModelHolder, U2fManager.De
         private const val EXTRA_AUTH_HANDOVER = "authHandover"
         private const val MAIN_MODEL_STATE = "mainModelState"
         private const val FRAGMENT_IDS_STATE = "fragmentIds"
-        private const val NEXT_FRAGMENT_ID = "nextFragmentId"
 
         private var authHandover: Triple<Long, Long, AuthenticatedUser>? = null
 
@@ -114,7 +113,6 @@ class MainActivity : AppCompatActivity(), ActivityViewModelHolder, U2fManager.De
     }
 
     private val mainModel by viewModels<MainModel>()
-    private var fragmentIds = mutableSetOf<Int>()
     private val syncModel: SyncStatusModel by lazy {
         ViewModelProviders.of(this).get(SyncStatusModel::class.java)
     }
@@ -134,8 +132,7 @@ class MainActivity : AppCompatActivity(), ActivityViewModelHolder, U2fManager.De
 
         if (savedInstanceState != null) {
             mainModel.state.value = savedInstanceState.getSerializable(MAIN_MODEL_STATE) as State
-            fragmentIds.addAll(savedInstanceState.getIntegerArrayList(FRAGMENT_IDS_STATE) ?: emptyList())
-            mainModel.nextFragmentId = savedInstanceState.getInt(NEXT_FRAGMENT_ID)
+            mainModel.fragmentIds.addAll(savedInstanceState.getIntegerArrayList(FRAGMENT_IDS_STATE) ?: emptyList())
         }
 
         lifecycleScope.launch {
@@ -279,7 +276,7 @@ class MainActivity : AppCompatActivity(), ActivityViewModelHolder, U2fManager.De
                                 screen = screen,
                                 executeCommand = ::execute,
                                 fragmentManager = supportFragmentManager,
-                                fragmentIds = fragmentIds,
+                                fragmentIds = mainModel.fragmentIds,
                                 modifier = Modifier
                                     .fillMaxSize()
                                     .padding(paddingValues)
@@ -300,8 +297,7 @@ class MainActivity : AppCompatActivity(), ActivityViewModelHolder, U2fManager.De
         super.onSaveInstanceState(outState)
 
         outState.putSerializable(MAIN_MODEL_STATE, mainModel.state.value)
-        outState.putIntegerArrayList(FRAGMENT_IDS_STATE, ArrayList(fragmentIds))
-        outState.putInt(NEXT_FRAGMENT_ID, mainModel.nextFragmentId)
+        outState.putIntegerArrayList(FRAGMENT_IDS_STATE, ArrayList(mainModel.fragmentIds))
     }
 
     override fun onStart() {
@@ -373,7 +369,7 @@ class MainActivity : AppCompatActivity(), ActivityViewModelHolder, U2fManager.De
     }
 
     private fun cleanupFragments() {
-        fragmentIds
+        mainModel.fragmentIds
             .filter { fragmentId ->
                 var v = mainModel.state.value as State?
 
@@ -385,8 +381,7 @@ class MainActivity : AppCompatActivity(), ActivityViewModelHolder, U2fManager.De
 
                 true
             }
-            .map { supportFragmentManager.findFragmentById(it) }
-            .filterNotNull()
+            .mapNotNull { supportFragmentManager.findFragmentById(it) }
             .filter { it.isDetached }
             .forEach {
                 if (BuildConfig.DEBUG) {
@@ -399,7 +394,7 @@ class MainActivity : AppCompatActivity(), ActivityViewModelHolder, U2fManager.De
                     .remove(it)
                     .commitAllowingStateLoss()
 
-                fragmentIds.remove(id)
+                mainModel.fragmentIds.remove(id)
             }
     }
 

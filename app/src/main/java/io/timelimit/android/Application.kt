@@ -1,5 +1,5 @@
 /*
- * TimeLimit Copyright <C> 2019 - 2021 Jonas Lochmann
+ * TimeLimit Copyright <C> 2019 - 2023 Jonas Lochmann
  *
  * This program is free software: you can redistribute it and/or modify
  * it under the terms of the GNU General Public License as published by
@@ -16,9 +16,19 @@
 package io.timelimit.android
 
 import android.app.Application
+import android.view.View
 import com.jakewharton.threetenabp.AndroidThreeTen
 
 class Application : Application() {
+    // two legacy screens use small id numbers as they want; by running generateViewId() often enough,
+    // all ids that are harcoded this way are not returned from generateViewId
+    init { (0..1024).forEach { _ -> View.generateViewId() } }
+
+    // allocate some view ids for Fragments that are not used for anything else
+    // by running this in the Application class, there is a high chance that these
+    // are always the same ids so that there is no trouble when restoring state
+    val viewIdPool = (0..4).map { View.generateViewId() }
+
     override fun onCreate() {
         super.onCreate()
 
