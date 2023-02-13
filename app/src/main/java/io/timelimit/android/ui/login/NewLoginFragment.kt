@@ -1,5 +1,5 @@
 /*
- * TimeLimit Copyright <C> 2019 - 2022 Jonas Lochmann
+ * TimeLimit Copyright <C> 2019 - 2023 Jonas Lochmann
  *
  * This program is free software: you can redistribute it and/or modify
  * it under the terms of the GNU General Public License as published by
@@ -42,7 +42,7 @@ import io.timelimit.android.ui.extension.openNextWizardScreen
 import io.timelimit.android.ui.extension.openPreviousWizardScreen
 import io.timelimit.android.ui.main.ActivityViewModelHolder
 import io.timelimit.android.ui.main.getActivityViewModel
-import io.timelimit.android.ui.manage.parent.key.MissingBarcodeScannerDialogFragment
+import io.timelimit.android.ui.manage.parent.key.MissingBinaryEyeDialogFragment
 import io.timelimit.android.ui.manage.parent.key.ScanBarcode
 import io.timelimit.android.ui.manage.parent.key.ScannedKey
 import io.timelimit.android.ui.view.KeyboardViewListener
@@ -149,7 +149,7 @@ class NewLoginFragment: DialogFragment() {
                 try {
                     scanLoginCode.launch(null)
                 } catch (ex: ActivityNotFoundException) {
-                    MissingBarcodeScannerDialogFragment.newInstance().show(parentFragmentManager)
+                    MissingBinaryEyeDialogFragment.newInstance().show(parentFragmentManager)
                 }
             }
         }

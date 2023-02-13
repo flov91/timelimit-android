@@ -1,5 +1,5 @@
 /*
- * TimeLimit Copyright <C> 2019 - 2022 Jonas Lochmann
+ * TimeLimit Copyright <C> 2019 - 2023 Jonas Lochmann
  *
  * This program is free software: you can redistribute it and/or modify
  * it under the terms of the GNU General Public License as published by
@@ -58,7 +58,7 @@ class AddUserKeyDialogFragment: DialogFragment() {
                     try {
                         scanBarcode.launch(null)
                     } catch (ex: ActivityNotFoundException) {
-                        MissingBarcodeScannerDialogFragment.newInstance().show(parentFragmentManager)
+                        MissingBinaryEyeDialogFragment.newInstance().show(parentFragmentManager)
 
                         dismiss()
                     }

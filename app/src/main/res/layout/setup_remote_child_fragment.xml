@@ -1,6 +1,6 @@
 <?xml version="1.0" encoding="utf-8"?>
 <!--
-  TimeLimit Copyright <C> 2019 - 2020 Jonas Lochmann
+  TimeLimit Copyright <C> 2019 - 2023 Jonas Lochmann
   This program is free software: you can redistribute it and/or modify
   it under the terms of the GNU General Public License as published by
   the Free Software Foundation version 3 of the License.
@@ -17,8 +17,6 @@
     xmlns:tools="http://schemas.android.com/tools"
     xmlns:app="http://schemas.android.com/apk/res-auto"
     tools:context="io.timelimit.android.ui.setup.child.SetupRemoteChildFragment">
-
-    <data></data>
 
     <io.timelimit.android.ui.view.SafeViewFlipper
         android:id="@+id/flipper"
@@ -52,6 +50,15 @@
                         android:layout_width="match_parent"
                         android:layout_height="wrap_content" />
 
+                    <Button
+                        android:id="@+id/scan_code_button"
+                        android:layout_marginTop="16dp"
+                        android:layout_marginBottom="16dp"
+                        android:layout_gravity="center_horizontal"
+                        android:text="@string/login_scan_code"
+                        android:layout_width="wrap_content"
+                        android:layout_height="wrap_content" />
+
                     <EditText
                         android:id="@+id/edit_code"
                         android:inputType="text"
@@ -66,6 +73,11 @@
                         android:layout_gravity="end"
                         android:layout_width="wrap_content"
                         android:layout_height="wrap_content" />
+
+                    <androidx.compose.ui.platform.ComposeView
+                        android:id="@+id/compose_view"
+                        android:layout_width="match_parent"
+                        android:layout_height="0dp" />
 
                 </LinearLayout>
             </androidx.cardview.widget.CardView>

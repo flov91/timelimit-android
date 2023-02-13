@@ -1,5 +1,5 @@
 /*
- * TimeLimit Copyright <C> 2019 - 2022 Jonas Lochmann
+ * TimeLimit Copyright <C> 2019 - 2023 Jonas Lochmann
  *
  * This program is free software: you can redistribute it and/or modify
  * it under the terms of the GNU General Public License as published by
@@ -20,9 +20,12 @@ import android.content.Context
 import android.content.Intent
 import androidx.activity.result.contract.ActivityResultContract
 
-class ScanBarcode: ActivityResultContract<Unit?, String?>() {
+class ScanBarcode(private val forceBinaryEye: Boolean = true): ActivityResultContract<Unit?, String?>() {
     override fun createIntent(context: Context, input: Unit?): Intent = Intent()
-        .setPackage("de.markusfisch.android.binaryeye")
+        .let {
+            if (forceBinaryEye) it.setPackage("de.markusfisch.android.binaryeye")
+            else it
+        }
         .setAction("com.google.zxing.client.android.SCAN")
 
     override fun parseResult(resultCode: Int, intent: Intent?): String? {

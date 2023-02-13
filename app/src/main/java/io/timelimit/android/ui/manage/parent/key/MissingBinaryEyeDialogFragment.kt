@@ -1,5 +1,5 @@
 /*
- * TimeLimit Copyright <C> 2019 - 2022 Jonas Lochmann
+ * TimeLimit Copyright <C> 2019 - 2023 Jonas Lochmann
  *
  * This program is free software: you can redistribute it and/or modify
  * it under the terms of the GNU General Public License as published by
@@ -27,11 +27,11 @@ import androidx.fragment.app.FragmentManager
 import io.timelimit.android.R
 import io.timelimit.android.extensions.showSafe
 
-class MissingBarcodeScannerDialogFragment: DialogFragment() {
+class MissingBinaryEyeDialogFragment: DialogFragment() {
     companion object {
-        private const val DIALOG_TAG = "MissingBarcodeScannerDialogFragment"
+        private const val DIALOG_TAG = "MissingBinaryEyeDialogFragment"
 
-        fun newInstance() = MissingBarcodeScannerDialogFragment()
+        fun newInstance() = MissingBinaryEyeDialogFragment()
     }
 
     override fun onCreateDialog(savedInstanceState: Bundle?): Dialog = AlertDialog.Builder(requireContext(), theme)

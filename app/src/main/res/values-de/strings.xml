@@ -1377,6 +1377,9 @@
     <string name="scan_key_missing_text">Zum Scannen der Barcodes wird die App Binary Eye benötigt</string>
     <string name="scan_key_missing_install">Binary Eye installieren</string>
 
+    <string name="scan_missing_title">Barcode Scanner wird benötigt</string>
+    <string name="scan_missing_text">TimeLimit benötigt einen zxing-kompatiblen Barcode-Scanner, wie z.B. einen der Folgenden:</string>
+
     <string name="select_time_span_view_minutes">Minuten</string>
     <string name="select_time_span_view_hours">Stunden</string>
     <string name="select_time_span_view_days">Tage</string>
@@ -1472,7 +1475,7 @@
         Starten Sie das Hinzufügen eines Gerätes an einem anderen Gerät,
         auf dem TimeLimit bereits installiert ist,
         indem Sie bei dem anderen Gerät in der Übersicht von TimeLimit \"Gerät hinzufügen\" wählen.
-        Geben Sie dann den dort angezeigten Code hier ein.
+        Geben Sie dann den dort angezeigten Code hier ein oder scannen Sie alternativ den Barcode.
     </string>
     <string name="setup_remote_child_hint_code">Code zum Verknüpfen</string>
 

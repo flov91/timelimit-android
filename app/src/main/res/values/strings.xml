@@ -1418,6 +1418,9 @@
     <string name="scan_key_missing_text">The App Binary Eye is required to scan a barcode</string>
     <string name="scan_key_missing_install">Install Binary Eye</string>
 
+    <string name="scan_missing_title">Barcode Scanner required</string>
+    <string name="scan_missing_text">TimeLimit needs a barcode scanner the implements the zxing scan API. You can find some Apps that do this below:</string>
+
     <string name="select_time_span_view_minutes">Minutes</string>
     <string name="select_time_span_view_hours">Hours</string>
     <string name="select_time_span_view_days">Days</string>
@@ -1506,7 +1509,7 @@
     <string name="setup_remote_child_text">
         Start adding a device to another device on which TimeLimit is installed already
         by selecting \"Add device\" in the overview of TimeLimit at the other device.
-        Enter here the code which is shown there.
+        Enter here the code which is shown there or use the barcode scan option.
     </string>
     <string name="setup_remote_child_hint_code">Code to connect</string>
 
