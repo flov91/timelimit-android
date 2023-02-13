@@ -1,5 +1,5 @@
 /*
- * TimeLimit Copyright <C> 2019 - 2022 Jonas Lochmann
+ * TimeLimit Copyright <C> 2019 - 2023 Jonas Lochmann
  *
  * This program is free software: you can redistribute it and/or modify
  * it under the terms of the GNU General Public License as published by
@@ -92,6 +92,8 @@ abstract class PlatformIntegration(
     abstract fun getExitLog(length: Int): List<ExitLogItem>
 
     abstract fun showNewDeviceNotification(title: String)
+
+    abstract val deviceOwner: DeviceOwnerApi
 
     var installedAppsChangeListener: Runnable? = null
     var systemClockChangeListener: Runnable? = null

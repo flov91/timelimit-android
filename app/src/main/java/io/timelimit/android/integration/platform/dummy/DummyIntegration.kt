@@ -1,5 +1,5 @@
 /*
- * TimeLimit Copyright <C> 2019 - 2022 Jonas Lochmann
+ * TimeLimit Copyright <C> 2019 - 2023 Jonas Lochmann
  *
  * This program is free software: you can redistribute it and/or modify
  * it under the terms of the GNU General Public License as published by
@@ -193,4 +193,14 @@ class DummyIntegration(
     override fun getExitLog(length: Int): List<ExitLogItem> = emptyList()
 
     override fun showNewDeviceNotification(title: String) = Unit
+
+    override val deviceOwner: DeviceOwnerApi = object: DeviceOwnerApi {
+        override val delegations: List<DeviceOwnerApi.DelegationScope> = emptyList()
+
+        override fun setDelegations(packageName: String, scopes: List<DeviceOwnerApi.DelegationScope>) {
+            throw SecurityException()
+        }
+
+        override fun getDelegations(): Map<String, List<DeviceOwnerApi.DelegationScope>> = emptyMap()
+    }
 }

@@ -18,6 +18,7 @@ package io.timelimit.android.ui
 import androidx.compose.runtime.Composable
 import androidx.compose.ui.Modifier
 import androidx.fragment.app.FragmentManager
+import io.timelimit.android.ui.diagnose.deviceowner.DeviceOwnerScreen
 import io.timelimit.android.ui.model.Screen
 import io.timelimit.android.ui.model.UpdateStateCommand
 import io.timelimit.android.ui.overview.overview.OverviewScreen
@@ -32,7 +33,8 @@ fun ScreenMultiplexer(
 ) {
     when (screen) {
         null -> {/* nothing to do */ }
-        is Screen.OverviewScreen -> OverviewScreen(screen.content, modifier = modifier)
         is Screen.FragmentScreen -> FragmentScreen(screen, fragmentManager, fragmentIds, modifier = modifier)
+        is Screen.OverviewScreen -> OverviewScreen(screen.content, modifier = modifier)
+        is Screen.DeviceOwnerScreen -> DeviceOwnerScreen(screen.content, modifier = modifier)
     }
 }

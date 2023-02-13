@@ -19,6 +19,7 @@ import androidx.compose.material.SnackbarHostState
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.outlined.Info
 import io.timelimit.android.R
+import io.timelimit.android.ui.model.diagnose.DeviceOwnerHandling
 import io.timelimit.android.ui.model.main.OverviewHandling
 
 sealed class Screen(
@@ -50,9 +51,20 @@ sealed class Screen(
             UpdateStateCommand.Overview.Uninstall
         ))
     ), ScreenWithAuthenticationFab, ScreenWithSnackbar
+
+    class DeviceOwnerScreen(
+        state: State,
+        val content: DeviceOwnerHandling.OwnerScreen,
+        override val snackbarHostState: SnackbarHostState
+    ): Screen(state), ScreenWithAuthenticationFab, ScreenWithSnackbar, ScreenWithTitleResource {
+        override val titleResource = R.string.diagnose_dom_title
+    }
 }
 
 interface ScreenWithAuthenticationFab
 interface ScreenWithSnackbar {
     val snackbarHostState: SnackbarHostState
+}
+interface ScreenWithTitleResource {
+    val titleResource: Int
 }

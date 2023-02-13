@@ -229,8 +229,8 @@ class MainActivity : AppCompatActivity(), ActivityViewModelHolder, U2fManager.De
                     contentKey = { screen ->
                         when (screen) {
                             is Screen.FragmentScreen -> screen.fragment.containerId
-                            is Screen.OverviewScreen -> "overview"
                             null -> null
+                            else -> screen.javaClass
                         }
                     },
                     transitionSpec = {
@@ -264,9 +264,14 @@ class MainActivity : AppCompatActivity(), ActivityViewModelHolder, U2fManager.De
                         else -> liveDataFromNullableValue(null)
                     }.asFlow().collectAsState(initial = null)
 
+                    val screenTitle = when (screen) {
+                        is ScreenWithTitleResource -> stringResource(screen.titleResource)
+                        else -> null
+                    }
+
                     ScreenScaffold(
                         screen = screen,
-                        title = customTitle ?: stringResource(R.string.app_name),
+                        title = screenTitle ?: customTitle ?: stringResource(R.string.app_name),
                         subtitle = subtitleLive,
                         executeCommand = ::execute,
                         content = { paddingValues ->

@@ -602,6 +602,11 @@
     <string name="diagnose_don_no_owner_toast">TimeLimit is NOT set as device owner</string>
     <string name="diagnose_don_not_supported_toast">Your system does not support setting the organization name</string>
 
+    <string name="diagnose_dom_title">Device Owner</string>
+    <string name="diagnose_dom_error">You need a recent Android version and the device owner permission to use this</string>
+    <string name="diagnose_dom_delegate_title">Delegations</string>
+    <string name="diagnose_dom_delegate_add_app">Add App</string>
+
     <string name="diagnose_er_title">Exit Reasons</string>
     <string name="diagnose_er_empty">there is no data; this data is only available at Android 11 and newer</string>
 
