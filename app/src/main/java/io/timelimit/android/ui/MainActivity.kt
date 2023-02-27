@@ -242,7 +242,9 @@ class MainActivity : AppCompatActivity(), ActivityViewModelHolder, U2fManager.De
                             val isClosing = from.state.hasPrevious(to.state)
 
                             if (isOpening) Transition.openScreen
-                            else if (isClosing) Transition.closeScreen
+                            else if (isClosing)
+                                if (from.state.previous == to.state) Transition.closeScreen
+                                else Transition.bigCloseScreen
                             else Transition.swap
                         }
                     }

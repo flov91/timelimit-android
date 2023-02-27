@@ -33,6 +33,19 @@ object Transition {
         targetContentZIndex = -1f
     )
 
+    val bigCloseScreen = run {
+        val speed = 250
+
+        fun <T> phase1() = tween<T>(speed, 0, FastOutLinearInEasing)
+        fun <T> phase2() = tween<T>(speed, speed, LinearOutSlowInEasing)
+
+        ContentTransform(
+            initialContentExit = slideOutHorizontally(phase1()) { it } + fadeOut(phase1()),
+            targetContentEnter = slideInHorizontally(phase2()) { -it / 2 } + fadeIn(phase2()),
+            targetContentZIndex = -1f
+        )
+    }
+
     val swap = run {
         val speed = 250
 
