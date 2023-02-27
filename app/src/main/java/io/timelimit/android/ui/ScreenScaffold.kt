@@ -115,8 +115,12 @@ fun ScreenScaffold(
                 disabledContentColor = MaterialTheme.colors.onSecondary
             )
 
+            val bottomBarColor =
+                if (MaterialTheme.colors.isLight) MaterialTheme.colors.secondary
+                else MaterialTheme.colors.primarySurface
+
             if (backStack.isNotEmpty()) BottomAppBar(
-                backgroundColor = MaterialTheme.colors.secondary,
+                backgroundColor = bottomBarColor,
                 content = {
                     Row(
                         modifier = Modifier.horizontalScroll(
