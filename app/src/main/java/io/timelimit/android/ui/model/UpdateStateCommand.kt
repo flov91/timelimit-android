@@ -246,27 +246,13 @@ sealed class UpdateStateCommand {
 
         object LeaveCategory: UpdateStateCommand() {
             override fun transform(state: State): State? =
-                if (state is State.ManageChild.ManageCategory) when (state) {
-                    is State.ManageChild.ManageCategory.Main -> state.previous
-                    is State.ManageChild.ManageCategory.Advanced -> state.previousCategory.previous
-                    is State.ManageChild.ManageCategory.BlockedTimes -> state.previousCategory.previous
-                }
+                if (state is State.ManageChild.ManageCategory) state.previousChild
                 else null
         }
 
         object LeaveChild: UpdateStateCommand() {
             override fun transform(state: State): State? =
-                if (state is State.ManageChild) when (state) {
-                    is State.ManageChild.Main -> state.previous
-                    is State.ManageChild.Apps -> state.previousChild.previous
-                    is State.ManageChild.Advanced -> state.previousChild.previous
-                    is State.ManageChild.Contacts -> state.previousChild.previous
-                    is State.ManageChild.Tasks -> state.previousChild.previous
-                    is State.ManageChild.UsageHistory -> state.previousChild.previous
-                    is State.ManageChild.ManageCategory.Main -> state.previousChild.previous
-                    is State.ManageChild.ManageCategory.Advanced -> state.previousCategory.previousChild.previous
-                    is State.ManageChild.ManageCategory.BlockedTimes -> state.previousCategory.previousChild.previous
-                }
+                if (state is State.ManageChild) state.previousOverview
                 else null
         }
     }

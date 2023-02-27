@@ -84,7 +84,12 @@ sealed class State (val previous: State?): Serializable {
             previousOverview: Overview,
             childId: String,
             fromRedirect: Boolean
-        ): ManageChild(previous = previousOverview, ManageChildFragment::class.java, childId = childId, previousOverview = previousOverview) {
+        ): ManageChild(
+            previous = previousOverview,
+            fragmentClass = ManageChildFragment::class.java,
+            childId = childId,
+            previousOverview = previousOverview
+        ) {
             @Transient
             override val arguments = ManageChildFragmentArgs(childId = childId, fromRedirect = fromRedirect).toBundle()
 
@@ -110,29 +115,35 @@ sealed class State (val previous: State?): Serializable {
             )
         }
 
-        class Apps(val previousChild: Main): ManageChild(previousChild, ChildAppsFragmentWrapper::class.java, previousChild.childId, previousChild.previousOverview) {
+        sealed class Sub(
+            previous: State,
+            previousMain: Main,
+            fragmentClass: Class<out Fragment>
+        ): ManageChild(previous, fragmentClass, previousMain.childId, previousMain.previousOverview)
+
+        class Apps(val previousChild: Main): Sub(previousChild, previousChild, ChildAppsFragmentWrapper::class.java) {
             @Transient
             override val arguments: Bundle = ChildAppsFragmentWrapperArgs(previousChild.childId).toBundle()
         }
-        class Advanced(val previousChild: Main): ManageChild(previousChild, ChildAdvancedFragmentWrapper::class.java, previousChild.childId, previousChild.previousOverview) {
+        class Advanced(val previousChild: Main): Sub(previousChild, previousChild, ChildAdvancedFragmentWrapper::class.java) {
             @Transient
             override val arguments: Bundle = ChildAdvancedFragmentWrapperArgs(previousChild.childId).toBundle()
         }
-        class Contacts(val previousChild: Main): ManageChild(previousChild, ContactsFragment::class.java, previousChild.childId, previousChild.previousOverview)
-        class UsageHistory(val previousChild: Main): ManageChild(previousChild, ChildUsageHistoryFragmentWrapper::class.java, previousChild.childId, previousChild.previousOverview) {
+        class Contacts(val previousChild: Main): Sub(previousChild, previousChild, ContactsFragment::class.java)
+        class UsageHistory(val previousChild: Main): Sub(previousChild, previousChild, ChildUsageHistoryFragmentWrapper::class.java) {
             @Transient
             override val arguments: Bundle = ChildUsageHistoryFragmentWrapperArgs(previousChild.childId).toBundle()
         }
-        class Tasks(val previousChild: Main): ManageChild(previousChild, ChildTasksFragmentWrapper::class.java, previousChild.childId, previousChild.previousOverview) {
+        class Tasks(val previousChild: Main): Sub(previousChild, previousChild, ChildTasksFragmentWrapper::class.java) {
             @Transient
             override val arguments: Bundle = ChildTasksFragmentWrapperArgs(previousChild.childId).toBundle()
         }
 
-        sealed class ManageCategory(previous: State, fragmentClass: Class<out Fragment>, val previousChild: ManageChild.Main): ManageChild(previous, fragmentClass, previousChild.childId, previousChild.previousOverview) {
+        sealed class ManageCategory(previous: State, val previousChild: ManageChild.Main, fragmentClass: Class<out Fragment>): Sub(previous, previousChild, fragmentClass) {
             class Main(
                 previousChild: ManageChild.Main,
                 val categoryId: String
-            ): ManageCategory(previous = previousChild, fragmentClass = ManageCategoryFragment::class.java, previousChild) {
+            ): ManageCategory(previousChild, previousChild, ManageCategoryFragment::class.java) {
                 @Transient
                 override val arguments: Bundle = ManageCategoryFragmentArgs(
                     childId = previousChild.childId,
@@ -146,9 +157,13 @@ sealed class State (val previous: State?): Serializable {
                 )
             }
 
+            sealed class Sub(
+                previous: State, previousMain: Main, fragmentClass: Class<out Fragment>
+            ): ManageCategory(previous, previousMain.previousChild, fragmentClass)
+
             class BlockedTimes(
-                val previousCategory: Main
-            ): ManageCategory(previous = previousCategory, fragmentClass = BlockedTimeAreasFragmentWrapper::class.java, previousChild = previousCategory.previousChild) {
+                previousCategory: Main
+            ): Sub(previousCategory, previousCategory, BlockedTimeAreasFragmentWrapper::class.java) {
                 @Transient
                 override val arguments: Bundle = BlockedTimeAreasFragmentWrapperArgs(
                     childId = previousCategory.previousChild.childId,
@@ -157,8 +172,8 @@ sealed class State (val previous: State?): Serializable {
             }
 
             class Advanced(
-                val previousCategory: Main
-            ): ManageCategory(previous = previousCategory, fragmentClass = CategoryAdvancedFragmentWrapper::class.java, previousChild = previousCategory.previousChild) {
+                previousCategory: Main
+            ): Sub(previousCategory, previousCategory, CategoryAdvancedFragmentWrapper::class.java) {
                 @Transient
                 override val arguments: Bundle = CategoryAdvancedFragmentWrapperArgs(
                     childId = previousCategory.previousChild.childId,
