@@ -225,7 +225,9 @@ class MainActivity : AppCompatActivity(), ActivityViewModelHolder, U2fManager.De
                     modifier = Modifier.background(Color.Black),
                     contentKey = { screen ->
                         when (screen) {
-                            is Screen.FragmentScreen -> screen.fragment.containerId
+                            is Screen.FragmentScreen ->
+                                if (screen::class.java == Screen.FragmentScreen::class.java) screen.fragment.containerId
+                                else screen.javaClass
                             null -> null
                             else -> screen.javaClass
                         }

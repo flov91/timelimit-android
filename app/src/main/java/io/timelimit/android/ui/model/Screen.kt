@@ -64,6 +64,17 @@ sealed class Screen(
         override val title = Title.Plain(childName)
     }
 
+    class ManageChildAppsScreen(
+        state: State,
+        toolbarIcons: List<Menu.Icon>,
+        toolbarOptions: List<Menu.Dropdown>,
+        fragment: FragmentState,
+        containerId: Int,
+        override val backStack: List<BackStackItem>
+    ): FragmentScreen(state, toolbarIcons, toolbarOptions, fragment, containerId), ScreenWithBackStack, ScreenWithTitle {
+        override val title = Title.StringResource(R.string.child_apps_title)
+    }
+
     class DeviceOwnerScreen(
         state: State,
         val content: DeviceOwnerHandling.OwnerScreen,

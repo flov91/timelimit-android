@@ -29,6 +29,17 @@ object ManageChildHandling {
     fun processState(
         logic: AppLogic,
         stateLive: MutableStateFlow<State>
+    ) = flow {
+        while (true) when (stateLive.value) {
+            is State.ManageChild.Main -> emitAll(processMainState(logic, stateLive))
+            is State.ManageChild.Apps -> emitAll(processAppsState(logic, stateLive))
+            else -> break
+        }
+    }
+
+    private fun processMainState(
+        logic: AppLogic,
+        stateLive: MutableStateFlow<State>
     ): Flow<Screen> {
         val hasMatchingStateLive = stateLive.map { it is State.ManageChild.Main }
         val matchingState = stateLive.filterIsInstance<State.ManageChild.Main>()
@@ -49,6 +60,39 @@ object ManageChildHandling {
                         BackStackItem(
                             Title.StringResource(R.string.main_tab_overview)
                         ) { stateLive.compareAndSet(state, state.previousOverview) }
+                    )
+                ))
+            })
+        }
+
+        return hasMatchingStateLive.whileTrue { screenLive }
+    }
+
+    private fun processAppsState(
+        logic: AppLogic,
+        stateLive: MutableStateFlow<State>
+    ): Flow<Screen> {
+        val hasMatchingStateLive = stateLive.map { it is State.ManageChild.Apps }
+        val matchingState = stateLive.filterIsInstance<State.ManageChild.Apps>()
+
+        val screenLive = matchingState.transformLatest { state ->
+            val userLive = logic.database.user().getUserByIdFlow(state.childId)
+
+            emitAll(userLive.transform {user ->
+                if (user?.type != UserType.Child) stateLive.compareAndSet(state, state.previousChild.previousOverview)
+                else emit(Screen.ManageChildAppsScreen(
+                    state,
+                    state.toolbarIcons,
+                    state.toolbarOptions,
+                    state,
+                    R.id.fragment_manage_child_apps,
+                    listOf(
+                        BackStackItem(
+                            Title.StringResource(R.string.main_tab_overview)
+                        ) { stateLive.compareAndSet(state, state.previousChild.previousOverview) },
+                        BackStackItem(
+                            Title.Plain(user.name)
+                        ) { stateLive.compareAndSet(state, state.previousChild) }
                     )
                 ))
             })

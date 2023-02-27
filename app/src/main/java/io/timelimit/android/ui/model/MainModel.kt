@@ -114,6 +114,7 @@ class MainModel(application: Application): AndroidViewModel(application) {
                 is State.LaunchState -> LaunchHandling.processLaunchState(state, logic)
                 is State.Overview -> emitAll(OverviewHandling.processState(logic, scope, activityCommandInternal, authenticationModelApi, state))
                 is State.ManageChild.Main -> emitAll(ManageChildHandling.processState(logic, state))
+                is State.ManageChild.Apps -> emitAll(ManageChildHandling.processState(logic, state))
                 is State.DiagnoseScreen.DeviceOwner -> emitAll(DeviceOwnerHandling.processState(logic, scope, authenticationModelApi, state))
                 is FragmentState -> emitAll(state.transformWhile {
                     if (it is FragmentState && it::class.java === initialState::class.java) {

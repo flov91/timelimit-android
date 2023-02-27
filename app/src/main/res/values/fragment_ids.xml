@@ -31,4 +31,5 @@
     <item name="fragment_15" type="id" />
     <item name="fragment_16" type="id" />
     <item name="fragment_manage_child" type="id" />
+    <item name="fragment_manage_child_apps" type="id" />
 </resources>
