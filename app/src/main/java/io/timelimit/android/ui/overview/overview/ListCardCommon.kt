@@ -16,10 +16,7 @@
 package io.timelimit.android.ui.overview.overview
 
 import androidx.compose.foundation.layout.*
-import androidx.compose.material.Button
-import androidx.compose.material.Icon
-import androidx.compose.material.LocalTextStyle
-import androidx.compose.material.Text
+import androidx.compose.material.*
 import androidx.compose.runtime.Composable
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
@@ -50,7 +47,7 @@ object ListCardCommon {
         label: String,
         value: String,
         style: TextStyle = LocalTextStyle.current,
-        tint: Color = Color.Unspecified,
+        tint: Color = LocalContentColor.current.copy(alpha = LocalContentAlpha.current),
         multiline: Boolean = false
     ) {
         Row {
