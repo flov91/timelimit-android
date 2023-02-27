@@ -34,6 +34,8 @@ class CaseScope<LocalStateType>(
             else oldState
         }
     }
+
+    fun <T> share(flow: Flow<T>): SharedFlow<T> = flow.shareIn(scope, SharingStarted.Lazily, 1)
 }
 
 class Case<T, R>(

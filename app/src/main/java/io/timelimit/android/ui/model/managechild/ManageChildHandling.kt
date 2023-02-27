@@ -16,7 +16,7 @@
 package io.timelimit.android.ui.model.managechild
 
 import io.timelimit.android.R
-import io.timelimit.android.data.model.UserType
+import io.timelimit.android.data.model.User
 import io.timelimit.android.logic.AppLogic
 import io.timelimit.android.ui.model.BackStackItem
 import io.timelimit.android.ui.model.Screen
@@ -31,64 +31,72 @@ object ManageChildHandling {
         logic: AppLogic,
         state: Flow<State.ManageChild>,
         updateState: ((State.ManageChild) -> State) -> Unit
-    ) = state.splitConflated(
-        Case.simple<_, _, State.ManageChild.Main> { processMainState(logic, it, updateMethod(updateState)) },
-        Case.simple<_, _, State.ManageChild.Apps> { processAppsState(logic, it, updateMethod(updateState)) }
-    )
+    ): Flow<Screen> = state.splitConflated(
+        Case.withKey<_, _, State.ManageChild, _>(
+            withKey = { it.childId },
+            producer = { childId, state2 ->
+                val state3 = share(state2)
+                val userLive = logic.database.user().getUserByIdFlow(childId)
 
-    private fun processMainState(
-        logic: AppLogic,
-        stateLive: Flow<State.ManageChild.Main>,
-        updateState: ((State.ManageChild.Main) -> State) -> Unit
-    ): Flow<Screen> {
-        return stateLive.transformLatest { state ->
-            val userLive = logic.database.user().getUserByIdFlow(state.childId)
+                val hasUserLive = userLive.map { it != null }.distinctUntilChanged()
+                val foundUserLive = userLive.filterNotNull()
 
-            emitAll(userLive.transform {user ->
-                if (user?.type != UserType.Child) updateState { state.previousOverview }
-                else emit(Screen.ManageChildScreen(
-                    state,
-                    state.toolbarIcons,
-                    state.toolbarOptions,
-                    state,
-                    R.id.fragment_manage_child,
-                    user.name,
+                val baseBackStackLive = state3.map { state ->
                     listOf(
                         BackStackItem(
                             Title.StringResource(R.string.main_tab_overview)
                         ) { updateState { state.previousOverview } }
                     )
-                ))
-            })
-        }
+                }
+
+                hasUserLive.transformLatest { hasUser ->
+                    if (hasUser) emitAll(state3.splitConflated(
+                        Case.simple<_, _, State.ManageChild.Main> { processMainState(it, baseBackStackLive, foundUserLive) },
+                        Case.simple<_, _, State.ManageChild.Apps> { processAppsState(share(it), baseBackStackLive, foundUserLive, updateMethod(updateState)) }
+                    ))
+                    else updateState { it.previousOverview }
+                }
+            }
+        )
+    )
+
+    private fun processMainState(
+        stateLive: Flow<State.ManageChild.Main>,
+        baseBackStackLive: Flow<List<BackStackItem>>,
+        userLive: Flow<User>
+    ): Flow<Screen> = combine(stateLive, baseBackStackLive, userLive) { state, backStack, user ->
+        Screen.ManageChildScreen(
+            state,
+            state.toolbarIcons,
+            state.toolbarOptions,
+            state,
+            R.id.fragment_manage_child,
+            user.name,
+            backStack
+        )
     }
 
     private fun processAppsState(
-        logic: AppLogic,
-        stateLive: Flow<State.ManageChild.Apps>,
+        stateLive: SharedFlow<State.ManageChild.Apps>,
+        baseBackStackLive: Flow<List<BackStackItem>>,
+        userLive: Flow<User>,
         updateState: ((State.ManageChild.Apps) -> State) -> Unit
     ): Flow<Screen> {
-        return stateLive.transformLatest { state ->
-            val userLive = logic.database.user().getUserByIdFlow(state.childId)
+        val subBackStackLive = combine(stateLive, baseBackStackLive, userLive) { state, baseBackStack, user ->
+            baseBackStack + BackStackItem(
+                Title.Plain(user.name)
+            ) { updateState { state.previousChild } }
+        }
 
-            emitAll(userLive.transform {user ->
-                if (user?.type != UserType.Child) updateState { state.previousChild.previousOverview }
-                else emit(Screen.ManageChildAppsScreen(
-                    state,
-                    state.toolbarIcons,
-                    state.toolbarOptions,
-                    state,
-                    R.id.fragment_manage_child_apps,
-                    listOf(
-                        BackStackItem(
-                            Title.StringResource(R.string.main_tab_overview)
-                        ) { updateState { state.previousChild.previousOverview } },
-                        BackStackItem(
-                            Title.Plain(user.name)
-                        ) { updateState { state.previousChild } }
-                    )
-                ))
-            })
+        return stateLive.combine(subBackStackLive) { state, backStack ->
+            Screen.ManageChildAppsScreen(
+                state,
+                state.toolbarIcons,
+                state.toolbarOptions,
+                state,
+                R.id.fragment_manage_child_apps,
+                backStack
+            )
         }
     }
 }
