@@ -1,5 +1,5 @@
 /*
- * TimeLimit Copyright <C> 2019 - 2020 Jonas Lochmann
+ * TimeLimit Copyright <C> 2019 - 2023 Jonas Lochmann
  *
  * This program is free software: you can redistribute it and/or modify
  * it under the terms of the GNU General Public License as published by
@@ -21,6 +21,7 @@ import io.timelimit.android.data.customtypes.ImmutableBitmask
 import io.timelimit.android.data.customtypes.ImmutableBitmaskAdapter
 import io.timelimit.android.data.model.Category
 import io.timelimit.android.livedata.map
+import kotlinx.coroutines.flow.Flow
 import java.util.*
 
 @Dao
@@ -39,6 +40,9 @@ abstract class CategoryDao {
 
     @Query("SELECT * FROM category WHERE id = :categoryId")
     abstract fun getCategoryByIdSync(categoryId: String): Category?
+
+    @Query("SELECT * FROM category WHERE id = :categoryId")
+    abstract fun getCategoryByIdFlow(categoryId: String): Flow<Category?>
 
     @Query("SELECT * FROM category WHERE child_id = :childId")
     abstract fun getCategoriesByChildIdSync(childId: String): List<Category>

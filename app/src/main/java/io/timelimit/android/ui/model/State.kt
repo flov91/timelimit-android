@@ -117,7 +117,7 @@ sealed class State (val previous: State?): Serializable {
 
         sealed class Sub(
             previous: State,
-            previousMain: Main,
+            val previousMain: Main,
             fragmentClass: Class<out Fragment>
         ): ManageChild(previous, fragmentClass, previousMain.childId, previousMain.previousOverview)
 
@@ -139,11 +139,16 @@ sealed class State (val previous: State?): Serializable {
             override val arguments: Bundle = ChildTasksFragmentWrapperArgs(previousChild.childId).toBundle()
         }
 
-        sealed class ManageCategory(previous: State, val previousChild: ManageChild.Main, fragmentClass: Class<out Fragment>): Sub(previous, previousChild, fragmentClass) {
+        sealed class ManageCategory(
+            previous: State,
+            val previousChild: ManageChild.Main,
+            val categoryId: String,
+            fragmentClass: Class<out Fragment>
+        ): Sub(previous, previousChild, fragmentClass) {
             class Main(
                 previousChild: ManageChild.Main,
-                val categoryId: String
-            ): ManageCategory(previousChild, previousChild, ManageCategoryFragment::class.java) {
+                categoryId: String
+            ): ManageCategory(previousChild, previousChild, categoryId, ManageCategoryFragment::class.java) {
                 @Transient
                 override val arguments: Bundle = ManageCategoryFragmentArgs(
                     childId = previousChild.childId,
@@ -158,8 +163,10 @@ sealed class State (val previous: State?): Serializable {
             }
 
             sealed class Sub(
-                previous: State, previousMain: Main, fragmentClass: Class<out Fragment>
-            ): ManageCategory(previous, previousMain.previousChild, fragmentClass)
+                previous: State,
+                val previousCategory: Main,
+                fragmentClass: Class<out Fragment>
+            ): ManageCategory(previous, previousCategory.previousChild, previousCategory.categoryId, fragmentClass)
 
             class BlockedTimes(
                 previousCategory: Main

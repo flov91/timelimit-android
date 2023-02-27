@@ -75,6 +75,82 @@ sealed class Screen(
         override val title = Title.StringResource(R.string.child_apps_title)
     }
 
+    class ManageChildAdvancedScreen(
+        state: State,
+        toolbarIcons: List<Menu.Icon>,
+        toolbarOptions: List<Menu.Dropdown>,
+        fragment: FragmentState,
+        containerId: Int,
+        override val backStack: List<BackStackItem>
+    ): FragmentScreen(state, toolbarIcons, toolbarOptions, fragment, containerId), ScreenWithBackStack, ScreenWithTitle {
+        override val title = Title.StringResource(R.string.manage_child_tab_other)
+    }
+
+    class ManageChildContactsScreen(
+        state: State,
+        toolbarIcons: List<Menu.Icon>,
+        toolbarOptions: List<Menu.Dropdown>,
+        fragment: FragmentState,
+        containerId: Int,
+        override val backStack: List<BackStackItem>
+    ): FragmentScreen(state, toolbarIcons, toolbarOptions, fragment, containerId), ScreenWithBackStack, ScreenWithTitle {
+        override val title = Title.StringResource(R.string.contacts_title_long)
+    }
+
+    class ManageChildUsageHistory(
+        state: State,
+        toolbarIcons: List<Menu.Icon>,
+        toolbarOptions: List<Menu.Dropdown>,
+        fragment: FragmentState,
+        containerId: Int,
+        override val backStack: List<BackStackItem>
+    ): FragmentScreen(state, toolbarIcons, toolbarOptions, fragment, containerId), ScreenWithBackStack, ScreenWithTitle {
+        override val title = Title.StringResource(R.string.usage_history_title)
+    }
+
+    class ManageChildUsageTasks(
+        state: State,
+        toolbarIcons: List<Menu.Icon>,
+        toolbarOptions: List<Menu.Dropdown>,
+        fragment: FragmentState,
+        containerId: Int,
+        override val backStack: List<BackStackItem>
+    ): FragmentScreen(state, toolbarIcons, toolbarOptions, fragment, containerId), ScreenWithBackStack, ScreenWithTitle {
+        override val title = Title.StringResource(R.string.manage_child_tasks)
+    }
+    class ManageCategory(
+        state: State,
+        toolbarIcons: List<Menu.Icon>,
+        toolbarOptions: List<Menu.Dropdown>,
+        fragment: FragmentState,
+        containerId: Int,
+        val categoryName: String,
+        override val backStack: List<BackStackItem>
+    ): FragmentScreen(state, toolbarIcons, toolbarOptions, fragment, containerId), ScreenWithBackStack, ScreenWithTitle {
+        override val title = Title.Plain(categoryName)
+    }
+    class ManageCategoryAdvanced(
+        state: State,
+        toolbarIcons: List<Menu.Icon>,
+        toolbarOptions: List<Menu.Dropdown>,
+        fragment: FragmentState,
+        containerId: Int,
+        override val backStack: List<BackStackItem>
+    ): FragmentScreen(state, toolbarIcons, toolbarOptions, fragment, containerId), ScreenWithBackStack, ScreenWithTitle {
+        override val title = Title.StringResource(R.string.category_settings)
+    }
+
+    class ManageBlockedTimes(
+        state: State,
+        toolbarIcons: List<Menu.Icon>,
+        toolbarOptions: List<Menu.Dropdown>,
+        fragment: FragmentState,
+        containerId: Int,
+        override val backStack: List<BackStackItem>
+    ): FragmentScreen(state, toolbarIcons, toolbarOptions, fragment, containerId), ScreenWithBackStack, ScreenWithTitle {
+        override val title = Title.StringResource(R.string.blocked_time_areas)
+    }
+
     class DeviceOwnerScreen(
         state: State,
         val content: DeviceOwnerHandling.OwnerScreen,

@@ -17,6 +17,7 @@ package io.timelimit.android.ui.model.managechild
 
 import io.timelimit.android.R
 import io.timelimit.android.data.model.User
+import io.timelimit.android.data.model.UserType
 import io.timelimit.android.logic.AppLogic
 import io.timelimit.android.ui.model.BackStackItem
 import io.timelimit.android.ui.model.Screen
@@ -38,7 +39,7 @@ object ManageChildHandling {
                 val state3 = share(state2)
                 val userLive = logic.database.user().getUserByIdFlow(childId)
 
-                val hasUserLive = userLive.map { it != null }.distinctUntilChanged()
+                val hasUserLive = userLive.map { it?.type == UserType.Child }.distinctUntilChanged()
                 val foundUserLive = userLive.filterNotNull()
 
                 val baseBackStackLive = state3.map { state ->
@@ -52,7 +53,7 @@ object ManageChildHandling {
                 hasUserLive.transformLatest { hasUser ->
                     if (hasUser) emitAll(state3.splitConflated(
                         Case.simple<_, _, State.ManageChild.Main> { processMainState(it, baseBackStackLive, foundUserLive) },
-                        Case.simple<_, _, State.ManageChild.Apps> { processAppsState(share(it), baseBackStackLive, foundUserLive, updateMethod(updateState)) }
+                        Case.simple<_, _, State.ManageChild.Sub> { processSubState(logic, share(it), baseBackStackLive, foundUserLive, updateMethod(updateState)) },
                     ))
                     else updateState { it.previousOverview }
                 }
@@ -76,27 +77,96 @@ object ManageChildHandling {
         )
     }
 
-    private fun processAppsState(
-        stateLive: SharedFlow<State.ManageChild.Apps>,
-        baseBackStackLive: Flow<List<BackStackItem>>,
+    private fun processSubState(
+        logic: AppLogic,
+        stateLive: SharedFlow<State.ManageChild.Sub>,
+        parentBackStackLive: Flow<List<BackStackItem>>,
         userLive: Flow<User>,
-        updateState: ((State.ManageChild.Apps) -> State) -> Unit
+        updateState: ((State.ManageChild.Sub) -> State) -> Unit
     ): Flow<Screen> {
-        val subBackStackLive = combine(stateLive, baseBackStackLive, userLive) { state, baseBackStack, user ->
+        val subBackStackLive = combine(stateLive, parentBackStackLive, userLive) { state, baseBackStack, user ->
             baseBackStack + BackStackItem(
                 Title.Plain(user.name)
-            ) { updateState { state.previousChild } }
+            ) { updateState { state.previousMain } }
         }
 
-        return stateLive.combine(subBackStackLive) { state, backStack ->
-            Screen.ManageChildAppsScreen(
-                state,
-                state.toolbarIcons,
-                state.toolbarOptions,
-                state,
-                R.id.fragment_manage_child_apps,
-                backStack
-            )
-        }
+        return stateLive.splitConflated(
+            Case.simple<_, _, State.ManageChild.Apps> { processAppsState(it, subBackStackLive) },
+            Case.simple<_, _, State.ManageChild.Advanced> { processAdvancedState(it, subBackStackLive) },
+            Case.simple<_, _, State.ManageChild.Contacts> { processContactsState(it, subBackStackLive) },
+            Case.simple<_, _, State.ManageChild.UsageHistory> { processUsageHistoryState(it, subBackStackLive) },
+            Case.simple<_, _, State.ManageChild.Tasks> { processTasksState(it, subBackStackLive) },
+            Case.simple<_, _, State.ManageChild.ManageCategory> { ManageCategoryHandling.processState(logic, it, subBackStackLive, updateMethod(updateState)) },
+        )
+    }
+
+    private fun processAppsState(
+        stateLive: Flow<State.ManageChild.Apps>,
+        parentBackStackLive: Flow<List<BackStackItem>>
+    ): Flow<Screen> = stateLive.combine(parentBackStackLive) { state, backStack ->
+        Screen.ManageChildAppsScreen(
+            state,
+            state.toolbarIcons,
+            state.toolbarOptions,
+            state,
+            R.id.fragment_manage_child_apps,
+            backStack
+        )
+    }
+
+    private fun processAdvancedState(
+        stateLive: Flow<State.ManageChild.Advanced>,
+        parentBackStackLive: Flow<List<BackStackItem>>
+    ): Flow<Screen> = stateLive.combine(parentBackStackLive) { state, backStack ->
+        Screen.ManageChildAdvancedScreen(
+            state,
+            state.toolbarIcons,
+            state.toolbarOptions,
+            state,
+            R.id.fragment_manage_child_advanced,
+            backStack
+        )
+    }
+
+    private fun processContactsState(
+        stateLive: Flow<State.ManageChild.Contacts>,
+        parentBackStackLive: Flow<List<BackStackItem>>
+    ): Flow<Screen> = stateLive.combine(parentBackStackLive) { state, backStack ->
+        Screen.ManageChildContactsScreen(
+            state,
+            state.toolbarIcons,
+            state.toolbarOptions,
+            state,
+            R.id.fragment_manage_child_contacts,
+            backStack
+        )
+    }
+
+    private fun processUsageHistoryState(
+        stateLive: Flow<State.ManageChild.UsageHistory>,
+        parentBackStackLive: Flow<List<BackStackItem>>
+    ): Flow<Screen> = stateLive.combine(parentBackStackLive) { state, backStack ->
+        Screen.ManageChildUsageHistory(
+            state,
+            state.toolbarIcons,
+            state.toolbarOptions,
+            state,
+            R.id.fragment_manage_child_usage_history,
+            backStack
+        )
+    }
+
+    private fun processTasksState(
+        stateLive: Flow<State.ManageChild.Tasks>,
+        parentBackStackLive: Flow<List<BackStackItem>>
+    ): Flow<Screen> = stateLive.combine(parentBackStackLive) { state, backStack ->
+        Screen.ManageChildUsageTasks(
+            state,
+            state.toolbarIcons,
+            state.toolbarOptions,
+            state,
+            R.id.fragment_manage_child_tasks,
+            backStack
+        )
     }
 }

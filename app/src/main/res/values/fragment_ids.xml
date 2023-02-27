@@ -32,4 +32,11 @@
     <item name="fragment_16" type="id" />
     <item name="fragment_manage_child" type="id" />
     <item name="fragment_manage_child_apps" type="id" />
+    <item name="fragment_manage_child_advanced" type="id" />
+    <item name="fragment_manage_child_contacts" type="id" />
+    <item name="fragment_manage_child_usage_history" type="id" />
+    <item name="fragment_manage_child_tasks" type="id" />
+    <item name="fragment_manage_category" type="id" />
+    <item name="fragment_manage_category_advanced" type="id" />
+    <item name="fragment_manage_category_blocked_times" type="id" />
 </resources>

@@ -108,8 +108,7 @@ class MainModel(application: Application): AndroidViewModel(application) {
     val screen: Flow<Screen> = state.splitConflated(
         Case.simple<_, _, State.LaunchState> { LaunchHandling.processLaunchState(state, logic) },
         Case.simple<_, _, State.Overview> { OverviewHandling.processState(logic, scope, activityCommandInternal, authenticationModelApi, state) },
-        Case.simple<_, _, State.ManageChild.Main> { state -> ManageChildHandling.processState(logic, state, updateMethod(::updateState)) },
-        Case.simple<_, _, State.ManageChild.Apps> { state -> ManageChildHandling.processState(logic, state, updateMethod(::updateState)) },
+        Case.simple<_, _, State.ManageChild> { state -> ManageChildHandling.processState(logic, state, updateMethod(::updateState)) },
         Case.simple<_, _, State.DiagnoseScreen.DeviceOwner> { DeviceOwnerHandling.processState(logic, scope, authenticationModelApi, state) },
         Case.simple<_, _, FragmentState> { state ->
             state.transform {
