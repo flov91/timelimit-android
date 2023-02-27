@@ -17,38 +17,35 @@ package io.timelimit.android.ui.model.managechild
 
 import io.timelimit.android.R
 import io.timelimit.android.data.model.UserType
-import io.timelimit.android.extensions.whileTrue
 import io.timelimit.android.logic.AppLogic
 import io.timelimit.android.ui.model.BackStackItem
 import io.timelimit.android.ui.model.Screen
 import io.timelimit.android.ui.model.State
 import io.timelimit.android.ui.model.Title
+import io.timelimit.android.ui.model.flow.Case
+import io.timelimit.android.ui.model.flow.splitConflated
 import kotlinx.coroutines.flow.*
 
 object ManageChildHandling {
     fun processState(
         logic: AppLogic,
-        stateLive: MutableStateFlow<State>
-    ) = flow {
-        while (true) when (stateLive.value) {
-            is State.ManageChild.Main -> emitAll(processMainState(logic, stateLive))
-            is State.ManageChild.Apps -> emitAll(processAppsState(logic, stateLive))
-            else -> break
-        }
-    }
+        state: Flow<State.ManageChild>,
+        updateState: ((State.ManageChild) -> State) -> Unit
+    ) = state.splitConflated(
+        Case.simple<_, _, State.ManageChild.Main> { processMainState(logic, it, updateMethod(updateState)) },
+        Case.simple<_, _, State.ManageChild.Apps> { processAppsState(logic, it, updateMethod(updateState)) }
+    )
 
     private fun processMainState(
         logic: AppLogic,
-        stateLive: MutableStateFlow<State>
+        stateLive: Flow<State.ManageChild.Main>,
+        updateState: ((State.ManageChild.Main) -> State) -> Unit
     ): Flow<Screen> {
-        val hasMatchingStateLive = stateLive.map { it is State.ManageChild.Main }
-        val matchingState = stateLive.filterIsInstance<State.ManageChild.Main>()
-
-        val screenLive = matchingState.transformLatest { state ->
+        return stateLive.transformLatest { state ->
             val userLive = logic.database.user().getUserByIdFlow(state.childId)
 
             emitAll(userLive.transform {user ->
-                if (user?.type != UserType.Child) stateLive.compareAndSet(state, state.previousOverview)
+                if (user?.type != UserType.Child) updateState { state.previousOverview }
                 else emit(Screen.ManageChildScreen(
                     state,
                     state.toolbarIcons,
@@ -59,27 +56,23 @@ object ManageChildHandling {
                     listOf(
                         BackStackItem(
                             Title.StringResource(R.string.main_tab_overview)
-                        ) { stateLive.compareAndSet(state, state.previousOverview) }
+                        ) { updateState { state.previousOverview } }
                     )
                 ))
             })
         }
-
-        return hasMatchingStateLive.whileTrue { screenLive }
     }
 
     private fun processAppsState(
         logic: AppLogic,
-        stateLive: MutableStateFlow<State>
+        stateLive: Flow<State.ManageChild.Apps>,
+        updateState: ((State.ManageChild.Apps) -> State) -> Unit
     ): Flow<Screen> {
-        val hasMatchingStateLive = stateLive.map { it is State.ManageChild.Apps }
-        val matchingState = stateLive.filterIsInstance<State.ManageChild.Apps>()
-
-        val screenLive = matchingState.transformLatest { state ->
+        return stateLive.transformLatest { state ->
             val userLive = logic.database.user().getUserByIdFlow(state.childId)
 
             emitAll(userLive.transform {user ->
-                if (user?.type != UserType.Child) stateLive.compareAndSet(state, state.previousChild.previousOverview)
+                if (user?.type != UserType.Child) updateState { state.previousChild.previousOverview }
                 else emit(Screen.ManageChildAppsScreen(
                     state,
                     state.toolbarIcons,
@@ -89,15 +82,13 @@ object ManageChildHandling {
                     listOf(
                         BackStackItem(
                             Title.StringResource(R.string.main_tab_overview)
-                        ) { stateLive.compareAndSet(state, state.previousChild.previousOverview) },
+                        ) { updateState { state.previousChild.previousOverview } },
                         BackStackItem(
                             Title.Plain(user.name)
-                        ) { stateLive.compareAndSet(state, state.previousChild) }
+                        ) { updateState { state.previousChild } }
                     )
                 ))
             })
         }
-
-        return hasMatchingStateLive.whileTrue { screenLive }
     }
 }

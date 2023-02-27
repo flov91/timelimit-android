@@ -24,12 +24,11 @@ import io.timelimit.android.data.model.UserType
 import io.timelimit.android.logic.DefaultAppLogic
 import io.timelimit.android.ui.main.ActivityViewModel
 import io.timelimit.android.ui.model.diagnose.DeviceOwnerHandling
+import io.timelimit.android.ui.model.flow.Case
+import io.timelimit.android.ui.model.flow.splitConflated
 import io.timelimit.android.ui.model.launch.LaunchHandling
 import io.timelimit.android.ui.model.main.OverviewHandling
 import io.timelimit.android.ui.model.managechild.ManageChildHandling
-import kotlinx.coroutines.CoroutineScope
-import kotlinx.coroutines.Job
-import kotlinx.coroutines.cancel
 import kotlinx.coroutines.channels.Channel
 import kotlinx.coroutines.channels.ReceiveChannel
 import kotlinx.coroutines.flow.*
@@ -106,39 +105,28 @@ class MainModel(application: Application): AndroidViewModel(application) {
     val state = MutableStateFlow(State.LaunchState as State)
     var fragmentIds = mutableSetOf<Int>()
 
-    val screen: Flow<Screen> = flow {
-        while (true) {
-            val scope = CoroutineScope(viewModelScope.coroutineContext + Job())
+    val screen: Flow<Screen> = state.splitConflated(
+        Case.simple<_, _, State.LaunchState> { LaunchHandling.processLaunchState(state, logic) },
+        Case.simple<_, _, State.Overview> { OverviewHandling.processState(logic, scope, activityCommandInternal, authenticationModelApi, state) },
+        Case.simple<_, _, State.ManageChild.Main> { state -> ManageChildHandling.processState(logic, state, updateMethod(::updateState)) },
+        Case.simple<_, _, State.ManageChild.Apps> { state -> ManageChildHandling.processState(logic, state, updateMethod(::updateState)) },
+        Case.simple<_, _, State.DiagnoseScreen.DeviceOwner> { DeviceOwnerHandling.processState(logic, scope, authenticationModelApi, state) },
+        Case.simple<_, _, FragmentState> { state ->
+            state.transform {
+                val containerId = it.containerId ?: run {
+                    (viewIdPool - fragmentIds).firstOrNull()?.also { id ->
+                        it.containerId = id
+                    }
+                }
 
-            when (val initialState = state.value) {
-                is State.LaunchState -> LaunchHandling.processLaunchState(state, logic)
-                is State.Overview -> emitAll(OverviewHandling.processState(logic, scope, activityCommandInternal, authenticationModelApi, state))
-                is State.ManageChild.Main -> emitAll(ManageChildHandling.processState(logic, state))
-                is State.ManageChild.Apps -> emitAll(ManageChildHandling.processState(logic, state))
-                is State.DiagnoseScreen.DeviceOwner -> emitAll(DeviceOwnerHandling.processState(logic, scope, authenticationModelApi, state))
-                is FragmentState -> emitAll(state.transformWhile {
-                    if (it is FragmentState && it::class.java === initialState::class.java) {
-                        val containerId = it.containerId ?: run {
-                            (viewIdPool - fragmentIds).firstOrNull()?.also { id ->
-                                it.containerId = id
-                            }
-                        }
+                if (containerId != null) {
+                    fragmentIds.add(containerId)
 
-                        if (containerId != null) {
-                            fragmentIds.add(containerId)
-
-                            emit(Screen.FragmentScreen(it, it.toolbarIcons, it.toolbarOptions, it, containerId))
-                        }
-
-                        true
-                    } else false
-                })
-                else -> throw IllegalStateException()
+                    emit(Screen.FragmentScreen(it as State, it.toolbarIcons, it.toolbarOptions, it, containerId))
+                }
             }
-
-            scope.cancel()
         }
-    }
+    ).shareIn(viewModelScope, SharingStarted.WhileSubscribed(1000), 1)
 
     fun execute(command: UpdateStateCommand) {
         command.applyTo(state)
@@ -147,4 +135,6 @@ class MainModel(application: Application): AndroidViewModel(application) {
     fun reportAuthenticationScreenClosed() {
         authenticationScreenClosed.tryEmit(Unit)
     }
+
+    private fun updateState(method: (State) -> State): Unit = state.update(method)
 }
