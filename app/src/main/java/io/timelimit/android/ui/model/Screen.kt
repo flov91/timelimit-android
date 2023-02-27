@@ -68,19 +68,14 @@ sealed class Screen(
         state: State,
         val content: DeviceOwnerHandling.OwnerScreen,
         override val snackbarHostState: SnackbarHostState
-    ): Screen(state), ScreenWithAuthenticationFab, ScreenWithSnackbar, ScreenWithTitleResource {
-        override val titleResource = R.string.diagnose_dom_title
+    ): Screen(state), ScreenWithAuthenticationFab, ScreenWithSnackbar, ScreenWithTitle {
+        override val title = Title.StringResource(R.string.diagnose_dom_title)
     }
 }
 
 interface ScreenWithAuthenticationFab
 interface ScreenWithSnackbar {
     val snackbarHostState: SnackbarHostState
-}
-
-@Deprecated(message = "Use ScreenWithTitle instead")
-interface ScreenWithTitleResource {
-    val titleResource: Int
 }
 
 interface ScreenWithTitle {

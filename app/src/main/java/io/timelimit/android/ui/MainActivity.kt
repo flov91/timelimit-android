@@ -262,7 +262,6 @@ class MainActivity : AppCompatActivity(), ActivityViewModelHolder, U2fManager.De
                     }.asFlow().collectAsState(initial = null)
 
                     val screenTitle = when (screen) {
-                        is ScreenWithTitleResource -> stringResource(screen.titleResource)
                         is ScreenWithTitle -> when (val title = screen.title) {
                             is Title.Plain -> title.text
                             is Title.StringResource -> stringResource(title.id)
