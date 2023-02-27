@@ -26,6 +26,7 @@ import io.timelimit.android.ui.main.ActivityViewModel
 import io.timelimit.android.ui.model.diagnose.DeviceOwnerHandling
 import io.timelimit.android.ui.model.launch.LaunchHandling
 import io.timelimit.android.ui.model.main.OverviewHandling
+import io.timelimit.android.ui.model.managechild.ManageChildHandling
 import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.Job
 import kotlinx.coroutines.cancel
@@ -109,12 +110,13 @@ class MainModel(application: Application): AndroidViewModel(application) {
         while (true) {
             val scope = CoroutineScope(viewModelScope.coroutineContext + Job())
 
-            when (state.value) {
+            when (val initialState = state.value) {
                 is State.LaunchState -> LaunchHandling.processLaunchState(state, logic)
                 is State.Overview -> emitAll(OverviewHandling.processState(logic, scope, activityCommandInternal, authenticationModelApi, state))
+                is State.ManageChild.Main -> emitAll(ManageChildHandling.processState(logic, state))
                 is State.DiagnoseScreen.DeviceOwner -> emitAll(DeviceOwnerHandling.processState(logic, scope, authenticationModelApi, state))
                 is FragmentState -> emitAll(state.transformWhile {
-                    if (it is FragmentState && it !is State.Overview) {
+                    if (it is FragmentState && it::class.java === initialState::class.java) {
                         val containerId = it.containerId ?: run {
                             (viewIdPool - fragmentIds).firstOrNull()?.also { id ->
                                 it.containerId = id

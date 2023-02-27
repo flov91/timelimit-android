@@ -76,10 +76,10 @@ sealed class State (val previous: State?): Serializable {
     class AddUser(previous: Overview): FragmentStateLegacy(previous = previous, fragmentClass = AddUserFragment::class.java)
     sealed class ManageChild(previous: State, fragmentClass: Class<out Fragment>): FragmentStateLegacy(previous, fragmentClass) {
         class Main(
-            previous: Overview,
+            val previousOverview: Overview,
             val childId: String,
             fromRedirect: Boolean
-        ): ManageChild(previous = previous, ManageChildFragment::class.java) {
+        ): ManageChild(previous = previousOverview, ManageChildFragment::class.java) {
             @Transient
             override val arguments = ManageChildFragmentArgs(childId = childId, fromRedirect = fromRedirect).toBundle()
 

@@ -33,7 +33,7 @@ object LaunchHandling {
                 val overview = State.Overview()
 
                 if (config?.userRelatedData?.user?.type == UserType.Child) State.ManageChild.Main(
-                    previous = overview,
+                    previousOverview = overview,
                     childId = config.userRelatedData.user.id,
                     fromRedirect = true
                 )

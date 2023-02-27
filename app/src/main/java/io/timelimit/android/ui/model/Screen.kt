@@ -52,6 +52,18 @@ sealed class Screen(
         ))
     ), ScreenWithAuthenticationFab, ScreenWithSnackbar
 
+    class ManageChildScreen(
+        state: State,
+        toolbarIcons: List<Menu.Icon>,
+        toolbarOptions: List<Menu.Dropdown>,
+        fragment: FragmentState,
+        containerId: Int,
+        childName: String,
+        override val backStack: List<BackStackItem>
+    ): FragmentScreen(state, toolbarIcons, toolbarOptions, fragment, containerId), ScreenWithBackStack, ScreenWithTitle {
+        override val title = Title.Plain(childName)
+    }
+
     class DeviceOwnerScreen(
         state: State,
         val content: DeviceOwnerHandling.OwnerScreen,
@@ -65,6 +77,26 @@ interface ScreenWithAuthenticationFab
 interface ScreenWithSnackbar {
     val snackbarHostState: SnackbarHostState
 }
+
+@Deprecated(message = "Use ScreenWithTitle instead")
 interface ScreenWithTitleResource {
     val titleResource: Int
+}
+
+interface ScreenWithTitle {
+    val title: Title
+}
+
+interface ScreenWithBackStack {
+    val backStack: List<BackStackItem>
+}
+
+data class BackStackItem(
+    val title: Title,
+    val action: () -> Unit
+)
+
+sealed class Title {
+    data class Plain(val text: String): Title()
+    data class StringResource(val id: Int): Title()
 }

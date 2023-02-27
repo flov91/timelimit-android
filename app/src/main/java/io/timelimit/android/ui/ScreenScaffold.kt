@@ -15,18 +15,26 @@
  */
 package io.timelimit.android.ui
 
+import androidx.compose.foundation.horizontalScroll
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.PaddingValues
+import androidx.compose.foundation.layout.Row
+import androidx.compose.foundation.rememberScrollState
 import androidx.compose.material.*
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.filled.ArrowBack
+import androidx.compose.material.icons.filled.ArrowForwardIos
 import androidx.compose.material.icons.filled.LockOpen
 import androidx.compose.material.icons.filled.MoreVert
 import androidx.compose.runtime.*
+import androidx.compose.ui.Alignment
+import androidx.compose.ui.Modifier
 import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.text.style.TextOverflow
 import io.timelimit.android.R
+import io.timelimit.android.ui.model.BackStackItem
 import io.timelimit.android.ui.model.Screen
+import io.timelimit.android.ui.model.Title
 import io.timelimit.android.ui.model.UpdateStateCommand
 
 @Composable
@@ -34,6 +42,7 @@ fun ScreenScaffold(
     screen: Screen?,
     title: String,
     subtitle: String?,
+    backStack: List<BackStackItem>,
     snackbarHostState: SnackbarHostState?,
     content: @Composable (PaddingValues) -> Unit,
     executeCommand: (UpdateStateCommand) -> Unit,
@@ -95,6 +104,50 @@ fun ScreenScaffold(
                                     Text(stringResource(option.labelResource))
                                 }
                             }
+                        }
+                    }
+                }
+            )
+        },
+        bottomBar = {
+            val backStackColors = ButtonDefaults.textButtonColors(
+                contentColor = MaterialTheme.colors.onSecondary.copy(alpha = .8f),
+                disabledContentColor = MaterialTheme.colors.onSecondary
+            )
+
+            if (backStack.isNotEmpty()) BottomAppBar(
+                backgroundColor = MaterialTheme.colors.secondary,
+                content = {
+                    Row(
+                        modifier = Modifier.horizontalScroll(
+                            rememberScrollState(),
+                            reverseScrolling = true
+                        ),
+                        verticalAlignment = Alignment.CenterVertically
+                    ) {
+                        for (item in backStack) {
+                            TextButton(
+                                onClick = item.action,
+                                colors = backStackColors
+                            ) {
+                                Text(when (item.title) {
+                                    is Title.Plain -> item.title.text
+                                    is Title.StringResource -> stringResource(item.title.id)
+                                })
+                            }
+
+                            Icon(
+                                Icons.Default.ArrowForwardIos,
+                                ">"
+                            )
+                        }
+
+                        TextButton(
+                            enabled = false,
+                            onClick = {},
+                            colors = backStackColors
+                        ) {
+                            Text(title)
                         }
                     }
                 }

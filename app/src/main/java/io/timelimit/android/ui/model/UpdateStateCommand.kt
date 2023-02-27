@@ -55,7 +55,7 @@ sealed class UpdateStateCommand {
                 if (state is State.LaunchState) State.ManageChild.Main(
                     childId = childId,
                     fromRedirect = true,
-                    previous = State.Overview()
+                    previousOverview = State.Overview()
                 )
                 else null
         }

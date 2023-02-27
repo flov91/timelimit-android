@@ -263,6 +263,10 @@ class MainActivity : AppCompatActivity(), ActivityViewModelHolder, U2fManager.De
 
                     val screenTitle = when (screen) {
                         is ScreenWithTitleResource -> stringResource(screen.titleResource)
+                        is ScreenWithTitle -> when (val title = screen.title) {
+                            is Title.Plain -> title.text
+                            is Title.StringResource -> stringResource(title.id)
+                        }
                         else -> null
                     }
 
@@ -270,6 +274,10 @@ class MainActivity : AppCompatActivity(), ActivityViewModelHolder, U2fManager.De
                         screen = screen,
                         title = screenTitle ?: customTitle ?: stringResource(R.string.app_name),
                         subtitle = subtitleLive,
+                        backStack = when (screen) {
+                            is ScreenWithBackStack -> screen.backStack
+                            else -> emptyList()
+                        },
                         executeCommand = ::execute,
                         content = { paddingValues ->
                             ScreenMultiplexer(

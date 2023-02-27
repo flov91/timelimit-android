@@ -1,5 +1,5 @@
 /*
- * TimeLimit Copyright <C> 2019 - 2021 Jonas Lochmann
+ * TimeLimit Copyright <C> 2019 - 2023 Jonas Lochmann
  *
  * This program is free software: you can redistribute it and/or modify
  * it under the terms of the GNU General Public License as published by
@@ -27,6 +27,9 @@ import kotlinx.coroutines.flow.Flow
 abstract class UserDao {
     @Query("SELECT * from user WHERE id = :userId")
     abstract fun getUserByIdLive(userId: String): LiveData<User?>
+
+    @Query("SELECT * from user WHERE id = :userId")
+    abstract fun getUserByIdFlow(userId: String): Flow<User?>
 
     @Query("SELECT * from user WHERE id = :userId")
     suspend abstract fun getUserByIdCoroutine(userId: String): User?
