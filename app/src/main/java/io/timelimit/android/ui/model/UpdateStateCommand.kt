@@ -181,13 +181,7 @@ sealed class UpdateStateCommand {
         }
         object Leave: UpdateStateCommand() {
             override fun transform(state: State): State? =
-                if (state is State.ManageDevice) when (state) {
-                    is State.ManageDevice.Main -> state.previousOverview
-                    is State.ManageDevice.User -> state.previousMain.previousOverview
-                    is State.ManageDevice.Permissions -> state.previousMain.previousOverview
-                    is State.ManageDevice.Features -> state.previousMain.previousOverview
-                    is State.ManageDevice.Advanced -> state.previousMain.previousOverview
-                }
+                if (state is State.ManageDevice) state.previousOverview
                 else null
         }
         class EnterFromDeviceSetup(val deviceId: String): UpdateStateCommand() {

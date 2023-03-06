@@ -151,6 +151,62 @@ sealed class Screen(
         override val title = Title.StringResource(R.string.blocked_time_areas)
     }
 
+    class ManageDevice(
+        state: State,
+        toolbarIcons: List<Menu.Icon>,
+        toolbarOptions: List<Menu.Dropdown>,
+        fragment: FragmentState,
+        containerId: Int,
+        deviceName: String,
+        override val backStack: List<BackStackItem>
+    ): FragmentScreen(state, toolbarIcons, toolbarOptions, fragment, containerId), ScreenWithBackStack, ScreenWithTitle {
+        override val title = Title.Plain(deviceName)
+    }
+
+    class ManageDeviceUser(
+        state: State,
+        toolbarIcons: List<Menu.Icon>,
+        toolbarOptions: List<Menu.Dropdown>,
+        fragment: FragmentState,
+        containerId: Int,
+        override val backStack: List<BackStackItem>
+    ): FragmentScreen(state, toolbarIcons, toolbarOptions, fragment, containerId), ScreenWithBackStack, ScreenWithTitle {
+        override val title = Title.StringResource(R.string.manage_device_card_user_title)
+    }
+
+    class ManageDevicePermissions(
+        state: State,
+        toolbarIcons: List<Menu.Icon>,
+        toolbarOptions: List<Menu.Dropdown>,
+        fragment: FragmentState,
+        containerId: Int,
+        override val backStack: List<BackStackItem>
+    ): FragmentScreen(state, toolbarIcons, toolbarOptions, fragment, containerId), ScreenWithBackStack, ScreenWithTitle {
+        override val title = Title.StringResource(R.string.manage_device_card_permission_title)
+    }
+
+    class ManageDeviceFeatures(
+        state: State,
+        toolbarIcons: List<Menu.Icon>,
+        toolbarOptions: List<Menu.Dropdown>,
+        fragment: FragmentState,
+        containerId: Int,
+        override val backStack: List<BackStackItem>
+    ): FragmentScreen(state, toolbarIcons, toolbarOptions, fragment, containerId), ScreenWithBackStack, ScreenWithTitle {
+        override val title = Title.StringResource(R.string.manage_device_card_feature_title)
+    }
+
+    class ManageDeviceAdvances(
+        state: State,
+        toolbarIcons: List<Menu.Icon>,
+        toolbarOptions: List<Menu.Dropdown>,
+        fragment: FragmentState,
+        containerId: Int,
+        override val backStack: List<BackStackItem>
+    ): FragmentScreen(state, toolbarIcons, toolbarOptions, fragment, containerId), ScreenWithBackStack, ScreenWithTitle {
+        override val title = Title.StringResource(R.string.manage_device_card_manage_title)
+    }
+
     class DeviceOwnerScreen(
         state: State,
         val content: DeviceOwnerHandling.OwnerScreen,

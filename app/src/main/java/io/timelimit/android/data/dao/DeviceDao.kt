@@ -36,6 +36,9 @@ abstract class DeviceDao {
     abstract fun getDeviceById(deviceId: String): LiveData<Device?>
 
     @Query("SELECT * FROM device WHERE id = :deviceId")
+    abstract fun getDeviceByIdFlow(deviceId: String): Flow<Device?>
+
+    @Query("SELECT * FROM device WHERE id = :deviceId")
     abstract fun getDeviceByIdSync(deviceId: String): Device?
 
     @Query("SELECT * FROM device ORDER BY id")

@@ -217,40 +217,53 @@ sealed class State (val previous: State?): Serializable {
     }
     sealed class ManageDevice(
         previous: State,
+        val previousOverview: Overview,
+        val deviceId: String,
         fragmentClass: Class<out Fragment>
     ): FragmentStateLegacy(previous, fragmentClass) {
         class Main(
-            val previousOverview: Overview,
+            previousOverview: Overview,
             deviceId: String
-        ): ManageDevice(previousOverview, ManageDeviceFragment::class.java) {
+        ): ManageDevice(previousOverview, previousOverview, deviceId, ManageDeviceFragment::class.java) {
             @Transient
             override val arguments: Bundle = ManageDeviceFragmentArgs(deviceId).toBundle()
         }
+
+        sealed class Sub(
+            val previousManageDeviceMain: Main,
+            fragmentClass: Class<out Fragment>
+        ): ManageDevice(
+            previousManageDeviceMain,
+            previousManageDeviceMain.previousOverview,
+            previousManageDeviceMain.deviceId,
+            fragmentClass
+        )
+
         class User(
-            val previousMain: Main,
+            previousMain: Main,
             deviceId: String
-        ): ManageDevice(previousMain, ManageDeviceUserFragment::class.java) {
+        ): Sub(previousMain, ManageDeviceUserFragment::class.java) {
             @Transient
             override val arguments: Bundle = ManageDeviceUserFragmentArgs(deviceId).toBundle()
         }
         class Permissions(
             val previousMain: Main,
             deviceId: String
-        ): ManageDevice(previousMain, ManageDevicePermissionsFragment::class.java) {
+        ): Sub(previousMain, ManageDevicePermissionsFragment::class.java) {
             @Transient
             override val arguments: Bundle = ManageDevicePermissionsFragmentArgs(deviceId).toBundle()
         }
         class Features(
             val previousMain: Main,
             deviceId: String
-        ): ManageDevice(previousMain, ManageDeviceFeaturesFragment::class.java) {
+        ): Sub(previousMain, ManageDeviceFeaturesFragment::class.java) {
             @Transient
             override val arguments: Bundle = ManageDeviceFeaturesFragmentArgs(deviceId).toBundle()
         }
         class Advanced(
             val previousMain: Main,
             deviceId: String
-        ): ManageDevice(previousMain, ManageDeviceAdvancedFragment::class.java) {
+        ): Sub(previousMain, ManageDeviceAdvancedFragment::class.java) {
             @Transient
             override val arguments: Bundle = ManageDeviceAdvancedFragmentArgs(deviceId).toBundle()
         }
