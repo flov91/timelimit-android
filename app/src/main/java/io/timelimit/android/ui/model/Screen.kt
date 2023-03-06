@@ -21,6 +21,7 @@ import androidx.compose.material.icons.outlined.Info
 import io.timelimit.android.R
 import io.timelimit.android.ui.model.diagnose.DeviceOwnerHandling
 import io.timelimit.android.ui.model.main.OverviewHandling
+import io.timelimit.android.ui.model.managedevice.ManageDeviceUser
 
 sealed class Screen(
     val state: State,
@@ -163,14 +164,14 @@ sealed class Screen(
         override val title = Title.Plain(deviceName)
     }
 
-    class ManageDeviceUser(
+    class ManageDeviceUserScreen(
         state: State,
-        toolbarIcons: List<Menu.Icon>,
-        toolbarOptions: List<Menu.Dropdown>,
-        fragment: FragmentState,
-        containerId: Int,
-        override val backStack: List<BackStackItem>
-    ): FragmentScreen(state, toolbarIcons, toolbarOptions, fragment, containerId), ScreenWithBackStack, ScreenWithTitle {
+        override val backStack: List<BackStackItem>,
+        override val snackbarHostState: SnackbarHostState,
+        val items: List<ManageDeviceUser.UserItem>,
+        val actions: ManageDeviceUser.Actions,
+        val overlay: ManageDeviceUser.Overlay?
+    ): Screen(state), ScreenWithBackStack, ScreenWithTitle, ScreenWithAuthenticationFab, ScreenWithSnackbar {
         override val title = Title.StringResource(R.string.manage_device_card_user_title)
     }
 

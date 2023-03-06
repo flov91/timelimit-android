@@ -161,22 +161,22 @@ sealed class UpdateStateCommand {
     object ManageDevice {
         data class User(val childId: String): UpdateStateCommand() {
             override fun transform(state: State): State? =
-                if (state is State.ManageDevice.Main) State.ManageDevice.User(state, childId)
+                if (state is State.ManageDevice.Main) State.ManageDevice.User(state)
                 else null
         }
         data class Permissions(val childId: String): UpdateStateCommand() {
             override fun transform(state: State): State? =
-                if (state is State.ManageDevice.Main) State.ManageDevice.Permissions(state, childId)
+                if (state is State.ManageDevice.Main) State.ManageDevice.Permissions(state)
                 else null
         }
         data class Features(val childId: String): UpdateStateCommand() {
             override fun transform(state: State): State? =
-                if (state is State.ManageDevice.Main) State.ManageDevice.Features(state, childId)
+                if (state is State.ManageDevice.Main) State.ManageDevice.Features(state)
                 else null
         }
         data class Advanced(val childId: String): UpdateStateCommand() {
             override fun transform(state: State): State? =
-                if (state is State.ManageDevice.Main) State.ManageDevice.Advanced(state, childId)
+                if (state is State.ManageDevice.Main) State.ManageDevice.Advanced(state)
                 else null
         }
         object Leave: UpdateStateCommand() {

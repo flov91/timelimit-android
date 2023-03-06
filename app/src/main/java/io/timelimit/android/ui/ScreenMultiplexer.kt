@@ -19,14 +19,13 @@ import androidx.compose.runtime.Composable
 import androidx.compose.ui.Modifier
 import androidx.fragment.app.FragmentManager
 import io.timelimit.android.ui.diagnose.deviceowner.DeviceOwnerScreen
+import io.timelimit.android.ui.manage.device.manage.user.ManageDeviceUserScreen
 import io.timelimit.android.ui.model.Screen
-import io.timelimit.android.ui.model.UpdateStateCommand
 import io.timelimit.android.ui.overview.overview.OverviewScreen
 
 @Composable
 fun ScreenMultiplexer(
     screen: Screen?,
-    executeCommand: (UpdateStateCommand) -> Unit,
     fragmentManager: FragmentManager,
     fragmentIds: MutableSet<Int>,
     modifier: Modifier = Modifier
@@ -35,6 +34,7 @@ fun ScreenMultiplexer(
         null -> {/* nothing to do */ }
         is Screen.FragmentScreen -> FragmentScreen(screen, fragmentManager, fragmentIds, modifier = modifier)
         is Screen.OverviewScreen -> OverviewScreen(screen.content, modifier = modifier)
+        is Screen.ManageDeviceUserScreen -> ManageDeviceUserScreen(screen.items, screen.actions, screen.overlay, modifier)
         is Screen.DeviceOwnerScreen -> DeviceOwnerScreen(screen.content, modifier = modifier)
     }
 }

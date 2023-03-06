@@ -110,7 +110,7 @@ class MainModel(application: Application): AndroidViewModel(application) {
         Case.simple<_, _, State.LaunchState> { LaunchHandling.processLaunchState(state, logic) },
         Case.simple<_, _, State.Overview> { OverviewHandling.processState(logic, scope, activityCommandInternal, authenticationModelApi, state) },
         Case.simple<_, _, State.ManageChild> { state -> ManageChildHandling.processState(logic, state, updateMethod(::updateState)) },
-        Case.simple<_, _, State.ManageDevice> { state -> ManageDeviceHandling.processState(logic, state, updateMethod(::updateState)) },
+        Case.simple<_, _, State.ManageDevice> { state -> ManageDeviceHandling.processState(logic, activityCommandInternal, authenticationModelApi, state, updateMethod(::updateState)) },
         Case.simple<_, _, State.DiagnoseScreen.DeviceOwner> { DeviceOwnerHandling.processState(logic, scope, authenticationModelApi, state) },
         Case.simple<_, _, FragmentState> { state ->
             state.transform {

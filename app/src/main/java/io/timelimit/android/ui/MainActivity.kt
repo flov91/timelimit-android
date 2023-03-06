@@ -285,7 +285,6 @@ class MainActivity : AppCompatActivity(), ActivityViewModelHolder, U2fManager.De
                         content = { paddingValues ->
                             ScreenMultiplexer(
                                 screen = screen,
-                                executeCommand = ::execute,
                                 fragmentManager = supportFragmentManager,
                                 fragmentIds = mainModel.fragmentIds,
                                 modifier = Modifier

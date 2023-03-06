@@ -40,7 +40,6 @@
     <item name="fragment_manage_category_advanced" type="id" />
     <item name="fragment_manage_category_blocked_times" type="id" />
     <item name="fragment_manage_device_main" type="id" />
-    <item name="fragment_manage_device_user" type="id" />
     <item name="fragment_manage_device_permissions" type="id" />
     <item name="fragment_manage_device_features" type="id" />
     <item name="fragment_manage_device_advanced" type="id" />

@@ -18,17 +18,17 @@ package io.timelimit.android.ui.model.managedevice
 import io.timelimit.android.R
 import io.timelimit.android.data.model.Device
 import io.timelimit.android.logic.AppLogic
-import io.timelimit.android.ui.model.BackStackItem
-import io.timelimit.android.ui.model.Screen
-import io.timelimit.android.ui.model.State
-import io.timelimit.android.ui.model.Title
+import io.timelimit.android.ui.model.*
 import io.timelimit.android.ui.model.flow.Case
 import io.timelimit.android.ui.model.flow.splitConflated
+import kotlinx.coroutines.channels.SendChannel
 import kotlinx.coroutines.flow.*
 
 object ManageDeviceHandling {
     fun processState(
         logic: AppLogic,
+        activityCommand: SendChannel<ActivityCommand>,
+        authentication: AuthenticationModelApi,
         state: Flow<State.ManageDevice>,
         updateState: ((State.ManageDevice) -> State) -> Unit
     ): Flow<Screen> = state.splitConflated(
@@ -60,6 +60,9 @@ object ManageDeviceHandling {
                         },
                         Case.simple<_, _, State.ManageDevice.Sub> {
                             processSubState(
+                                logic,
+                                activityCommand,
+                                authentication,
                                 it,
                                 baseBackStackLive,
                                 share(foundDeviceLive),
@@ -90,6 +93,9 @@ object ManageDeviceHandling {
     }
 
     private fun processSubState(
+        logic: AppLogic,
+        activityCommand: SendChannel<ActivityCommand>,
+        authentication: AuthenticationModelApi,
         stateLive: Flow<State.ManageDevice.Sub>,
         parentBackStackLive: Flow<List<BackStackItem>>,
         deviceLive: SharedFlow<Device>,
@@ -101,10 +107,15 @@ object ManageDeviceHandling {
 
         return stateLive.splitConflated(
             Case.simple<_, _, State.ManageDevice.User> {
-                processUserState(
-                    it,
+                ManageDeviceUser.processUserState(
+                    logic,
+                    scope,
+                    activityCommand,
+                    authentication,
+                    share(it),
                     subBackStackLive,
-                    deviceLive
+                    deviceLive,
+                    updateMethod(updateState)
                 )
             },
             Case.simple<_, _, State.ManageDevice.Permissions> {
@@ -128,21 +139,6 @@ object ManageDeviceHandling {
                     deviceLive
                 )
             },
-        )
-    }
-
-    private fun processUserState(
-        stateLive: Flow<State.ManageDevice.User>,
-        parentBackStackLive: Flow<List<BackStackItem>>,
-        deviceLive: Flow<Device>
-    ): Flow<Screen> = combine(stateLive, deviceLive, parentBackStackLive) { state, device, backStack ->
-        Screen.ManageDeviceUser(
-            state,
-            state.toolbarIcons,
-            state.toolbarOptions,
-            state,
-            R.id.fragment_manage_device_user,
-            backStack
         )
     }
 

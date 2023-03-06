@@ -37,8 +37,6 @@ import io.timelimit.android.ui.manage.device.manage.feature.ManageDeviceFeatures
 import io.timelimit.android.ui.manage.device.manage.feature.ManageDeviceFeaturesFragmentArgs
 import io.timelimit.android.ui.manage.device.manage.permission.ManageDevicePermissionsFragment
 import io.timelimit.android.ui.manage.device.manage.permission.ManageDevicePermissionsFragmentArgs
-import io.timelimit.android.ui.manage.device.manage.user.ManageDeviceUserFragment
-import io.timelimit.android.ui.manage.device.manage.user.ManageDeviceUserFragmentArgs
 import io.timelimit.android.ui.manage.parent.ManageParentFragment
 import io.timelimit.android.ui.manage.parent.ManageParentFragmentArgs
 import io.timelimit.android.ui.manage.parent.link.LinkParentMailFragment
@@ -239,31 +237,24 @@ sealed class State (val previous: State?): Serializable {
             fragmentClass
         )
 
-        class User(
-            previousMain: Main,
-            deviceId: String
-        ): Sub(previousMain, ManageDeviceUserFragment::class.java) {
-            @Transient
-            override val arguments: Bundle = ManageDeviceUserFragmentArgs(deviceId).toBundle()
-        }
-        class Permissions(
+        data class User(
             val previousMain: Main,
-            deviceId: String
-        ): Sub(previousMain, ManageDevicePermissionsFragment::class.java) {
+            val overlay: Overlay? = null
+        ): Sub(previousMain, Fragment::class.java) {
+            sealed class Overlay: Serializable {
+                data class EnableDefaultUserDialog(val userId: String): Overlay()
+                object AdjustDefaultUserTimeout: Overlay()
+            }
+        }
+        class Permissions(previousMain: Main): Sub(previousMain, ManageDevicePermissionsFragment::class.java) {
             @Transient
             override val arguments: Bundle = ManageDevicePermissionsFragmentArgs(deviceId).toBundle()
         }
-        class Features(
-            val previousMain: Main,
-            deviceId: String
-        ): Sub(previousMain, ManageDeviceFeaturesFragment::class.java) {
+        class Features(previousMain: Main): Sub(previousMain, ManageDeviceFeaturesFragment::class.java) {
             @Transient
             override val arguments: Bundle = ManageDeviceFeaturesFragmentArgs(deviceId).toBundle()
         }
-        class Advanced(
-            val previousMain: Main,
-            deviceId: String
-        ): Sub(previousMain, ManageDeviceAdvancedFragment::class.java) {
+        class Advanced(previousMain: Main): Sub(previousMain, ManageDeviceAdvancedFragment::class.java) {
             @Transient
             override val arguments: Bundle = ManageDeviceAdvancedFragmentArgs(deviceId).toBundle()
         }

@@ -24,13 +24,14 @@ import kotlinx.coroutines.launch
 
 class CaseScope<LocalStateType>(
     val scope: CoroutineScope,
-    val className: Class<LocalStateType>
+    val className: Class<LocalStateType>?
 ) {
     inline fun <SuperStateType, LocalStateType : SuperStateType> updateMethod(
         crossinline parent: ((SuperStateType) -> SuperStateType) -> Unit
     ): ((LocalStateType) -> SuperStateType) -> Unit = { request ->
         parent { oldState ->
-            if (scope.isActive && className.isInstance(oldState)) request(oldState as LocalStateType)
+            if (!scope.isActive) oldState
+            else if (className != null && className.isInstance(oldState)) request(oldState as LocalStateType)
             else oldState
         }
     }
@@ -39,11 +40,16 @@ class CaseScope<LocalStateType>(
 }
 
 class Case<T, R>(
-    val className: Class<out Any>,
+    val className: Class<out Any>?,
     val key: (T) -> Any?,
     val producer: CaseScope<T>.(Flow<T>, Any?) -> Flow<R>
 ) {
     companion object {
+        fun <T, R> nil(producer: CaseScope<Unit>.(Flow<Unit>) -> Flow<R>) = Case<T, R>(
+            className = null,
+            key = {}
+        ) { flow, _ -> producer(this as CaseScope<Unit>, flow.map { Unit }) }
+
         inline fun <T, R, reified C : Any> simple(
             crossinline producer: CaseScope<C>.(Flow<C>) -> Flow<R>
         ) = Case<T, R>(
@@ -60,7 +66,7 @@ class Case<T, R>(
         ) { flow, key -> producer(this as CaseScope<C>, key as K, flow as Flow<C>) }
     }
 
-    internal fun doesMatch(value: Any?): Boolean = className.isInstance(value)
+    internal fun doesMatch(value: Any?): Boolean = (className == null && value == null) || (className != null && className.isInstance(value))
 }
 
 fun <T, R> Flow<T>.splitConflated(vararg cases: Case<T, R>): Flow<R> {
@@ -78,7 +84,7 @@ fun <T, R> Flow<T>.splitConflated(vararg cases: Case<T, R>): Flow<R> {
             val key = case.key(value)
             val relayChannel = Channel<T>(Channel.CONFLATED)
             val job = launch {
-                val scope = CaseScope<T>(this, case.className as Class<T>)
+                val scope = CaseScope<T>(this, case.className as Class<T>?)
                 val inputFlow = flow { relayChannel.consumeEach { emit(it) } }
 
                 case.producer(scope, inputFlow, key).collect { send(it) }

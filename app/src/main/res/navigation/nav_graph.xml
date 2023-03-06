@@ -103,15 +103,6 @@
             app:argType="string" />
     </fragment>
     <fragment
-        android:id="@+id/manageDeviceUserFragment"
-        android:name="io.timelimit.android.ui.manage.device.manage.user.ManageDeviceUserFragment"
-        android:label="manage_device_user_fragment"
-        tools:layout="@layout/manage_device_user_fragment" >
-        <argument
-            android:name="deviceId"
-            app:argType="string" />
-    </fragment>
-    <fragment
         android:id="@+id/manageDeviceAdvancedFragment"
         android:name="io.timelimit.android.ui.manage.device.manage.advanced.ManageDeviceAdvancedFragment"
         android:label="manage_device_advanced_fragment"
