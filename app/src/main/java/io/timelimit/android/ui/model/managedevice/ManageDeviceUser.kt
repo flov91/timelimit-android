@@ -104,7 +104,7 @@ object ManageDeviceUser {
 
                         updateState { state ->
                             when (userEntry.type) {
-                                UserType.Child -> State.ManageChild.Main(state.previousOverview, user.id, false)
+                                UserType.Child -> State.ManageChild.Main(state.previousOverview, user.id)
                                 UserType.Parent -> State.ManageParent.Main(state.previousOverview, user.id)
                             }
                         }

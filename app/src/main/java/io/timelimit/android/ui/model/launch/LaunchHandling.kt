@@ -52,8 +52,7 @@ object LaunchHandling {
 
                 if (config?.userRelatedData?.user?.type == UserType.Child) State.ManageChild.Main(
                     previousOverview = overview,
-                    childId = config.userRelatedData.user.id,
-                    fromRedirect = true
+                    childId = config.userRelatedData.user.id
                 )
                 else if (config?.userRelatedData == null) State.SetupDevice(overview)
                 else overview

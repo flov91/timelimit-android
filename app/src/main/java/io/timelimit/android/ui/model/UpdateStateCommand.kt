@@ -44,38 +44,6 @@ sealed class UpdateStateCommand {
     object BackToPreviousScreen: UpdateStateCommand() {
         override fun transform(state: State): State? = state.previous
     }
-    object Launch {
-        object LaunchOverview: UpdateStateCommand() {
-            override fun transform(state: State): State? =
-                if (state is State.LaunchState) State.Overview()
-                else null
-        }
-        class LaunchChild(val childId: String): UpdateStateCommand() {
-            override fun transform(state: State): State? =
-                if (state is State.LaunchState) State.ManageChild.Main(
-                    childId = childId,
-                    fromRedirect = true,
-                    previousOverview = State.Overview()
-                )
-                else null
-        }
-        object LaunchDeviceSetup: UpdateStateCommand() {
-            override fun transform(state: State): State? =
-                if (state is State.LaunchState) State.SetupDevice(State.Overview())
-                else null
-        }
-
-        object LaunchTerms: UpdateStateCommand() {
-            override fun transform(state: State): State? =
-                if (state is State.LaunchState) State.Setup.SetupTerms()
-                else null
-        }
-        object LaunchParentMode: UpdateStateCommand() {
-            override fun transform(state: State): State? =
-                if (state is State.LaunchState) State.ParentMode()
-                else null
-        }
-    }
 
     object Overview {
         object LaunchAbout: UpdateStateCommand() {
@@ -90,7 +58,7 @@ sealed class UpdateStateCommand {
         }
         data class ManageChild(val childId: String): UpdateStateCommand() {
             override fun transform(state: State): State? =
-                if (state is State.Overview) State.ManageChild.Main(state, childId, fromRedirect = false)
+                if (state is State.Overview) State.ManageChild.Main(state, childId)
                 else null
         }
         data class ManageParent(val childId: String): UpdateStateCommand() {

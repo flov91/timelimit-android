@@ -15,35 +15,13 @@
  */
 package io.timelimit.android.ui.manage.child
 
-import android.os.Bundle
-import android.view.View
 import androidx.fragment.app.Fragment
-import com.google.android.material.snackbar.Snackbar
-import io.timelimit.android.R
-import io.timelimit.android.livedata.map
 import io.timelimit.android.ui.fragment.ChildFragmentWrapper
-import io.timelimit.android.ui.main.FragmentWithCustomTitle
 import io.timelimit.android.ui.manage.child.category.ManageChildCategoriesFragment
 
-class ManageChildFragment : ChildFragmentWrapper(), FragmentWithCustomTitle {
+class ManageChildFragment : ChildFragmentWrapper() {
     private val params: ManageChildFragmentArgs by lazy { ManageChildFragmentArgs.fromBundle(arguments!!) }
     override val childId: String get() = params.childId
 
     override fun createChildFragment(): Fragment = ManageChildCategoriesFragment.newInstance(params)
-
-    override fun onCreate(savedInstanceState: Bundle?) {
-        super.onCreate(savedInstanceState)
-
-        setHasOptionsMenu(true)
-    }
-
-    override fun onViewCreated(view: View, savedInstanceState: Bundle?) {
-        super.onViewCreated(view, savedInstanceState)
-
-        if (savedInstanceState == null && params.fromRedirect) {
-            Snackbar.make(binding.coordinator, R.string.manage_child_redirected_toast, Snackbar.LENGTH_LONG).show()
-        }
-    }
-
-    override fun getCustomTitle() = child.map { "${it?.name} < ${getString(R.string.main_tab_overview)}" as String? }
 }

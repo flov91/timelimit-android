@@ -80,8 +80,7 @@ sealed class State (val previous: State?): Serializable {
     ): FragmentStateLegacy(previous, fragmentClass) {
         class Main(
             previousOverview: Overview,
-            childId: String,
-            fromRedirect: Boolean
+            childId: String
         ): ManageChild(
             previous = previousOverview,
             fragmentClass = ManageChildFragment::class.java,
@@ -89,7 +88,7 @@ sealed class State (val previous: State?): Serializable {
             previousOverview = previousOverview
         ) {
             @Transient
-            override val arguments = ManageChildFragmentArgs(childId = childId, fromRedirect = fromRedirect).toBundle()
+            override val arguments = ManageChildFragmentArgs(childId = childId, fromRedirect = false).toBundle()
 
             @Transient
             override val toolbarIcons: List<Menu.Icon> = listOf(

@@ -812,8 +812,6 @@
     <string name="manage_child_password_btn_set">Passwort festlegen (als Elternteil)</string>
     <string name="manage_child_password_btn_change">Passwort ändern (als das Kind selbst)</string>
 
-    <string name="manage_child_redirected_toast">Mit der Zurück-Taste geht es zur Übersicht von TimeLimit</string>
-
     <string name="manage_child_special_mode_wizard_block_title">%s vorübergehend sperren</string>
     <string name="manage_child_special_mode_wizard_block_option">vorübergehend sperren</string>
     <string name="manage_child_special_mode_wizard_disable_limits_title">Begrenzungen von %s deaktivieren</string>
