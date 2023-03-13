@@ -87,11 +87,9 @@ sealed class State (val previous: State?): Serializable {
             childId = childId,
             previousOverview = previousOverview
         ) {
-            @Transient
-            override val arguments = ManageChildFragmentArgs(childId = childId, fromRedirect = false).toBundle()
+            override val arguments get() = ManageChildFragmentArgs(childId = childId, fromRedirect = false).toBundle()
 
-            @Transient
-            override val toolbarIcons: List<Menu.Icon> = listOf(
+            override val toolbarIcons: List<Menu.Icon> get() = listOf(
                 Menu.Icon(
                     Icons.Default.DirectionsBike,
                     R.string.manage_child_tasks,
@@ -104,8 +102,7 @@ sealed class State (val previous: State?): Serializable {
                 )
             )
 
-            @Transient
-            override val toolbarOptions: List<Menu.Dropdown> = listOf(
+            override val toolbarOptions: List<Menu.Dropdown> get() = listOf(
                 Menu.Dropdown(R.string.child_apps_title, UpdateStateCommand.ManageChild.Apps),
                 Menu.Dropdown(R.string.usage_history_title, UpdateStateCommand.ManageChild.UsageHistory),
                 Menu.Dropdown(R.string.manage_child_tab_other, UpdateStateCommand.ManageChild.Advanced)
@@ -119,21 +116,17 @@ sealed class State (val previous: State?): Serializable {
         ): ManageChild(previous, fragmentClass, previousMain.childId, previousMain.previousOverview)
 
         class Apps(val previousChild: Main): Sub(previousChild, previousChild, ChildAppsFragmentWrapper::class.java) {
-            @Transient
-            override val arguments: Bundle = ChildAppsFragmentWrapperArgs(previousChild.childId).toBundle()
+            override val arguments: Bundle get() = ChildAppsFragmentWrapperArgs(previousChild.childId).toBundle()
         }
         class Advanced(val previousChild: Main): Sub(previousChild, previousChild, ChildAdvancedFragmentWrapper::class.java) {
-            @Transient
-            override val arguments: Bundle = ChildAdvancedFragmentWrapperArgs(previousChild.childId).toBundle()
+            override val arguments: Bundle get() = ChildAdvancedFragmentWrapperArgs(previousChild.childId).toBundle()
         }
         class Contacts(val previousChild: Main): Sub(previousChild, previousChild, ContactsFragment::class.java)
         class UsageHistory(val previousChild: Main): Sub(previousChild, previousChild, ChildUsageHistoryFragmentWrapper::class.java) {
-            @Transient
-            override val arguments: Bundle = ChildUsageHistoryFragmentWrapperArgs(previousChild.childId).toBundle()
+            override val arguments: Bundle get() = ChildUsageHistoryFragmentWrapperArgs(previousChild.childId).toBundle()
         }
         class Tasks(val previousChild: Main): Sub(previousChild, previousChild, ChildTasksFragmentWrapper::class.java) {
-            @Transient
-            override val arguments: Bundle = ChildTasksFragmentWrapperArgs(previousChild.childId).toBundle()
+            override val arguments: Bundle get() = ChildTasksFragmentWrapperArgs(previousChild.childId).toBundle()
         }
 
         sealed class ManageCategory(
@@ -146,14 +139,12 @@ sealed class State (val previous: State?): Serializable {
                 previousChild: ManageChild.Main,
                 categoryId: String
             ): ManageCategory(previousChild, previousChild, categoryId, ManageCategoryFragment::class.java) {
-                @Transient
-                override val arguments: Bundle = ManageCategoryFragmentArgs(
+                override val arguments: Bundle get() = ManageCategoryFragmentArgs(
                     childId = previousChild.childId,
                     categoryId = categoryId
                 ).toBundle()
 
-                @Transient
-                override val toolbarOptions: List<Menu.Dropdown> = listOf(
+                override val toolbarOptions: List<Menu.Dropdown> get() = listOf(
                     Menu.Dropdown(R.string.blocked_time_areas, UpdateStateCommand.ManageChild.BlockedTimes),
                     Menu.Dropdown(R.string.category_settings, UpdateStateCommand.ManageChild.CategoryAdvanced)
                 )
@@ -168,8 +159,7 @@ sealed class State (val previous: State?): Serializable {
             class BlockedTimes(
                 previousCategory: Main
             ): Sub(previousCategory, previousCategory, BlockedTimeAreasFragmentWrapper::class.java) {
-                @Transient
-                override val arguments: Bundle = BlockedTimeAreasFragmentWrapperArgs(
+                override val arguments: Bundle get() = BlockedTimeAreasFragmentWrapperArgs(
                     childId = previousCategory.previousChild.childId,
                     categoryId = previousCategory.categoryId
                 ).toBundle()
@@ -178,8 +168,7 @@ sealed class State (val previous: State?): Serializable {
             class Advanced(
                 previousCategory: Main
             ): Sub(previousCategory, previousCategory, CategoryAdvancedFragmentWrapper::class.java) {
-                @Transient
-                override val arguments: Bundle = CategoryAdvancedFragmentWrapperArgs(
+                override val arguments: Bundle get() = CategoryAdvancedFragmentWrapperArgs(
                     childId = previousCategory.previousChild.childId,
                     categoryId = previousCategory.categoryId
                 ).toBundle()
@@ -191,25 +180,20 @@ sealed class State (val previous: State?): Serializable {
             previous: Overview,
             val parentId: String
         ): ManageParent(previous = previous, fragmentClass = ManageParentFragment::class.java) {
-            @Transient
-            override val arguments = ManageParentFragmentArgs(parentId).toBundle()
+            override val arguments get() = ManageParentFragmentArgs(parentId).toBundle()
         }
 
         class ChangePassword(val previousParent: Main): ManageParent(previousParent, ChangeParentPasswordFragment::class.java) {
-            @Transient
-            override val arguments: Bundle = ChangeParentPasswordFragmentArgs(previousParent.parentId).toBundle()
+            override val arguments: Bundle get() = ChangeParentPasswordFragmentArgs(previousParent.parentId).toBundle()
         }
         class RestorePassword(val previousParent: Main): ManageParent(previousParent, RestoreParentPasswordFragment::class.java) {
-            @Transient
-            override val arguments: Bundle = RestoreParentPasswordFragmentArgs(previousParent.parentId).toBundle()
+            override val arguments: Bundle get() = RestoreParentPasswordFragmentArgs(previousParent.parentId).toBundle()
         }
         class LinkMail(val previousParent: Main): ManageParent(previousParent, LinkParentMailFragment::class.java) {
-            @Transient
-            override val arguments: Bundle = LinkParentMailFragmentArgs(previousParent.parentId).toBundle()
+            override val arguments: Bundle get() = LinkParentMailFragmentArgs(previousParent.parentId).toBundle()
         }
         class U2F(val previousParent: Main): ManageParent(previousParent, ManageParentU2FKeyFragment::class.java) {
-            @Transient
-            override val arguments: Bundle = ManageParentU2FKeyFragmentArgs(previousParent.parentId).toBundle()
+            override val arguments: Bundle get() = ManageParentU2FKeyFragmentArgs(previousParent.parentId).toBundle()
         }
     }
     sealed class ManageDevice(
@@ -222,8 +206,7 @@ sealed class State (val previous: State?): Serializable {
             previousOverview: Overview,
             deviceId: String
         ): ManageDevice(previousOverview, previousOverview, deviceId, ManageDeviceFragment::class.java) {
-            @Transient
-            override val arguments: Bundle = ManageDeviceFragmentArgs(deviceId).toBundle()
+            override val arguments: Bundle get() = ManageDeviceFragmentArgs(deviceId).toBundle()
         }
 
         sealed class Sub(
@@ -246,16 +229,13 @@ sealed class State (val previous: State?): Serializable {
             }
         }
         class Permissions(previousMain: Main): Sub(previousMain, ManageDevicePermissionsFragment::class.java) {
-            @Transient
-            override val arguments: Bundle = ManageDevicePermissionsFragmentArgs(deviceId).toBundle()
+            override val arguments: Bundle get() = ManageDevicePermissionsFragmentArgs(deviceId).toBundle()
         }
         class Features(previousMain: Main): Sub(previousMain, ManageDeviceFeaturesFragment::class.java) {
-            @Transient
-            override val arguments: Bundle = ManageDeviceFeaturesFragmentArgs(deviceId).toBundle()
+            override val arguments: Bundle get() = ManageDeviceFeaturesFragmentArgs(deviceId).toBundle()
         }
         class Advanced(previousMain: Main): Sub(previousMain, ManageDeviceAdvancedFragment::class.java) {
-            @Transient
-            override val arguments: Bundle = ManageDeviceAdvancedFragmentArgs(deviceId).toBundle()
+            override val arguments: Bundle get() = ManageDeviceAdvancedFragmentArgs(deviceId).toBundle()
         }
     }
     class SetupDevice(val previousOverview: Overview): FragmentStateLegacy(previous = previousOverview, fragmentClass = SetupDeviceFragment::class.java)
