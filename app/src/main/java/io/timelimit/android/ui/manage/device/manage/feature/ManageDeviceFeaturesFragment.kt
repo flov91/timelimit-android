@@ -29,7 +29,6 @@ import io.timelimit.android.data.model.Device
 import io.timelimit.android.data.model.NetworkTime
 import io.timelimit.android.databinding.ManageDeviceFeaturesFragmentBinding
 import io.timelimit.android.livedata.liveDataFromNonNullValue
-import io.timelimit.android.livedata.map
 import io.timelimit.android.logic.AppLogic
 import io.timelimit.android.logic.DefaultAppLogic
 import io.timelimit.android.logic.RealTime
@@ -38,11 +37,10 @@ import io.timelimit.android.ui.help.HelpDialogFragment
 import io.timelimit.android.ui.main.ActivityViewModel
 import io.timelimit.android.ui.main.ActivityViewModelHolder
 import io.timelimit.android.ui.main.AuthenticationFab
-import io.timelimit.android.ui.main.FragmentWithCustomTitle
 import io.timelimit.android.ui.model.UpdateStateCommand
 import io.timelimit.android.ui.model.execute
 
-class ManageDeviceFeaturesFragment : Fragment(), FragmentWithCustomTitle {
+class ManageDeviceFeaturesFragment : Fragment() {
     companion object {
         fun getPreviewText(device: Device, context: Context): String {
             val featureLabels = mutableListOf<String>()
@@ -168,8 +166,6 @@ class ManageDeviceFeaturesFragment : Fragment(), FragmentWithCustomTitle {
 
         return binding.root
     }
-
-    override fun getCustomTitle(): LiveData<String?> = deviceEntry.map { "${getString(R.string.manage_device_card_feature_title)} < ${it?.name} < ${getString(R.string.main_tab_overview)}" }
 }
 
 interface ManageDeviceFeaturesFragmentHandlers {

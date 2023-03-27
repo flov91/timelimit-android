@@ -1,5 +1,5 @@
 /*
- * TimeLimit Copyright <C> 2019 - 2020 Jonas Lochmann
+ * TimeLimit Copyright <C> 2019 - 2023 Jonas Lochmann
  *
  * This program is free software: you can redistribute it and/or modify
  * it under the terms of the GNU General Public License as published by
@@ -20,17 +20,13 @@ import android.os.Bundle
 import android.view.View
 import androidx.fragment.app.Fragment
 import androidx.lifecycle.LiveData
-import io.timelimit.android.R
 import io.timelimit.android.data.model.User
-import io.timelimit.android.livedata.map
-import io.timelimit.android.livedata.switchMap
-import io.timelimit.android.ui.main.FragmentWithCustomTitle
 import io.timelimit.android.ui.manage.category.blocked_times.BlockedTimeAreasFragment
 import io.timelimit.android.ui.manage.category.settings.CategorySettingsFragment
 import io.timelimit.android.ui.model.UpdateStateCommand
 import io.timelimit.android.ui.model.execute
 
-abstract class CategoryFragmentWrapper: SingleFragmentWrapper(), FragmentWithCustomTitle {
+abstract class CategoryFragmentWrapper: SingleFragmentWrapper() {
     abstract val childId: String
     abstract val categoryId: String
     override val showAuthButton: Boolean = true
@@ -47,12 +43,6 @@ abstract class CategoryFragmentWrapper: SingleFragmentWrapper(), FragmentWithCus
 
         category.observe(viewLifecycleOwner) {
             if (it == null) requireActivity().execute(UpdateStateCommand.ManageChild.LeaveCategory)
-        }
-    }
-
-    override fun getCustomTitle(): LiveData<String?> = user.switchMap { user ->
-        category.map { category ->
-            "${category?.title} < ${user?.name} < ${getString(R.string.main_tab_overview)}" as String?
         }
     }
 }

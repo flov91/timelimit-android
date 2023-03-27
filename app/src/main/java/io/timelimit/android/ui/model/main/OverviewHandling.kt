@@ -17,6 +17,7 @@ package io.timelimit.android.ui.model.main
 
 import androidx.compose.material.SnackbarHostState
 import androidx.lifecycle.asFlow
+import androidx.lifecycle.map
 import io.timelimit.android.BuildConfig
 import io.timelimit.android.R
 import io.timelimit.android.async.Threads
@@ -30,7 +31,6 @@ import io.timelimit.android.date.DateInTimezone
 import io.timelimit.android.extensions.tryWithLock
 import io.timelimit.android.extensions.whileTrue
 import io.timelimit.android.integration.platform.RuntimePermissionStatus
-import io.timelimit.android.livedata.map
 import io.timelimit.android.logic.AppLogic
 import io.timelimit.android.sync.actions.ReviewChildTaskAction
 import io.timelimit.android.sync.actions.apply.ApplyActionUtil

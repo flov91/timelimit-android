@@ -17,10 +17,9 @@ package io.timelimit.android.ui.manage.category
 
 import androidx.fragment.app.Fragment
 import io.timelimit.android.ui.fragment.CategoryFragmentWrapper
-import io.timelimit.android.ui.main.FragmentWithCustomTitle
 import io.timelimit.android.ui.manage.category.appsandrules.CombinedAppsAndRulesFragment
 
-class ManageCategoryFragment : CategoryFragmentWrapper(), FragmentWithCustomTitle {
+class ManageCategoryFragment : CategoryFragmentWrapper() {
     private val params: ManageCategoryFragmentArgs by lazy { ManageCategoryFragmentArgs.fromBundle(requireArguments()) }
     override val childId: String get() = params.childId
     override val categoryId: String get() = params.categoryId

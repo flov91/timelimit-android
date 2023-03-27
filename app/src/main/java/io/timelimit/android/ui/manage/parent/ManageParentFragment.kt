@@ -24,11 +24,11 @@ import androidx.fragment.app.Fragment
 import androidx.lifecycle.LiveData
 import androidx.lifecycle.Observer
 import androidx.lifecycle.ViewModelProviders
+import androidx.lifecycle.map
 import io.timelimit.android.R
 import io.timelimit.android.data.model.User
 import io.timelimit.android.databinding.FragmentManageParentBinding
 import io.timelimit.android.livedata.liveDataFromNonNullValue
-import io.timelimit.android.livedata.map
 import io.timelimit.android.logic.AppLogic
 import io.timelimit.android.logic.DefaultAppLogic
 import io.timelimit.android.ui.main.ActivityViewModelHolder

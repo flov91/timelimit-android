@@ -19,6 +19,7 @@ import android.os.Parcelable
 import android.util.JsonReader
 import android.util.JsonWriter
 import androidx.lifecycle.LiveData
+import androidx.lifecycle.map
 import androidx.room.ColumnInfo
 import androidx.room.Entity
 import androidx.room.PrimaryKey
@@ -28,7 +29,6 @@ import io.timelimit.android.data.JsonSerializable
 import io.timelimit.android.data.customtypes.ImmutableBitmaskAdapter
 import io.timelimit.android.extensions.MinuteOfDay
 import io.timelimit.android.livedata.ignoreUnchanged
-import io.timelimit.android.livedata.map
 import kotlinx.parcelize.Parcelize
 import kotlin.experimental.and
 

@@ -1,5 +1,5 @@
 /*
- * TimeLimit Copyright <C> 2019 - 2022 Jonas Lochmann
+ * TimeLimit Copyright <C> 2019 - 2023 Jonas Lochmann
  *
  * This program is free software: you can redistribute it and/or modify
  * it under the terms of the GNU General Public License as published by
@@ -16,13 +16,9 @@
 package io.timelimit.android.ui.manage.category.apps.addactivity
 
 import android.app.Application
-import androidx.lifecycle.AndroidViewModel
-import androidx.lifecycle.LiveData
-import androidx.lifecycle.MutableLiveData
+import androidx.lifecycle.*
 import io.timelimit.android.data.extensions.getCategoryWithParentCategories
-import io.timelimit.android.livedata.map
 import io.timelimit.android.livedata.mergeLiveDataWaitForValues
-import io.timelimit.android.livedata.switchMap
 import io.timelimit.android.logic.DefaultAppLogic
 
 class AddActivitiesModel(application: Application): AndroidViewModel(application) {

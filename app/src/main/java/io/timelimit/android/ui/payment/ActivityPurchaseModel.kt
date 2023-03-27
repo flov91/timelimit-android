@@ -1,5 +1,5 @@
 /*
- * TimeLimit Copyright <C> 2019 - 2022 Jonas Lochmann
+ * TimeLimit Copyright <C> 2019 - 2023 Jonas Lochmann
  *
  * This program is free software: you can redistribute it and/or modify
  * it under the terms of the GNU General Public License as published by
@@ -21,12 +21,12 @@ import android.util.Log
 import android.widget.Toast
 import androidx.lifecycle.AndroidViewModel
 import androidx.lifecycle.MutableLiveData
+import androidx.lifecycle.map
 import com.android.billingclient.api.*
 import io.timelimit.android.BuildConfig
 import io.timelimit.android.R
 import io.timelimit.android.coroutines.runAsync
 import io.timelimit.android.extensions.*
-import io.timelimit.android.livedata.map
 import io.timelimit.android.livedata.mergeLiveData
 import io.timelimit.android.livedata.setTemporarily
 import io.timelimit.android.logic.DefaultAppLogic

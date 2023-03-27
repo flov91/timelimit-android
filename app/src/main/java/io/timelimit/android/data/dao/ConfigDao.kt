@@ -19,7 +19,7 @@ import android.content.ComponentName
 import android.util.Base64
 import android.util.JsonWriter
 import androidx.lifecycle.LiveData
-import androidx.lifecycle.Transformations
+import androidx.lifecycle.map
 import androidx.room.*
 import io.timelimit.android.data.model.ConfigurationItem
 import io.timelimit.android.data.model.ConfigurationItemType
@@ -29,7 +29,6 @@ import io.timelimit.android.extensions.base64
 import io.timelimit.android.extensions.parseBase64
 import io.timelimit.android.extensions.toJsonReader
 import io.timelimit.android.livedata.ignoreUnchanged
-import io.timelimit.android.livedata.map
 import io.timelimit.android.sync.network.ServerDhKey
 import io.timelimit.android.update.UpdateStatus
 import kotlinx.coroutines.flow.Flow
@@ -48,7 +47,7 @@ abstract class ConfigDao {
     protected abstract fun getRowByKeyAsync(key: ConfigurationItemType): LiveData<ConfigurationItem?>
 
     private fun getValueOfKeyAsync(key: ConfigurationItemType): LiveData<String?> {
-        return Transformations.map(getRowByKeyAsync(key)) { it?.value }.ignoreUnchanged()
+        return getRowByKeyAsync(key).map { it?.value }.ignoreUnchanged()
     }
 
     @Query("SELECT * FROM config WHERE id = :key")

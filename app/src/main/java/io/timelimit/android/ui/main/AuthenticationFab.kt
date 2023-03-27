@@ -1,5 +1,5 @@
 /*
- * TimeLimit Copyright <C> 2019 - 2020 Jonas Lochmann
+ * TimeLimit Copyright <C> 2019 - 2023 Jonas Lochmann
  *
  * This program is free software: you can redistribute it and/or modify
  * it under the terms of the GNU General Public License as published by
@@ -20,10 +20,7 @@ import android.util.Log
 import androidx.core.content.ContextCompat
 import androidx.fragment.app.Fragment
 import androidx.fragment.app.FragmentActivity
-import androidx.lifecycle.LifecycleOwner
-import androidx.lifecycle.LiveData
-import androidx.lifecycle.MutableLiveData
-import androidx.lifecycle.Observer
+import androidx.lifecycle.*
 import com.getkeepsafe.taptargetview.TapTarget
 import com.getkeepsafe.taptargetview.TapTargetView
 import com.google.android.material.floatingactionbutton.FloatingActionButton
@@ -33,7 +30,6 @@ import io.timelimit.android.data.model.User
 import io.timelimit.android.data.model.UserType
 import io.timelimit.android.livedata.and
 import io.timelimit.android.livedata.invert
-import io.timelimit.android.livedata.map
 import io.timelimit.android.sync.actions.apply.ApplyActionParentAuthentication
 
 object AuthenticationFab {

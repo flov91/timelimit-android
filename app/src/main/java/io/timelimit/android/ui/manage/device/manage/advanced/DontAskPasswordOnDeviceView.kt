@@ -1,5 +1,5 @@
 /*
- * TimeLimit Copyright <C> 2019 Jonas Lochmann
+ * TimeLimit Copyright <C> 2019 - 2023 Jonas Lochmann
  *
  * This program is free software: you can redistribute it and/or modify
  * it under the terms of the GNU General Public License as published by
@@ -18,9 +18,9 @@ package io.timelimit.android.ui.manage.device.manage.advanced
 import androidx.lifecycle.LifecycleOwner
 import androidx.lifecycle.LiveData
 import androidx.lifecycle.Observer
+import androidx.lifecycle.map
 import io.timelimit.android.coroutines.runAsync
 import io.timelimit.android.data.model.Device
-import io.timelimit.android.livedata.map
 import io.timelimit.android.livedata.waitForNullableValue
 import io.timelimit.android.sync.actions.SetKeepSignedInAction
 import io.timelimit.android.ui.main.ActivityViewModel

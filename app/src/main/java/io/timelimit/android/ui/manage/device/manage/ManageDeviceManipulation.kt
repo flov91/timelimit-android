@@ -17,17 +17,13 @@ package io.timelimit.android.ui.manage.device.manage
 
 import android.view.ViewGroup
 import android.widget.CheckBox
-import androidx.lifecycle.LifecycleOwner
-import androidx.lifecycle.LiveData
-import androidx.lifecycle.Observer
-import androidx.lifecycle.ViewModel
+import androidx.lifecycle.*
 import com.google.android.material.snackbar.Snackbar
 import io.timelimit.android.R
 import io.timelimit.android.data.model.Device
 import io.timelimit.android.data.model.HadManipulationFlag
 import io.timelimit.android.data.model.ManipulationFlag
 import io.timelimit.android.databinding.ManageDeviceManipulationViewBinding
-import io.timelimit.android.livedata.map
 import io.timelimit.android.sync.actions.IgnoreManipulationAction
 import io.timelimit.android.ui.main.ActivityViewModel
 

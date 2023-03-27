@@ -22,10 +22,8 @@ import android.view.LayoutInflater
 import android.view.View
 import android.view.ViewGroup
 import androidx.fragment.app.viewModels
-import io.timelimit.android.R
 import io.timelimit.android.databinding.ManageParentU2fKeyFragmentBinding
 import io.timelimit.android.livedata.liveDataFromNonNullValue
-import io.timelimit.android.livedata.map
 import io.timelimit.android.ui.main.*
 import io.timelimit.android.ui.manage.parent.u2fkey.add.AddU2FDialogFragment
 import io.timelimit.android.ui.manage.parent.u2fkey.remove.RemoveU2FKeyDialogFragment
@@ -33,7 +31,7 @@ import io.timelimit.android.ui.manage.parent.u2fkey.remove.U2FRequiresPasswordFo
 import io.timelimit.android.ui.model.UpdateStateCommand
 import io.timelimit.android.ui.model.execute
 
-class ManageParentU2FKeyFragment : Fragment(), FragmentWithCustomTitle {
+class ManageParentU2FKeyFragment : Fragment() {
     val model: ManageParentU2FKeyModel by viewModels()
 
     override fun onCreateView(inflater: LayoutInflater, container: ViewGroup?, savedInstanceState: Bundle?): View {
@@ -101,6 +99,4 @@ class ManageParentU2FKeyFragment : Fragment(), FragmentWithCustomTitle {
 
         return binding.root
     }
-
-    override fun getCustomTitle() = model.user.map { "${getString(R.string.manage_parent_u2f_title)} < ${it?.name} < ${getString(R.string.main_tab_overview)}" as String? }
 }

@@ -1,5 +1,5 @@
 /*
- * TimeLimit Copyright <C> 2019 - 2022 Jonas Lochmann
+ * TimeLimit Copyright <C> 2019 - 2023 Jonas Lochmann
  *
  * This program is free software: you can redistribute it and/or modify
  * it under the terms of the GNU General Public License as published by
@@ -20,6 +20,7 @@ import android.util.Log
 import android.widget.Toast
 import androidx.lifecycle.AndroidViewModel
 import androidx.lifecycle.MutableLiveData
+import androidx.lifecycle.map
 import io.timelimit.android.BuildConfig
 import io.timelimit.android.R
 import io.timelimit.android.async.Threads
@@ -28,10 +29,8 @@ import io.timelimit.android.coroutines.runAsync
 import io.timelimit.android.data.backup.DatabaseBackup
 import io.timelimit.android.data.devicename.DeviceName
 import io.timelimit.android.livedata.castDown
-import io.timelimit.android.livedata.map
 import io.timelimit.android.logic.DefaultAppLogic
 import io.timelimit.android.sync.ApplyServerDataStatus
-import io.timelimit.android.sync.network.ClientDataStatus
 import io.timelimit.android.sync.network.NewDeviceInfo
 import io.timelimit.android.sync.network.ParentPassword
 import io.timelimit.android.sync.network.StatusOfMailAddressResponse

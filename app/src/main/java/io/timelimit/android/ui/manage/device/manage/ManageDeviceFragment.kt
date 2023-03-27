@@ -21,10 +21,7 @@ import android.view.LayoutInflater
 import android.view.View
 import android.view.ViewGroup
 import androidx.fragment.app.Fragment
-import androidx.lifecycle.LiveData
-import androidx.lifecycle.Observer
-import androidx.lifecycle.ViewModelProviders
-import androidx.lifecycle.switchMap
+import androidx.lifecycle.*
 import io.timelimit.android.R
 import io.timelimit.android.crypto.Curve25519
 import io.timelimit.android.crypto.HexString

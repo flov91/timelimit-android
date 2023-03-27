@@ -1,5 +1,5 @@
 /*
- * TimeLimit Copyright <C> 2019 - 2022 Jonas Lochmann
+ * TimeLimit Copyright <C> 2019 - 2023 Jonas Lochmann
  *
  * This program is free software: you can redistribute it and/or modify
  * it under the terms of the GNU General Public License as published by
@@ -18,17 +18,16 @@ package io.timelimit.android.ui.setup.child
 import android.app.Application
 import androidx.lifecycle.AndroidViewModel
 import androidx.lifecycle.MutableLiveData
+import androidx.lifecycle.map
 import io.timelimit.android.async.Threads
 import io.timelimit.android.coroutines.executeAndWait
 import io.timelimit.android.coroutines.runAsync
 import io.timelimit.android.data.backup.DatabaseBackup
 import io.timelimit.android.data.devicename.DeviceName
 import io.timelimit.android.livedata.castDown
-import io.timelimit.android.livedata.map
 import io.timelimit.android.logic.AppLogic
 import io.timelimit.android.logic.DefaultAppLogic
 import io.timelimit.android.sync.ApplyServerDataStatus
-import io.timelimit.android.sync.network.ClientDataStatus
 import io.timelimit.android.sync.network.NewDeviceInfo
 import io.timelimit.android.sync.network.api.UnauthorizedHttpError
 import io.timelimit.android.ui.setup.SetupUnprovisionedCheck

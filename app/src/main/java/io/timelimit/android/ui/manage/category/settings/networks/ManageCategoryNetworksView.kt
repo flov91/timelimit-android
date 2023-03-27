@@ -1,5 +1,5 @@
 /*
- * TimeLimit Copyright <C> 2019 - 2021 Jonas Lochmann
+ * TimeLimit Copyright <C> 2019 - 2023 Jonas Lochmann
  *
  * This program is free software: you can redistribute it and/or modify
  * it under the terms of the GNU General Public License as published by
@@ -17,9 +17,7 @@ package io.timelimit.android.ui.manage.category.settings.networks
 
 import androidx.fragment.app.Fragment
 import androidx.fragment.app.FragmentManager
-import androidx.lifecycle.LifecycleOwner
-import androidx.lifecycle.LiveData
-import androidx.lifecycle.Observer
+import androidx.lifecycle.*
 import com.google.android.material.snackbar.Snackbar
 import io.timelimit.android.R
 import io.timelimit.android.data.IdGenerator
@@ -29,8 +27,6 @@ import io.timelimit.android.data.model.CategoryNetworkId
 import io.timelimit.android.databinding.ManageCategoryNetworksViewBinding
 import io.timelimit.android.integration.platform.NetworkId
 import io.timelimit.android.livedata.liveDataFromFunction
-import io.timelimit.android.livedata.map
-import io.timelimit.android.livedata.switchMap
 import io.timelimit.android.sync.actions.AddCategoryNetworkId
 import io.timelimit.android.sync.actions.ResetCategoryNetworkIds
 import io.timelimit.android.sync.actions.UpdateCategoryFlagsAction

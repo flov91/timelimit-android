@@ -1,5 +1,5 @@
 /*
- * TimeLimit Copyright <C> 2019 - 2021 Jonas Lochmann
+ * TimeLimit Copyright <C> 2019 - 2023 Jonas Lochmann
  *
  * This program is free software: you can redistribute it and/or modify
  * it under the terms of the GNU General Public License as published by
@@ -24,14 +24,14 @@ import android.widget.Toast
 import androidx.fragment.app.Fragment
 import androidx.lifecycle.LiveData
 import androidx.lifecycle.Observer
+import androidx.lifecycle.map
+import androidx.lifecycle.switchMap
 import androidx.paging.LivePagedListBuilder
 import androidx.recyclerview.widget.LinearLayoutManager
 import io.timelimit.android.R
 import io.timelimit.android.async.Threads
 import io.timelimit.android.databinding.DiagnoseSyncFragmentBinding
 import io.timelimit.android.livedata.liveDataFromNullableValue
-import io.timelimit.android.livedata.map
-import io.timelimit.android.livedata.switchMap
 import io.timelimit.android.logic.DefaultAppLogic
 import io.timelimit.android.sync.actions.apply.UploadActionsUtil
 import io.timelimit.android.ui.main.FragmentWithCustomTitle

@@ -16,11 +16,11 @@
 package io.timelimit.android.data.dao
 
 import androidx.lifecycle.LiveData
+import androidx.lifecycle.map
 import androidx.room.*
 import io.timelimit.android.data.customtypes.ImmutableBitmask
 import io.timelimit.android.data.customtypes.ImmutableBitmaskAdapter
 import io.timelimit.android.data.model.Category
-import io.timelimit.android.livedata.map
 import kotlinx.coroutines.flow.Flow
 import java.util.*
 

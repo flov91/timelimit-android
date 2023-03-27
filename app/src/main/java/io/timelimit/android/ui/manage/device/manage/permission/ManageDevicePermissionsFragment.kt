@@ -23,6 +23,7 @@ import android.view.ViewGroup
 import androidx.fragment.app.Fragment
 import androidx.lifecycle.LiveData
 import androidx.lifecycle.Observer
+import androidx.lifecycle.map
 import io.timelimit.android.R
 import io.timelimit.android.data.model.Device
 import io.timelimit.android.data.model.UserType
@@ -33,7 +34,6 @@ import io.timelimit.android.integration.platform.RuntimePermissionStatus
 import io.timelimit.android.integration.platform.SystemPermission
 import io.timelimit.android.livedata.ignoreUnchanged
 import io.timelimit.android.livedata.liveDataFromNonNullValue
-import io.timelimit.android.livedata.map
 import io.timelimit.android.logic.AppLogic
 import io.timelimit.android.logic.DefaultAppLogic
 import io.timelimit.android.ui.main.ActivityViewModel

@@ -1,5 +1,5 @@
 /*
- * TimeLimit Copyright <C> 2019 - 2020 Jonas Lochmann
+ * TimeLimit Copyright <C> 2019 - 2023 Jonas Lochmann
  *
  * This program is free software: you can redistribute it and/or modify
  * it under the terms of the GNU General Public License as published by
@@ -19,9 +19,6 @@ package io.timelimit.android.ui.fragment
 import android.os.Bundle
 import android.view.View
 import androidx.fragment.app.Fragment
-import io.timelimit.android.R
-import io.timelimit.android.livedata.map
-import io.timelimit.android.ui.main.FragmentWithCustomTitle
 import io.timelimit.android.ui.manage.category.usagehistory.UsageHistoryFragment
 import io.timelimit.android.ui.manage.child.advanced.ManageChildAdvancedFragment
 import io.timelimit.android.ui.manage.child.apps.ChildAppsFragment
@@ -44,36 +41,32 @@ abstract class ChildFragmentWrapper: SingleFragmentWrapper() {
     }
 }
 
-class ChildAppsFragmentWrapper: ChildFragmentWrapper(), FragmentWithCustomTitle {
+class ChildAppsFragmentWrapper: ChildFragmentWrapper() {
     private val params by lazy { ChildAppsFragmentWrapperArgs.fromBundle(arguments!!) }
     override val childId: String get() = params.childId
 
     override fun createChildFragment(): Fragment = ChildAppsFragment.newInstance(childId = childId)
-    override fun getCustomTitle() = child.map { "${getString(R.string.child_apps_title)} < ${it?.name} < ${getString(R.string.main_tab_overview)}" as String? }
 }
 
-class ChildAdvancedFragmentWrapper: ChildFragmentWrapper(), FragmentWithCustomTitle {
+class ChildAdvancedFragmentWrapper: ChildFragmentWrapper() {
     private val params by lazy { ChildAdvancedFragmentWrapperArgs.fromBundle(arguments!!) }
     override val childId: String get() = params.childId
 
     override fun createChildFragment(): Fragment = ManageChildAdvancedFragment.newInstance(childId = childId)
-    override fun getCustomTitle() = child.map { it?.name }
 }
 
-class ChildUsageHistoryFragmentWrapper: ChildFragmentWrapper(), FragmentWithCustomTitle {
+class ChildUsageHistoryFragmentWrapper: ChildFragmentWrapper() {
     private val params by lazy { ChildUsageHistoryFragmentWrapperArgs.fromBundle(arguments!!) }
     override val childId: String get() = params.childId
     override val showAuthButton: Boolean = false
 
     override fun createChildFragment(): Fragment = UsageHistoryFragment.newInstance(userId = childId, categoryId = null)
-    override fun getCustomTitle() = child.map { it?.let { "${it.name} - ${getString(R.string.usage_history_title)}" } }
 }
 
-class ChildTasksFragmentWrapper: ChildFragmentWrapper(), FragmentWithCustomTitle {
+class ChildTasksFragmentWrapper: ChildFragmentWrapper() {
     private val params by lazy { ChildTasksFragmentWrapperArgs.fromBundle(requireArguments()) }
     override val childId: String get() = params.childId
     override val showAuthButton: Boolean = true
 
     override fun createChildFragment(): Fragment = ManageChildTasksFragment.newInstance(childId = childId)
-    override fun getCustomTitle() = child.map { it?.let { "${it.name} - ${getString(R.string.manage_child_tasks)}" } }
 }

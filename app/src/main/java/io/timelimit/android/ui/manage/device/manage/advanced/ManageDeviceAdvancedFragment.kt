@@ -23,6 +23,8 @@ import android.view.ViewGroup
 import androidx.fragment.app.Fragment
 import androidx.lifecycle.LiveData
 import androidx.lifecycle.Observer
+import androidx.lifecycle.map
+import androidx.lifecycle.switchMap
 import io.timelimit.android.R
 import io.timelimit.android.data.model.Device
 import io.timelimit.android.data.model.User

@@ -48,7 +48,6 @@ import io.timelimit.android.extensions.showSafe
 import io.timelimit.android.integration.platform.android.NotificationChannels
 import io.timelimit.android.livedata.ignoreUnchanged
 import io.timelimit.android.livedata.liveDataFromNullableValue
-import io.timelimit.android.livedata.map
 import io.timelimit.android.logic.DefaultAppLogic
 import io.timelimit.android.u2f.U2fManager
 import io.timelimit.android.u2f.protocol.U2FDevice

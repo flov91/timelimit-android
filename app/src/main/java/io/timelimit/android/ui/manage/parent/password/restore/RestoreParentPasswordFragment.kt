@@ -27,16 +27,14 @@ import androidx.lifecycle.ViewModelProviders
 import io.timelimit.android.R
 import io.timelimit.android.data.model.User
 import io.timelimit.android.databinding.RestoreParentPasswordFragmentBinding
-import io.timelimit.android.livedata.map
 import io.timelimit.android.logic.AppLogic
 import io.timelimit.android.logic.DefaultAppLogic
 import io.timelimit.android.ui.authentication.AuthenticateByMailFragment
 import io.timelimit.android.ui.authentication.AuthenticateByMailFragmentListener
-import io.timelimit.android.ui.main.FragmentWithCustomTitle
 import io.timelimit.android.ui.model.UpdateStateCommand
 import io.timelimit.android.ui.model.execute
 
-class RestoreParentPasswordFragment : Fragment(), AuthenticateByMailFragmentListener, FragmentWithCustomTitle {
+class RestoreParentPasswordFragment : Fragment(), AuthenticateByMailFragmentListener {
     companion object {
         private const val PAGE_CHOSE_PASSWORD = 0
         private const val PAGE_AUTHENTICATE = 1
@@ -115,6 +113,4 @@ class RestoreParentPasswordFragment : Fragment(), AuthenticateByMailFragmentList
                     .commit()
         }
     }
-
-    override fun getCustomTitle() = parentUser.map { "${getString(R.string.restore_parent_password_title)} < ${it?.name} < ${getString(R.string.main_tab_overview)}" as String? }
 }

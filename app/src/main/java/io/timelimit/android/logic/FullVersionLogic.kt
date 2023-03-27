@@ -1,5 +1,5 @@
 /*
- * TimeLimit Copyright <C> 2019 Jonas Lochmann
+ * TimeLimit Copyright <C> 2019 - 2023 Jonas Lochmann
  *
  * This program is free software: you can redistribute it and/or modify
  * it under the terms of the GNU General Public License as published by
@@ -16,8 +16,8 @@
 package io.timelimit.android.logic
 
 import androidx.lifecycle.asFlow
+import androidx.lifecycle.map
 import io.timelimit.android.livedata.ignoreUnchanged
-import io.timelimit.android.livedata.map
 import io.timelimit.android.livedata.or
 import kotlinx.coroutines.flow.first
 

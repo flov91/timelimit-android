@@ -1,5 +1,5 @@
 /*
- * TimeLimit Copyright <C> 2019 - 2022 Jonas Lochmann
+ * TimeLimit Copyright <C> 2019 - 2023 Jonas Lochmann
  *
  * This program is free software: you can redistribute it and/or modify
  * it under the terms of the GNU General Public License as published by
@@ -16,9 +16,7 @@
 package io.timelimit.android.logic
 
 import android.content.Context
-import androidx.lifecycle.LiveData
-import androidx.lifecycle.MutableLiveData
-import androidx.lifecycle.Transformations
+import androidx.lifecycle.*
 import io.timelimit.android.data.Database
 import io.timelimit.android.data.model.Device
 import io.timelimit.android.data.model.User
@@ -46,7 +44,7 @@ class AppLogic(
 
     val deviceId = database.config().getOwnDeviceId()
 
-    val deviceEntry = Transformations.switchMap<String?, Device?> (deviceId) {
+    val deviceEntry = deviceId.switchMap<String?, Device?> {
         if (it == null) {
             liveDataFromNullableValue(null)
         } else {
@@ -62,7 +60,7 @@ class AppLogic(
         }
     }
 
-    val deviceUserId: LiveData<String> = Transformations.map(deviceEntry) { it?.currentUserId ?: "" }
+    val deviceUserId: LiveData<String> = deviceEntry.map { it?.currentUserId ?: "" }
 
     val deviceUserEntry = deviceUserId.switchMap {
         if (it == "") {
