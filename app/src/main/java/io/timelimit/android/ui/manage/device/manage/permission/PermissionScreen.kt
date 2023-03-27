@@ -15,15 +15,21 @@
  */
 package io.timelimit.android.ui.manage.device.manage.permission
 
+import androidx.compose.foundation.layout.Arrangement
+import androidx.compose.foundation.layout.Column
 import androidx.compose.runtime.Composable
+import androidx.compose.ui.unit.dp
 
 @Composable
 fun PermissionScreen(
     content: PermissionScreenContent
 ) {
-    PermissionScreenPermissionList(content.status, content.showDetails)
+    Column (
+        verticalArrangement = Arrangement.spacedBy(8.dp)
+    ) {
+        PermissionScreenPermissionList(content.status, content.showDetails)
+        PermissionGoals(content.status)
+    }
 
     if (content.dialog != null) PermissionScreenDialog(content.dialog, content.status)
-
-    // TODO: show reached goals
 }

@@ -1066,6 +1066,19 @@
         \n\nYou can disable it by using the uninstall feature of TimeLimit.
     </string>
 
+    <string name="manage_device_permission_goal_limit_title">Allow applying limits</string>
+    <string name="manage_device_permission_goal_floating_window">Allow blocking floating windows</string>
+    <string name="manage_device_permission_goal_background_audio">Allow limiting background audio</string>
+    <string name="manage_device_permission_goal_manipulation_protection">Protect against manipulation</string>
+    <string name="manage_device_permission_goal_manipulation_protection_unavailable">unavailable in the current environment</string>
+    <string name="manage_device_permission_goal_eventually_needs">eventually needs</string>
+    <string name="manage_device_permission_goal_needs">needs</string>
+    <string name="manage_device_permission_goal_or">or</string>
+    <string name="manage_device_permission_goal_reached_by_old_android">needs nothing due to old Android version</string>
+    <string name="manage_device_permission_goal_needs_device_owner">needs device owner</string>
+    <string name="manage_device_permission_goal_reached">goal reached</string>
+    <string name="manage_device_permission_goal_missed">goal not reached</string>
+
     <string name="manage_device_downgrade_title">Downgrade</string>
     <string name="manage_device_downgrade_text">On this device, a newer version of TimeLimit was replaced by an older one</string>
 
@@ -1451,6 +1464,10 @@
         Starting Android 10, the permission \"Draw over other Apps\" or \"Accessibility service\"
         is required to open the lockscreen.
         The other permissions are required for some extra features.
+    </string>
+
+    <string name="setup_device_permissions_text_short">
+        TimeLimit needs some permissions to work
     </string>
 
     <string name="setup_device_needs_parent">A parent must authenticate to finish the setup</string>

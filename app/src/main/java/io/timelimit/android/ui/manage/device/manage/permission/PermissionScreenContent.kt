@@ -31,7 +31,8 @@ data class PermissionScreenContent(
         val maxProtectionLevel: ProtectionLevel,
         val usageStats: RuntimePermissionStatus,
         val overlay: RuntimePermissionStatus,
-        val accessibility: Boolean
+        val accessibility: Boolean,
+        val isQOrLater: Boolean
     )
 
     data class Dialog(

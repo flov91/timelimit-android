@@ -21,6 +21,7 @@ import io.timelimit.android.ui.manage.device.manage.permission.PermissionScreenC
 import io.timelimit.android.ui.model.ActivityCommand
 import io.timelimit.android.ui.model.Screen
 import io.timelimit.android.ui.model.State
+import io.timelimit.android.util.AndroidVersion
 import kotlinx.coroutines.channels.SendChannel
 import kotlinx.coroutines.delay
 import kotlinx.coroutines.flow.Flow
@@ -68,7 +69,8 @@ object SetupLocalModePermissions {
                     maxProtectionLevel = platformIntegration.maximumProtectionLevel,
                     usageStats = platformIntegration.getForegroundAppPermissionStatus(),
                     overlay = platformIntegration.getDrawOverOtherAppsPermissionStatus(true),
-                    accessibility = platformIntegration.isAccessibilityServiceEnabled()
+                    accessibility = platformIntegration.isAccessibilityServiceEnabled(),
+                    isQOrLater = AndroidVersion.qOrLater
                 )
             )
 
