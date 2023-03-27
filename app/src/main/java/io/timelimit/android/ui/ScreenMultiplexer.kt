@@ -22,6 +22,7 @@ import io.timelimit.android.ui.diagnose.deviceowner.DeviceOwnerScreen
 import io.timelimit.android.ui.manage.device.manage.user.ManageDeviceUserScreen
 import io.timelimit.android.ui.model.Screen
 import io.timelimit.android.ui.overview.overview.OverviewScreen
+import io.timelimit.android.ui.setup.SetupDevicePermissionsScreen
 
 @Composable
 fun ScreenMultiplexer(
@@ -36,5 +37,6 @@ fun ScreenMultiplexer(
         is Screen.OverviewScreen -> OverviewScreen(screen.content, modifier = modifier)
         is Screen.ManageDeviceUserScreen -> ManageDeviceUserScreen(screen.items, screen.actions, screen.overlay, modifier)
         is Screen.DeviceOwnerScreen -> DeviceOwnerScreen(screen.content, modifier = modifier)
+        is Screen.SetupDevicePermissionsScreen -> SetupDevicePermissionsScreen(screen.content, screen.next, modifier)
     }
 }

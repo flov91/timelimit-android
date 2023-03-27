@@ -21,6 +21,7 @@ import androidx.compose.material.icons.filled.DirectionsBike
 import androidx.compose.material.icons.filled.Phone
 import androidx.fragment.app.Fragment
 import io.timelimit.android.R
+import io.timelimit.android.integration.platform.SystemPermission
 import io.timelimit.android.ui.contacts.ContactsFragment
 import io.timelimit.android.ui.diagnose.*
 import io.timelimit.android.ui.diagnose.exitreason.DiagnoseExitReasonFragment
@@ -256,7 +257,10 @@ sealed class State (val previous: State?): Serializable {
         class SetupTerms: FragmentStateLegacy(previous = null, fragmentClass = SetupTermsFragment::class.java)
         class SetupHelpInfo(previous: SetupTerms): FragmentStateLegacy(previous = previous, fragmentClass = SetupHelpInfoFragment::class.java)
         class SelectMode(previous: SetupHelpInfo): FragmentStateLegacy(previous = previous, fragmentClass = SetupSelectModeFragment::class.java)
-        class DevicePermissions(previous: SelectMode): FragmentStateLegacy(previous = previous, fragmentClass = SetupDevicePermissionsFragment::class.java)
+        data class DevicePermissions(
+            val previousSelectMode: SelectMode,
+            val currentDialog: SystemPermission? = null
+        ): FragmentStateLegacy(previous = previousSelectMode, fragmentClass = Fragment::class.java)
         class LocalMode(previous: DevicePermissions): FragmentStateLegacy(previous = previous, fragmentClass = SetupLocalModeFragment::class.java)
         class RemoteChild(previous: SelectMode): FragmentStateLegacy(previous = previous, fragmentClass = SetupRemoteChildFragment::class.java)
         class ParentMode(previous: SelectMode): FragmentStateLegacy(previous = previous, fragmentClass = SetupParentModeFragment::class.java)

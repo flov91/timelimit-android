@@ -80,6 +80,8 @@
         (<a href="https://github.com/JetBrains/kotlin/blob/master/license/LICENSE.txt">Apache License, Version 2.0</a>)
         \nAndroid X
         (<a href="https://www.apache.org/licenses/LICENSE-2.0">Apache License, Version 2.0</a>)
+        \n<a href="https://github.com/google/accompanist">Google Accompanist</a>
+        (<a href="https://github.com/google/accompanist/blob/main/LICENSE">Apache License, Version 2.0</a>)
         \nAndroid Navigation Component
         (<a href="https://www.apache.org/licenses/LICENSE-2.0">Apache License, Version 2.0</a>)
         \nAndroid Room
@@ -1029,6 +1031,11 @@
         This permission can only be disabled by TimeLimit/ a parent which uninstalls TimeLimit.
     </string>
 
+    <string name="manage_device_permission_device_owner_unsupported">The device owner permission
+        is something different and not available.</string>
+    <string name="manage_device_permission_device_owner_not_granted">The device
+        owner permission is something different and was not granted.</string>
+
     <string name="manage_device_permission_open_at_target_device">
         Open the screen at the other device to modify the permissions
     </string>
@@ -1039,6 +1046,12 @@
     <string name="manage_device_permission_status_not_supported">This feature is not supported by this device</string>
 
     <string name="manage_device_permission_btn_modify">Modify</string>
+
+    <string name="manage_device_permission_link_only_info">Apps can not grant permissions themself.
+        You are redirected to a system App to change the permission.
+        Due to that, you can not change the permissions remotely.
+        To protect the setting, you have to block the corresponding system App.
+    </string>
 
     <string name="manage_device_permission_no_ui_usage_stats_text">
         This device does not allow changing this permission graphically. You can only

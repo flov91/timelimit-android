@@ -13,14 +13,17 @@
  * You should have received a copy of the GNU General Public License
  * along with this program. If not, see <https://www.gnu.org/licenses/>.
  */
-package io.timelimit.android.ui.model
+package io.timelimit.android.ui.manage.device.manage.permission
 
-import io.timelimit.android.integration.platform.SystemPermission
+import androidx.compose.runtime.Composable
 
-sealed class ActivityCommand {
-    object ShowCanNotAddDevicesInLocalModeDialogFragment: ActivityCommand()
-    object ShowAddDeviceFragment: ActivityCommand()
-    object ShowAuthenticationScreen: ActivityCommand()
-    object ShowMissingPremiumDialog: ActivityCommand()
-    class LaunchSystemSettings(val permission: SystemPermission): ActivityCommand()
+@Composable
+fun PermissionScreen(
+    content: PermissionScreenContent
+) {
+    PermissionScreenPermissionList(content.status, content.showDetails)
+
+    if (content.dialog != null) PermissionScreenDialog(content.dialog, content.status)
+
+    // TODO: show reached goals
 }
