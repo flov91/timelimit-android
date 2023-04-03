@@ -23,6 +23,7 @@ import io.timelimit.android.R
 import io.timelimit.android.data.model.UserType
 import io.timelimit.android.logic.DefaultAppLogic
 import io.timelimit.android.ui.main.ActivityViewModel
+import io.timelimit.android.ui.model.account.AccountDeletion
 import io.timelimit.android.ui.model.diagnose.DeviceOwnerHandling
 import io.timelimit.android.ui.model.flow.Case
 import io.timelimit.android.ui.model.flow.splitConflated
@@ -114,6 +115,7 @@ class MainModel(application: Application): AndroidViewModel(application) {
         Case.simple<_, _, State.ManageDevice> { state -> ManageDeviceHandling.processState(logic, activityCommandInternal, authenticationModelApi, state, updateMethod(::updateState)) },
         Case.simple<_, _, State.DiagnoseScreen.DeviceOwner> { DeviceOwnerHandling.processState(logic, scope, authenticationModelApi, state) },
         Case.simple<_, _, State.Setup> { state -> SetupHandling.handle(logic, activityCommandInternal, state, updateMethod(::updateState)) },
+        Case.simple<_, _, State.DeleteAccount> { AccountDeletion.handle(logic, scope, share(it), updateMethod(::updateState)) },
         Case.simple<_, _, FragmentState> { state ->
             state.transform {
                 val containerId = it.containerId ?: run {

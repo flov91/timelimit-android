@@ -32,6 +32,7 @@ import io.timelimit.android.livedata.liveDataFromFunction
 import io.timelimit.android.livedata.liveDataFromNullableValue
 import io.timelimit.android.logic.DefaultAppLogic
 import io.timelimit.android.sync.websocket.networkstatus.NetworkStatus
+import io.timelimit.android.ui.diagnose.exception.DiagnoseExceptionDialogFragment
 import io.timelimit.android.ui.main.FragmentWithCustomTitle
 
 class DiagnoseConnectionFragment : Fragment(), FragmentWithCustomTitle {

@@ -42,8 +42,8 @@ class HttpServerApi(private val endpointWithoutSlashAtEnd: String): ServerApi {
         private const val LOG_TAG = "HttpServerApi"
 
         private const val DEVICE_AUTH_TOKEN = "deviceAuthToken"
-        private const val GOOGLE_AUTH_TOKEN = "googleAuthToken"
         private const val MAIL_AUTH_TOKEN = "mailAuthToken"
+        private const val MAIL_AUTH_TOKENS = "mailAuthTokens"
         private const val REGISTER_TOKEN = "registerToken"
         private const val MILLISECONDS = "ms"
         private const val STATUS = "status"
@@ -604,6 +604,24 @@ class HttpServerApi(private val endpointWithoutSlashAtEnd: String): ServerApi {
 
                 token!!
             }
+        }
+    }
+
+    override suspend fun requestAccountDeletion(
+        deviceAuthToken: String,
+        mailAuthTokens: List<String>
+    ) {
+        postJsonRequest("parent/delete-account") { writer ->
+            writer.beginObject()
+            writer.name(DEVICE_AUTH_TOKEN).value(deviceAuthToken)
+
+            writer.name(MAIL_AUTH_TOKENS).beginArray()
+            mailAuthTokens.forEach { writer.value(it) }
+            writer.endArray()
+
+            writer.endObject()
+        }.use { response ->
+            response.assertSuccess()
         }
     }
 

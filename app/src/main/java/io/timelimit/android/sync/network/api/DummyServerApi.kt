@@ -1,5 +1,5 @@
 /*
- * TimeLimit Copyright <C> 2019 - 2022 Jonas Lochmann
+ * TimeLimit Copyright <C> 2019 - 2023 Jonas Lochmann
  *
  * This program is free software: you can redistribute it and/or modify
  * it under the terms of the GNU General Public License as published by
@@ -104,6 +104,13 @@ class DummyServerApi: ServerApi {
         parentUserId: String,
         parentPasswordSecondHash: String
     ): String {
+        throw IOException()
+    }
+
+    override suspend fun requestAccountDeletion(
+        deviceAuthToken: String,
+        mailAuthTokens: List<String>
+    ) {
         throw IOException()
     }
 }

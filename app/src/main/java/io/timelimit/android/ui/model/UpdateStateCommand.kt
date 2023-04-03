@@ -83,6 +83,12 @@ sealed class UpdateStateCommand {
                 else null
         }
 
+        object DeleteAccount: UpdateStateCommand() {
+            override fun transform(state: State): State? =
+                if (state is State.Overview) State.DeleteAccount(state)
+                else null
+        }
+
         object ShowAllUsers: UpdateStateCommand() {
             override fun transform(state: State): State? =
                 if (state is State.Overview) state.copy(

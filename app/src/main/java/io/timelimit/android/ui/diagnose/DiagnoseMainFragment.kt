@@ -27,6 +27,7 @@ import io.timelimit.android.databinding.FragmentDiagnoseMainBinding
 import io.timelimit.android.livedata.liveDataFromNonNullValue
 import io.timelimit.android.livedata.liveDataFromNullableValue
 import io.timelimit.android.logic.DefaultAppLogic
+import io.timelimit.android.ui.diagnose.exception.DiagnoseExceptionDialogFragment
 import io.timelimit.android.ui.main.ActivityViewModelHolder
 import io.timelimit.android.ui.main.AuthenticationFab
 import io.timelimit.android.ui.main.FragmentWithCustomTitle

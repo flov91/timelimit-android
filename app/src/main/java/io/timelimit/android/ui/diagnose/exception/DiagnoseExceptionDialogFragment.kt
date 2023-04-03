@@ -1,5 +1,5 @@
 /*
- * TimeLimit Copyright <C> 2019 - 2022 Jonas Lochmann
+ * TimeLimit Copyright <C> 2019 - 2023 Jonas Lochmann
  *
  * This program is free software: you can redistribute it and/or modify
  * it under the terms of the GNU General Public License as published by
@@ -13,7 +13,7 @@
  * You should have received a copy of the GNU General Public License
  * along with this program. If not, see <https://www.gnu.org/licenses/>.
  */
-package io.timelimit.android.ui.diagnose
+package io.timelimit.android.ui.diagnose.exception
 
 import android.app.Dialog
 import android.os.Bundle
@@ -23,8 +23,6 @@ import androidx.fragment.app.FragmentManager
 import io.timelimit.android.R
 import io.timelimit.android.extensions.showSafe
 import io.timelimit.android.util.Clipboard
-import java.io.PrintWriter
-import java.io.StringWriter
 
 class DiagnoseExceptionDialogFragment: DialogFragment() {
     companion object {
@@ -36,25 +34,16 @@ class DiagnoseExceptionDialogFragment: DialogFragment() {
                 putSerializable(EXCEPTION, exception)
             }
         }
-
-        fun getStackTraceString(tr: Throwable): String = StringWriter().let { sw ->
-            PrintWriter(sw).let { pw ->
-                tr.printStackTrace(pw)
-                pw.flush()
-            }
-
-            sw.toString()
-        }
     }
 
     override fun onCreateDialog(savedInstanceState: Bundle?): Dialog {
-        val message = getStackTraceString(requireArguments().getSerializable(EXCEPTION) as Exception)
+        val message = ExceptionUtil.format(requireArguments().getSerializable(EXCEPTION) as Exception)
 
         return AlertDialog.Builder(requireContext(), theme)
-                .setMessage(message)
-                .setNeutralButton(R.string.diagnose_sync_copy_to_clipboard) { _, _ -> Clipboard.setAndToast(requireContext(), message) }
-                .setPositiveButton(R.string.generic_ok, null)
-                .create()
+            .setMessage(message)
+            .setNeutralButton(R.string.diagnose_sync_copy_to_clipboard) { _, _ -> Clipboard.setAndToast(requireContext(), message) }
+            .setPositiveButton(R.string.generic_ok, null)
+            .create()
     }
 
     fun show(fragmentManager: FragmentManager) = showSafe(fragmentManager, DIALOG_TAG)

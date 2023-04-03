@@ -18,6 +18,7 @@ package io.timelimit.android.ui
 import androidx.compose.runtime.Composable
 import androidx.compose.ui.Modifier
 import androidx.fragment.app.FragmentManager
+import io.timelimit.android.ui.account.DeleteRegistrationScreen
 import io.timelimit.android.ui.diagnose.deviceowner.DeviceOwnerScreen
 import io.timelimit.android.ui.manage.device.manage.permission.ManageDevicePermissionScreen
 import io.timelimit.android.ui.manage.device.manage.user.ManageDeviceUserScreen
@@ -46,5 +47,6 @@ fun ScreenMultiplexer(
         is Screen.SetupConnectModePrivacyScreen -> SetupConnectedModePrivacyScreen(screen.customServerDomain, screen.accept, modifier)
         is Screen.SetupSelectConnectedModeScreen -> SelectConnectedModeScreen(mailLogin = screen.mailLogin, codeLogin = screen.codeLogin, modifier = modifier)
         is Screen.SetupSelectModeScreen -> SelectModeScreen(selectLocal = screen.selectLocal, selectConnected = screen.selectConnected, selectUninstall = screen.selectUninstall, modifier = modifier)
+        is Screen.DeleteRegistration -> DeleteRegistrationScreen(screen.content, modifier)
     }
 }

@@ -34,6 +34,7 @@ import io.timelimit.android.databinding.DiagnoseSyncFragmentBinding
 import io.timelimit.android.livedata.liveDataFromNullableValue
 import io.timelimit.android.logic.DefaultAppLogic
 import io.timelimit.android.sync.actions.apply.UploadActionsUtil
+import io.timelimit.android.ui.diagnose.exception.DiagnoseExceptionDialogFragment
 import io.timelimit.android.ui.main.FragmentWithCustomTitle
 
 class DiagnoseSyncFragment : Fragment(), FragmentWithCustomTitle {

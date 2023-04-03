@@ -185,6 +185,7 @@
 
     <string name="authenticate_by_mail_other_title">Sign in with a mail address</string>
     <string name="authenticate_by_mail_other_text">TimeLimit will send you a message with a code which you enter here to authenticate.</string>
+    <string name="authenticate_by_mail_hardcoded_text">TimeLimit will send you a message to %s with a code which you enter here to authenticate.</string>
     <string name="authenticate_by_mail_message_sent">A code was sent to %s.</string>
     <string name="authenticate_by_mail_hint_mail">Mail address</string>
     <string name="authenticate_by_mail_hint_code">Received code</string>
@@ -628,6 +629,7 @@
     <string name="error_general">The operation failed</string>
     <string name="error_network">Something went wrong during the transmission</string>
     <string name="error_server_rejected">The server rejected the request</string>
+    <string name="error_server_client_deprecated">This action requires a newer App version</string>
 
     <string name="homescreen_selection_title">Homescreen selection</string>
     <string name="homescreen_selection_intro">TimeLimit itself is no complete homescreen, so you can chose what should be shown</string>
@@ -1130,6 +1132,8 @@
     <string name="manage_parent_remove_user_status_last_linked">
         You are using the connected mode and this user is the last one with a linked mail address.
         You must link an other user before you can delete this one.
+        Alternatively, you can delete your registration from the overview screen but
+        this deletes all child users and linked devices too.
     </string>
     <string name="manage_parent_remove_user_status_not_authenticated">
         Sign in with an other user to delete %1$s.
@@ -1794,4 +1798,17 @@
 
     <string name="u2f_login_error_unknown">unknown key</string>
     <string name="u2f_login_error_invalid">invalid key</string>
+
+    <string name="account_deletion_title">Delete Registration</string>
+    <string name="account_deletion_text_no_account">You are not using the connect mode so there is no account to delete</string>
+    <string name="account_deletion_text_done">You request was sent</string>
+    <string name="account_deletion_confirmation_text">Using this, you can
+        request the deletion of your registration.
+        This will reset TimeLimit on all linked devices.
+        If you do not this, your data is deleted automatically if you stop using TimeLimit.
+        Some data cannot be deleted upon request.
+        You can find the details in the privacy policy.
+    </string>
+    <string name="account_deletion_confirmation_premium_toggle">I accept that my premium version (if it exists) will be deleted without replacement</string>
+    <string name="account_deletion_confirmation_button">Request Deletion</string>
 </resources>

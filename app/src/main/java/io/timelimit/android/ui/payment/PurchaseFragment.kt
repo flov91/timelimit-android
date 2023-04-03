@@ -27,7 +27,7 @@ import io.timelimit.android.databinding.FragmentPurchaseBinding
 import io.timelimit.android.livedata.liveDataFromNullableValue
 import io.timelimit.android.livedata.mergeLiveData
 import io.timelimit.android.ui.MainActivity
-import io.timelimit.android.ui.diagnose.DiagnoseExceptionDialogFragment
+import io.timelimit.android.ui.diagnose.exception.DiagnoseExceptionDialogFragment
 import io.timelimit.android.ui.main.ActivityViewModelHolder
 import io.timelimit.android.ui.main.FragmentWithCustomTitle
 import io.timelimit.android.ui.main.getActivityViewModel

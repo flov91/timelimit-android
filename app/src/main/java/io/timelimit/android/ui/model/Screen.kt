@@ -21,6 +21,7 @@ import androidx.compose.material.icons.filled.Key
 import androidx.compose.material.icons.outlined.Info
 import io.timelimit.android.R
 import io.timelimit.android.ui.manage.device.manage.permission.PermissionScreenContent
+import io.timelimit.android.ui.model.account.AccountDeletion
 import io.timelimit.android.ui.model.diagnose.DeviceOwnerHandling
 import io.timelimit.android.ui.model.main.OverviewHandling
 import io.timelimit.android.ui.model.managedevice.ManageDeviceUser
@@ -49,10 +50,16 @@ sealed class Screen(
             R.string.main_tab_about,
             UpdateStateCommand.Overview.LaunchAbout
         )),
-        listOf(Menu.Dropdown(
-            R.string.main_tab_uninstall,
-            UpdateStateCommand.Overview.Uninstall
-        ))
+        listOf(
+            Menu.Dropdown(
+                R.string.main_tab_uninstall,
+                UpdateStateCommand.Overview.Uninstall
+            ),
+            Menu.Dropdown(
+                R.string.account_deletion_title,
+                UpdateStateCommand.Overview.DeleteAccount
+            )
+        )
     ), ScreenWithAuthenticationFab, ScreenWithSnackbar
 
     class ManageChildScreen(
@@ -252,6 +259,14 @@ sealed class Screen(
         val mailLogin: () -> Unit,
         val codeLogin: () -> Unit
     ): Screen(state)
+
+    class DeleteRegistration(
+        state: State.DeleteAccount,
+        val content: AccountDeletion.MyScreen,
+        override val snackbarHostState: SnackbarHostState
+    ): Screen(state), ScreenWithSnackbar, ScreenWithTitle {
+        override val title: Title = Title.StringResource(R.string.account_deletion_title)
+    }
 }
 
 interface ScreenWithAuthenticationFab

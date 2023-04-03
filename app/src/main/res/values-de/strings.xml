@@ -139,6 +139,7 @@
 
     <string name="authenticate_by_mail_other_title">Mit einer E-Mail-Adresse anmelden</string>
     <string name="authenticate_by_mail_other_text">TimeLimit wird Ihnen eine Nachricht mit einem Code senden, den Sie zum Authentifizieren hier eingeben.</string>
+    <string name="authenticate_by_mail_hardcoded_text">TimeLimit wird Ihnen eine Nachricht mit einem Code an %s senden, den Sie zum Authentifizieren hier eingeben.</string>
     <string name="authenticate_by_mail_message_sent">Es wurde ein Code an %s gesendet.</string>
     <string name="authenticate_by_mail_hint_mail">E-Mail-Adresse</string>
     <string name="authenticate_by_mail_hint_code">empfangener Code</string>
@@ -574,6 +575,7 @@
     <string name="error_general">Der Vorgang ist fehlgeschlagen</string>
     <string name="error_network">Es trat ein Fehler bei der Übertragung auf</string>
     <string name="error_server_rejected">Der Server hat die Anfrage abgelehnt</string>
+    <string name="error_server_client_deprecated">Diese Aktion erfordert eine neuere App-Version</string>
 
     <string name="homescreen_selection_title">Startbildschirmauswahl</string>
     <string name="homescreen_selection_intro">TimeLimit ist kein vollständiger Startbildschirm, aber Sie können auswählen, was angezeigt werden soll</string>
@@ -1079,6 +1081,8 @@
     <string name="manage_parent_remove_user_status_last_linked">
         Sie sind im vernetzen Modus und dieser Benutzer ist der letzte, mit dem eine E-Mail-Adresse verknüpft wurde.
         Sie müssen einen anderen Benutzer verknüpfen, bevor Sie diesen löschen können.
+        Sie können in der Übersicht die gesamte Registrierung löschen, aber das
+        umfasst auch alle eingeschränkten Benutzer und verknüpften Geräte.
     </string>
     <string name="manage_parent_remove_user_status_not_authenticated">
         Melden Sie sich mit einem anderen Benutzer an, um %1$s zu löschen.
@@ -1742,4 +1746,16 @@
 
     <string name="u2f_login_error_unknown">unbekannter Schlüssel</string>
     <string name="u2f_login_error_invalid">ungültiger Schlüssel</string>
+
+    <string name="account_deletion_title">Registrierung löschen</string>
+    <string name="account_deletion_text_no_account">Sie verwenden keine Vernetzung, sodass es keine Registrierung gibt, die gelöscht werden könnte</string>
+    <string name="account_deletion_text_done">Ihre Anfrage wurde gesendet</string>
+    <string name="account_deletion_confirmation_text">Hiermit können Sie Ihre Registrierung löschen lassen.
+        Damit wird TimeLimit auf allen verknüpften Geräten zurückgesetzt.
+        Wenn Sie das nicht tun, erfolgt eine automatische Löschung, wenn Sie TimeLimit nicht mehr verwenden.
+        Einige Daten können nicht auf Anfrage gelöscht werden.
+        Die Details finden Sie in der Datenschutzerklärung.
+    </string>
+    <string name="account_deletion_confirmation_premium_toggle">Ich verzichte ersatzlos auf eine evtl. vorhandene Restlaufzeit meiner Vollversion</string>
+    <string name="account_deletion_confirmation_button">Löschung anfordern</string>
 </resources>

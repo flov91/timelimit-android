@@ -46,6 +46,7 @@ import io.timelimit.android.ui.manage.parent.password.restore.RestoreParentPassw
 import io.timelimit.android.ui.manage.parent.password.restore.RestoreParentPasswordFragmentArgs
 import io.timelimit.android.ui.manage.parent.u2fkey.ManageParentU2FKeyFragment
 import io.timelimit.android.ui.manage.parent.u2fkey.ManageParentU2FKeyFragmentArgs
+import io.timelimit.android.ui.model.account.AccountDeletion
 import io.timelimit.android.ui.model.diagnose.DeviceOwnerHandling
 import io.timelimit.android.ui.model.main.OverviewHandling
 import io.timelimit.android.ui.overview.uninstall.UninstallFragment
@@ -236,6 +237,10 @@ sealed class State (val previous: State?): Serializable {
         }
     }
     class SetupDevice(val previousOverview: Overview): FragmentStateLegacy(previous = previousOverview, fragmentClass = SetupDeviceFragment::class.java)
+    data class DeleteAccount(
+        val previousOverview: Overview,
+        val content: AccountDeletion.MyState = AccountDeletion.MyState.Preparing()
+    ): State(previousOverview)
     class Uninstall(previous: Overview): FragmentStateLegacy(previous = previous, fragmentClass = UninstallFragment::class.java)
     object DiagnoseScreen {
         class Main(previous: About): FragmentStateLegacy(previous, DiagnoseMainFragment::class.java)
