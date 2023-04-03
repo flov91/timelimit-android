@@ -59,7 +59,7 @@ fun PermissionScreenDialog(
 
                 if (dialog.permission == SystemPermission.DeviceAdmin) {
                     val message =
-                        if (status.maxProtectionLevel != ProtectionLevel.DeviceOwner) R.string.manage_device_permission_device_owner_unsupported
+                        if (status.maxProtectionLevel != ProtectionLevel.DeviceOwner && status.maxProtectionLevel != null) R.string.manage_device_permission_device_owner_unsupported
                         else if (status.protectionLevel != ProtectionLevel.DeviceOwner) R.string.manage_device_permission_device_owner_not_granted
                         else null
 

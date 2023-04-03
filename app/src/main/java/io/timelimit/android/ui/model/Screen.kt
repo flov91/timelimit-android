@@ -178,12 +178,9 @@ sealed class Screen(
 
     class ManageDevicePermissions(
         state: State,
-        toolbarIcons: List<Menu.Icon>,
-        toolbarOptions: List<Menu.Dropdown>,
-        fragment: FragmentState,
-        containerId: Int,
+        val content: PermissionScreenContent,
         override val backStack: List<BackStackItem>
-    ): FragmentScreen(state, toolbarIcons, toolbarOptions, fragment, containerId), ScreenWithBackStack, ScreenWithTitle {
+    ): Screen(state), ScreenWithBackStack, ScreenWithTitle {
         override val title = Title.StringResource(R.string.manage_device_card_permission_title)
     }
 

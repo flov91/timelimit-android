@@ -84,7 +84,9 @@ fun PermissionGoals(status: PermissionScreenContent.Status) {
         status.protectionLevel == ProtectionLevel.DeviceOwner
     ) {
         Text(stringResource(
-            if (status.maxProtectionLevel == ProtectionLevel.DeviceOwner)
+            if (status.maxProtectionLevel == null)
+                R.string.manage_device_permission_goal_manipulation_protection_check_remotely
+            else if (status.maxProtectionLevel == ProtectionLevel.DeviceOwner)
                 R.string.manage_device_permission_goal_needs_device_owner
             else
                 R.string.manage_device_permission_goal_manipulation_protection_unavailable

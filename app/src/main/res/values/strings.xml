@@ -1036,10 +1036,6 @@
     <string name="manage_device_permission_device_owner_not_granted">The device
         owner permission is something different and was not granted.</string>
 
-    <string name="manage_device_permission_open_at_target_device">
-        Open the screen at the other device to modify the permissions
-    </string>
-
     <string name="manage_device_permission_status_granted">The permission was granted</string>
     <string name="manage_device_permission_status_not_granted">The permission was not granted</string>
     <string name="manage_device_permission_status_not_required">The permission is not needed due to the old Android version</string>
@@ -1071,6 +1067,7 @@
     <string name="manage_device_permission_goal_background_audio">Allow limiting background audio</string>
     <string name="manage_device_permission_goal_manipulation_protection">Protect against manipulation</string>
     <string name="manage_device_permission_goal_manipulation_protection_unavailable">unavailable in the current environment</string>
+    <string name="manage_device_permission_goal_manipulation_protection_check_remotely">open this screen at the device</string>
     <string name="manage_device_permission_goal_eventually_needs">eventually needs</string>
     <string name="manage_device_permission_goal_needs">needs</string>
     <string name="manage_device_permission_goal_or">or</string>
@@ -1457,14 +1454,6 @@
     <string name="set_password_view_label_password">New password</string>
     <string name="set_password_view_label_password_repeat">Repeat new password</string>
     <string name="set_password_view_checkbox_no_password">Disable password protection</string>
-
-    <string name="setup_device_permissions_text">
-        TimeLimit needs some permissions to work.
-        Only the usage stats access permission is absolutely necessary.
-        Starting Android 10, the permission \"Draw over other Apps\" or \"Accessibility service\"
-        is required to open the lockscreen.
-        The other permissions are required for some extra features.
-    </string>
 
     <string name="setup_device_permissions_text_short">
         TimeLimit needs some permissions to work

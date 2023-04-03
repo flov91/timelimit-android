@@ -60,7 +60,7 @@ object SetupLocalModePermissions {
         }
     }
 
-    private fun deviceStatus(platformIntegration: PlatformIntegration): Flow<PermissionScreenContent.Status> = flow {
+    fun deviceStatus(platformIntegration: PlatformIntegration): Flow<PermissionScreenContent.Status> = flow {
         while (true) {
             emit(
                 PermissionScreenContent.Status(

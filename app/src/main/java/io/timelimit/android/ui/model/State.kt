@@ -36,8 +36,6 @@ import io.timelimit.android.ui.manage.device.manage.advanced.ManageDeviceAdvance
 import io.timelimit.android.ui.manage.device.manage.advanced.ManageDeviceAdvancedFragmentArgs
 import io.timelimit.android.ui.manage.device.manage.feature.ManageDeviceFeaturesFragment
 import io.timelimit.android.ui.manage.device.manage.feature.ManageDeviceFeaturesFragmentArgs
-import io.timelimit.android.ui.manage.device.manage.permission.ManageDevicePermissionsFragment
-import io.timelimit.android.ui.manage.device.manage.permission.ManageDevicePermissionsFragmentArgs
 import io.timelimit.android.ui.manage.parent.ManageParentFragment
 import io.timelimit.android.ui.manage.parent.ManageParentFragmentArgs
 import io.timelimit.android.ui.manage.parent.link.LinkParentMailFragment
@@ -229,9 +227,7 @@ sealed class State (val previous: State?): Serializable {
                 object AdjustDefaultUserTimeout: Overlay()
             }
         }
-        class Permissions(previousMain: Main): Sub(previousMain, ManageDevicePermissionsFragment::class.java) {
-            override val arguments: Bundle get() = ManageDevicePermissionsFragmentArgs(deviceId).toBundle()
-        }
+        data class Permissions(val previousMain: Main, val currentDialog: SystemPermission? = null): Sub(previousMain, Fragment::class.java)
         class Features(previousMain: Main): Sub(previousMain, ManageDeviceFeaturesFragment::class.java) {
             override val arguments: Bundle get() = ManageDeviceFeaturesFragmentArgs(deviceId).toBundle()
         }

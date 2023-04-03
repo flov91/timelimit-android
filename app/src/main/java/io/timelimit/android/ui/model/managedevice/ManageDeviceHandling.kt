@@ -118,11 +118,15 @@ object ManageDeviceHandling {
                     updateMethod(updateState)
                 )
             },
-            Case.simple<_, _, State.ManageDevice.Permissions> {
-                processPermissionsState(
-                    it,
+            Case.simple<_, _, State.ManageDevice.Permissions> {state ->
+                ManageDevicePermissions.processState(
+                    scope,
+                    logic,
+                    activityCommand,
+                    state,
                     subBackStackLive,
-                    deviceLive
+                    deviceLive,
+                    updateMethod(updateState)
                 )
             },
             Case.simple<_, _, State.ManageDevice.Features> {
@@ -139,21 +143,6 @@ object ManageDeviceHandling {
                     deviceLive
                 )
             },
-        )
-    }
-
-    private fun processPermissionsState(
-        stateLive: Flow<State.ManageDevice.Permissions>,
-        parentBackStackLive: Flow<List<BackStackItem>>,
-        deviceLive: Flow<Device>
-    ): Flow<Screen> = combine(stateLive, deviceLive, parentBackStackLive) { state, device, backStack ->
-        Screen.ManageDevicePermissions(
-            state,
-            state.toolbarIcons,
-            state.toolbarOptions,
-            state,
-            R.id.fragment_manage_device_permissions,
-            backStack
         )
     }
 

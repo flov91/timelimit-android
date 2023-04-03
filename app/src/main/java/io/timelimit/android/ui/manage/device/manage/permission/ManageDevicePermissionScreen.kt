@@ -15,24 +15,22 @@
  */
 package io.timelimit.android.ui.manage.device.manage.permission
 
-import androidx.compose.foundation.layout.Arrangement
-import androidx.compose.foundation.layout.Column
+import androidx.compose.foundation.layout.padding
+import androidx.compose.foundation.rememberScrollState
+import androidx.compose.foundation.verticalScroll
 import androidx.compose.runtime.Composable
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.unit.dp
 
 @Composable
-fun PermissionScreen(
+fun ManageDevicePermissionScreen(
     content: PermissionScreenContent,
     modifier: Modifier = Modifier
 ) {
-    Column (
-        verticalArrangement = Arrangement.spacedBy(8.dp),
-        modifier = modifier
-    ) {
-        PermissionScreenPermissionList(content.status, content.showDetails)
-        PermissionGoals(content.status)
-    }
-
-    if (content.dialog != null) PermissionScreenDialog(content.dialog, content.status)
+    PermissionScreen(
+        content,
+        modifier
+            .verticalScroll(rememberScrollState())
+            .padding(8.dp)
+    )
 }

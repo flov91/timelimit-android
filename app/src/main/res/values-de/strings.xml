@@ -986,10 +986,6 @@
     <string name="manage_device_permission_device_owner_not_granted">Die Geräte-Besitzer-Berechtigung
         ist etwas anderes und wurde nicht erteilt.</string>
 
-    <string name="manage_device_permission_open_at_target_device">
-        Öffnen Sie diesen Bildschirm am entsprechenden Gerät, um die Berechtigung festzulegen
-    </string>
-
     <string name="manage_device_permission_status_granted">Die Berechtigung wurde erteilt</string>
     <string name="manage_device_permission_status_not_granted">Die Berechtigung wurde nicht erteilt</string>
     <string name="manage_device_permission_status_not_required">Die Berechtigung wird aufgrund der alten Android-Version nicht benötigt</string>
@@ -1021,6 +1017,7 @@
     <string name="manage_device_permission_goal_background_audio">Einschränkung von Audiowiedergaben im Hintergrund ermöglichen</string>
     <string name="manage_device_permission_goal_manipulation_protection">Manipulationen verhindern</string>
     <string name="manage_device_permission_goal_manipulation_protection_unavailable">in der aktuellen Umgebung nicht verfügbar</string>
+    <string name="manage_device_permission_goal_manipulation_protection_check_remotely">öffnen Sie diese Ansicht am entsprechenden Gerät</string>
     <string name="manage_device_permission_goal_eventually_needs">benötigt evtl.</string>
     <string name="manage_device_permission_goal_needs">benötigt</string>
     <string name="manage_device_permission_goal_or">oder</string>
@@ -1410,14 +1407,6 @@
     <string name="set_password_view_label_password">Neues Passwort</string>
     <string name="set_password_view_label_password_repeat">Neues Passwort wiederholen</string>
     <string name="set_password_view_checkbox_no_password">Passwortschutz nicht verwenden</string>
-
-    <string name="setup_device_permissions_text">
-        TimeLimit benötigt einige Berechtigungen, um funktionieren zu können.
-        Wirklich erforderlich ist nur der Nutzungsdatenzugriff.
-        Ab Android 10 wird zum Öffnen des Sperrbildschirms die Berechtigung
-        \"Über anderen Apps anzeigen\" oder \"Bedienhilfe\" benötigt.
-        Die weiteren Berechtigungen ermöglichen Zusatzfunktionen.
-    </string>
 
     <string name="setup_device_permissions_text_short">
         TimeLimit benötigt einige Berechtigungen, um funktionieren zu können

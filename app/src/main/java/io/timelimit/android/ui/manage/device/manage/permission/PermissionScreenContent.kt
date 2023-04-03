@@ -28,7 +28,7 @@ data class PermissionScreenContent(
     data class Status(
         val notificationAccess: NewPermissionStatus,
         val protectionLevel: ProtectionLevel,
-        val maxProtectionLevel: ProtectionLevel,
+        val maxProtectionLevel: ProtectionLevel?,
         val usageStats: RuntimePermissionStatus,
         val overlay: RuntimePermissionStatus,
         val accessibility: Boolean,
