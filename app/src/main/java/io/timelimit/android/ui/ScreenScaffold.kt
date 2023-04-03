@@ -80,7 +80,9 @@ fun ScreenScaffold(
                     for (icon in screen?.toolbarIcons ?: emptyList()) {
                         IconButton(
                             onClick = {
-                                executeCommand(icon.action)
+                                if (icon.action != null) executeCommand(icon.action)
+
+                                icon.handler()
                             }
                         ) {
                             Icon(icon.icon, stringResource(icon.labelResource))
@@ -98,7 +100,10 @@ fun ScreenScaffold(
                         ) {
                             for (option in screen.toolbarOptions) {
                                 DropdownMenuItem(onClick = {
-                                    executeCommand(option.action)
+                                    if (option.action != null) executeCommand(option.action)
+
+                                    option.handler()
+
                                     expandDropdown = false
                                 }) {
                                     Text(stringResource(option.labelResource))

@@ -17,6 +17,7 @@ package io.timelimit.android.ui.model
 
 import androidx.compose.material.SnackbarHostState
 import androidx.compose.material.icons.Icons
+import androidx.compose.material.icons.filled.Key
 import androidx.compose.material.icons.outlined.Info
 import io.timelimit.android.R
 import io.timelimit.android.ui.manage.device.manage.permission.PermissionScreenContent
@@ -214,10 +215,42 @@ sealed class Screen(
         override val title = Title.StringResource(R.string.diagnose_dom_title)
     }
 
+    class SetupSelectModeScreen(
+        state: State.Setup.SelectMode,
+        override val snackbarHostState: SnackbarHostState,
+        val selectLocal: () -> Unit,
+        val selectConnected: () -> Unit,
+        val selectUninstall: () -> Unit
+    ): Screen(state), ScreenWithSnackbar
+
     class SetupDevicePermissionsScreen(
-        state: State,
+        state: State.Setup.DevicePermissions,
         val content: PermissionScreenContent,
-        val next: () -> Unit
+        requestKeyMode: () -> Unit,
+        val next: () -> Unit,
+        val keyDialog: KeyDialog?,
+        override val snackbarHostState: SnackbarHostState
+    ): Screen(
+        state,
+        toolbarIcons = listOf(
+            Menu.Icon(Icons.Default.Key, R.string.setup_select_mode_parent_key_title, handler = requestKeyMode)
+        )
+    ), ScreenWithSnackbar {
+        data class KeyDialog(val confirm: () -> Unit, val cancel: () -> Unit)
+    }
+
+    class SetupConnectModePrivacyScreen(
+        state: State.Setup.ConnectedPrivacy,
+        val customServerDomain: String?,
+        val accept: () -> Unit
+    ): Screen(state), ScreenWithTitle {
+        override val title = Title.StringResource(R.string.setup_privacy_connected_title)
+    }
+
+    class SetupSelectConnectedModeScreen(
+        state: State.Setup.SelectConnectedMode,
+        val mailLogin: () -> Unit,
+        val codeLogin: () -> Unit
     ): Screen(state)
 }
 

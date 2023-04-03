@@ -1109,7 +1109,9 @@
     <string name="manage_user_key_info">Hiermit kann sich ein Benutzer durch
         das Scannen eines Barcodes anmelden. Der gescannte Code muss von TimeLimit
         generiert worden sein. Dafür muss TimeLimit auf einem anderen Gerät als
-        Schlüsselgenerator eingerichtet sein.
+        Schlüsselgenerator eingerichtet sein. Wählen Sie dafür bei der Einrichtung
+        am anderen Gerät den lokalen Modus und wählen Sie bei dem Bildschirm mit den
+        Berechtigungen den Schlüssel oben rechts.
     </string>
     <string name="manage_user_key_not_enrolled">Es gibt keinen Schlüssel für diesen Benutzer</string>
     <string name="manage_user_key_is_enrolled">Dieser Benutzer hat den Schlüssel %s</string>
@@ -1466,7 +1468,9 @@
     <string name="setup_privacy_connected_text_default_server">Sie verwenden - da Sie Nichts anderes gewählt haben -
         den Standardserver, d.h. den Server des App-Anbieters. Für diesen gelten die Angaben von der Datenschutzerklärung.
     </string>
-    <string name="setup_privacy_connected_text_custom_server">Sie haben einen Server gewählt.
+    <string name="setup_privacy_connected_text_custom_server">Sie haben den Server %s gewählt.
+        Verwenden Sie diesen nur, wenn Sie genau wissen, was Sie tun.
+        Ohne einen gesonderten Vertrag erhalten Sie damit keinerlei Support für TimeLimit.
         Dadurch gelten die Datenschutzbestimmungen des Anbieteres von diesem Server.
     </string>
     <string name="setup_privacy_connected_text_general_outro">Sie können die Übertragung der Daten
@@ -1494,31 +1498,41 @@
     </string>
     <string name="setup_remote_child_hint_code">Code zum Verknüpfen</string>
 
-    <string name="setup_select_mode_intro">Bitte wählen Sie einen Modus</string>
+    <string name="setup_select_connected_mode_intro">Wie möchten Sie sich anmelden?</string>
+    <string name="setup_select_mode_outro">Sie können Ihre Wahl später ändern, aber das erfordert eine Neueinrichtung von TimeLimit</string>
 
     <string name="setup_select_mode_local_title">lokaler Modus</string>
     <string name="setup_select_mode_local_text">
         TimeLimit schränkt dieses Gerät ein. Es findet keine Vernetzung mit anderen Geräten statt.
+        Das bietet den besten Datenschutz und ist vollständig kostenlos.
     </string>
 
-    <string name="setup_select_mode_parent_title">vernetztes Gerät eines Elternteils</string>
+    <string name="setup_select_mode_connected_title">vernetzter Modus</string>
+    <string name="setup_select_mode_connected_text">
+        TimeLimit schränkt einige Geräte ein. Die TimeLimit-Einstellungen können am entsprechenden
+        Gerät selbst und von anderen Geräten aus verändert werden.
+    </string>
+
+    <string name="setup_select_mode_parent_title">E-Mail-Adresse eines Elternteils</string>
     <string name="setup_select_mode_parent_text">
-        TimeLimit schränkt dieses Gerät nicht ein. Es wird zur Steuerung von TimeLimit auf anderen Geräten genutzt.
+        TimeLimit schränkt dieses Gerät nicht ein.
+        Es wird zur Steuerung von TimeLimit auf anderen Geräten genutzt.
         Es erfolgt eine Anmeldung mittels E-Mail-Adresse.
     </string>
 
-    <string name="setup_select_mode_child_title">vernetztes Gerät eines Kindes oder eines weiteren Elternteils</string>
+    <string name="setup_select_mode_child_title">Code von einer anderen TimeLimit-Installation</string>
     <string name="setup_select_mode_child_text">
-        Dieses Gerät wird mit einem anderen verknüpft. Alle Einstellungen von TimeLimit können von allen verknüpften Geräten aus geändert werden.
+        Dieses Gerät wird mit einem anderen verknüpft.
+        Sie haben die Wahl, ob dieses Gerät eingeschränkt werden soll.
+        Alle Einstellungen von TimeLimit können von allen verknüpften Geräten aus geändert werden.
         Es erfolgt eine Anmeldung mittels Code, der auf einem anderen Gerät, auf dem TimeLimit bereits installiert ist, angezeigt wird.
     </string>
 
-    <string name="setup_select_mode_parent_key_title">Schlüsselgerät eines Elternteils</string>
+    <string name="setup_select_mode_parent_key_title">Einrichten als Schlüsselgerät eines Elternteils</string>
     <string name="setup_select_mode_parent_key_text">
         TimeLimit schränkt dieses Gerät nicht ein. Es wird als zusätzlicher Schlüssel bei einem anderen Gerät im lokalen Mdous verwendet,
         um dort die Einstellungen von TimeLimit zu entsperren. Am anderen Gerät kann auch jederzeit ein Passwort verwendet werden.
     </string>
-    <string name="setup_select_mode_parent_key_progress">Erstelle Schlüssel</string>
 
     <string name="setup_select_mode_uninstall_title">TimeLimit entfernen</string>
     <string name="setup_select_mode_uninstall_text">

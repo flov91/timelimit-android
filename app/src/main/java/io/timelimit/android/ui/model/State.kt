@@ -249,17 +249,24 @@ sealed class State (val previous: State?): Serializable {
         class Sync(previous: Main): FragmentStateLegacy(previous, DiagnoseSyncFragment::class.java)
         data class DeviceOwner(val previousMain: Main, val details: DeviceOwnerHandling.OwnerState = DeviceOwnerHandling.OwnerState()): State(previousMain)
     }
-    object Setup {
+    sealed class Setup(previous: State): State(previous) {
         class SetupTerms: FragmentStateLegacy(previous = null, fragmentClass = SetupTermsFragment::class.java)
         class SetupHelpInfo(previous: SetupTerms): FragmentStateLegacy(previous = previous, fragmentClass = SetupHelpInfoFragment::class.java)
-        class SelectMode(previous: SetupHelpInfo): FragmentStateLegacy(previous = previous, fragmentClass = SetupSelectModeFragment::class.java)
+        class SelectMode(previous: SetupHelpInfo): Setup(previous)
         data class DevicePermissions(
             val previousSelectMode: SelectMode,
-            val currentDialog: SystemPermission? = null
-        ): FragmentStateLegacy(previous = previousSelectMode, fragmentClass = Fragment::class.java)
+            val currentDialog: Dialog? = null
+        ): Setup(previous = previousSelectMode) {
+            sealed class Dialog
+
+            data class SystemPermissionDialog(val permission: SystemPermission): Dialog()
+            object ParentKeyDialog: Dialog()
+        }
         class LocalMode(previous: DevicePermissions): FragmentStateLegacy(previous = previous, fragmentClass = SetupLocalModeFragment::class.java)
-        class RemoteChild(previous: SelectMode): FragmentStateLegacy(previous = previous, fragmentClass = SetupRemoteChildFragment::class.java)
-        class ParentMode(previous: SelectMode): FragmentStateLegacy(previous = previous, fragmentClass = SetupParentModeFragment::class.java)
+        class ConnectedPrivacy(previousSelectMode: SelectMode): Setup(previousSelectMode)
+        class SelectConnectedMode(previousConnectedPrivacy: ConnectedPrivacy): Setup(previousConnectedPrivacy)
+        class RemoteChild(previous: SelectConnectedMode): FragmentStateLegacy(previous = previous, fragmentClass = SetupRemoteChildFragment::class.java)
+        class ParentMode(previous: SelectConnectedMode): FragmentStateLegacy(previous = previous, fragmentClass = SetupParentModeFragment::class.java)
     }
     class ParentMode: FragmentStateLegacy(previous = null, fragmentClass = ParentModeFragment::class.java)
     object Purchase {

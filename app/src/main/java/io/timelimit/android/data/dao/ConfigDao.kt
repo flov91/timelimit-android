@@ -229,6 +229,7 @@ abstract class ConfigDao {
 
     fun getCustomServerUrlSync() = getValueOfKeySync(ConfigurationItemType.CustomServerUrl) ?: ""
     fun getCustomServerUrlAsync() = getValueOfKeyAsync(ConfigurationItemType.CustomServerUrl).map { it ?: "" }
+    fun getCustomServerUrlFlow() = getValueOfKeyFlow(ConfigurationItemType.CustomServerUrl).map { it ?: "" }
     fun setCustomServerUrlSync(url: String) = updateValueSync(ConfigurationItemType.CustomServerUrl, url)
 
     fun getForegroundAppQueryIntervalAsync(): LiveData<Long> = getValueOfKeyAsync(ConfigurationItemType.ForegroundAppQueryRange).map { (it ?: "0").toLong() }

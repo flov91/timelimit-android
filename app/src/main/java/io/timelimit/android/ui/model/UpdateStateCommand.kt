@@ -335,21 +335,9 @@ sealed class UpdateStateCommand {
                 else null
         }
 
-        object LocalMode: UpdateStateCommand() {
+        object Connected: UpdateStateCommand() {
             override fun transform(state: State): State? =
-                if (state is State.Setup.DevicePermissions) State.Setup.LocalMode(state)
-                else null
-        }
-
-        object RemoteChild: UpdateStateCommand() {
-            override fun transform(state: State): State? =
-                if (state is State.Setup.SelectMode) State.Setup.RemoteChild(state)
-                else null
-        }
-
-        object ParentMode: UpdateStateCommand() {
-            override fun transform(state: State): State? =
-                if (state is State.Setup.SelectMode) State.Setup.ParentMode(state)
+                if (state is State.Setup.SelectMode) State.Setup.ConnectedPrivacy(state)
                 else null
         }
     }

@@ -23,7 +23,10 @@ import io.timelimit.android.ui.manage.device.manage.permission.ManageDevicePermi
 import io.timelimit.android.ui.manage.device.manage.user.ManageDeviceUserScreen
 import io.timelimit.android.ui.model.Screen
 import io.timelimit.android.ui.overview.overview.OverviewScreen
+import io.timelimit.android.ui.setup.selectmode.SelectConnectedModeScreen
 import io.timelimit.android.ui.setup.SetupDevicePermissionsScreen
+import io.timelimit.android.ui.setup.privacy.SetupConnectedModePrivacyScreen
+import io.timelimit.android.ui.setup.selectmode.SelectModeScreen
 
 @Composable
 fun ScreenMultiplexer(
@@ -38,7 +41,10 @@ fun ScreenMultiplexer(
         is Screen.OverviewScreen -> OverviewScreen(screen.content, modifier = modifier)
         is Screen.ManageDeviceUserScreen -> ManageDeviceUserScreen(screen.items, screen.actions, screen.overlay, modifier)
         is Screen.DeviceOwnerScreen -> DeviceOwnerScreen(screen.content, modifier = modifier)
-        is Screen.SetupDevicePermissionsScreen -> SetupDevicePermissionsScreen(screen.content, screen.next, modifier)
+        is Screen.SetupDevicePermissionsScreen -> SetupDevicePermissionsScreen(screen, modifier)
         is Screen.ManageDevicePermissions -> ManageDevicePermissionScreen(screen.content, modifier)
+        is Screen.SetupConnectModePrivacyScreen -> SetupConnectedModePrivacyScreen(screen.customServerDomain, screen.accept, modifier)
+        is Screen.SetupSelectConnectedModeScreen -> SelectConnectedModeScreen(mailLogin = screen.mailLogin, codeLogin = screen.codeLogin, modifier = modifier)
+        is Screen.SetupSelectModeScreen -> SelectModeScreen(selectLocal = screen.selectLocal, selectConnected = screen.selectConnected, selectUninstall = screen.selectUninstall, modifier = modifier)
     }
 }

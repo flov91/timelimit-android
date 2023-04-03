@@ -18,8 +18,11 @@ package io.timelimit.android.ui
 import android.app.NotificationManager
 import android.content.Context
 import android.content.Intent
+import android.net.Uri
+import android.os.Build
 import android.os.Bundle
 import android.os.SystemClock
+import android.provider.Settings
 import android.util.Log
 import androidx.activity.compose.BackHandler
 import androidx.activity.compose.setContent
@@ -145,6 +148,20 @@ class MainActivity : AppCompatActivity(), ActivityViewModelHolder, U2fManager.De
                     is ActivityCommand.LaunchSystemSettings -> mainModel.logic.platformIntegration.openSystemPermissionScren(
                         this@MainActivity, message.permission, SystemPermissionConfirmationLevel.Suggestion
                     )
+                    is ActivityCommand.TriggerUninstall -> try {
+                        val intent = if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.P) Intent(
+                            Settings.ACTION_APPLICATION_DETAILS_SETTINGS,
+                            Uri.parse("package:${message.packageName}")
+                        ).addCategory(Intent.CATEGORY_DEFAULT)
+                        else Intent(
+                            Intent.ACTION_UNINSTALL_PACKAGE,
+                            Uri.parse("package:${message.packageName}")
+                        )
+
+                        startActivity(intent.addFlags(Intent.FLAG_ACTIVITY_NEW_TASK))
+                    } catch (ex: Exception) {
+                        message.errorHandler()
+                    }
                 }
             }
         }
