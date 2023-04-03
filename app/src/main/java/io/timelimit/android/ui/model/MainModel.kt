@@ -30,6 +30,7 @@ import io.timelimit.android.ui.model.launch.LaunchHandling
 import io.timelimit.android.ui.model.main.OverviewHandling
 import io.timelimit.android.ui.model.managechild.ManageChildHandling
 import io.timelimit.android.ui.model.managedevice.ManageDeviceHandling
+import io.timelimit.android.ui.model.setup.SetupLocalModePermissions
 import kotlinx.coroutines.channels.Channel
 import kotlinx.coroutines.channels.ReceiveChannel
 import kotlinx.coroutines.flow.*
@@ -57,8 +58,8 @@ class MainModel(application: Application): AndroidViewModel(application) {
     }
 
     val activityModel = ActivityViewModel(application)
+    val logic = DefaultAppLogic.with(application)
 
-    private val logic = DefaultAppLogic.with(application)
     private val activityCommandInternal = Channel<ActivityCommand>()
     private val authenticationScreenClosed = MutableSharedFlow<Unit>(extraBufferCapacity = 1)
 
@@ -112,6 +113,7 @@ class MainModel(application: Application): AndroidViewModel(application) {
         Case.simple<_, _, State.ManageChild> { state -> ManageChildHandling.processState(logic, state, updateMethod(::updateState)) },
         Case.simple<_, _, State.ManageDevice> { state -> ManageDeviceHandling.processState(logic, activityCommandInternal, authenticationModelApi, state, updateMethod(::updateState)) },
         Case.simple<_, _, State.DiagnoseScreen.DeviceOwner> { DeviceOwnerHandling.processState(logic, scope, authenticationModelApi, state) },
+        Case.simple<_, _, State.Setup.DevicePermissions> { state -> SetupLocalModePermissions.handle(logic, activityCommandInternal, state, updateMethod(::updateState)) },
         Case.simple<_, _, FragmentState> { state ->
             state.transform {
                 val containerId = it.containerId ?: run {

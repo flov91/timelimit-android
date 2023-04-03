@@ -13,14 +13,24 @@
  * You should have received a copy of the GNU General Public License
  * along with this program. If not, see <https://www.gnu.org/licenses/>.
  */
-package io.timelimit.android.ui.model
+package io.timelimit.android.ui.manage.device.manage.permission
 
-import io.timelimit.android.integration.platform.SystemPermission
+import androidx.compose.foundation.layout.padding
+import androidx.compose.foundation.rememberScrollState
+import androidx.compose.foundation.verticalScroll
+import androidx.compose.runtime.Composable
+import androidx.compose.ui.Modifier
+import androidx.compose.ui.unit.dp
 
-sealed class ActivityCommand {
-    object ShowCanNotAddDevicesInLocalModeDialogFragment: ActivityCommand()
-    object ShowAddDeviceFragment: ActivityCommand()
-    object ShowAuthenticationScreen: ActivityCommand()
-    object ShowMissingPremiumDialog: ActivityCommand()
-    class LaunchSystemSettings(val permission: SystemPermission): ActivityCommand()
+@Composable
+fun ManageDevicePermissionScreen(
+    content: PermissionScreenContent,
+    modifier: Modifier = Modifier
+) {
+    PermissionScreen(
+        content,
+        modifier
+            .verticalScroll(rememberScrollState())
+            .padding(8.dp)
+    )
 }

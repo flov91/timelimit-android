@@ -19,6 +19,7 @@ import androidx.compose.material.SnackbarHostState
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.outlined.Info
 import io.timelimit.android.R
+import io.timelimit.android.ui.manage.device.manage.permission.PermissionScreenContent
 import io.timelimit.android.ui.model.diagnose.DeviceOwnerHandling
 import io.timelimit.android.ui.model.main.OverviewHandling
 import io.timelimit.android.ui.model.managedevice.ManageDeviceUser
@@ -177,12 +178,9 @@ sealed class Screen(
 
     class ManageDevicePermissions(
         state: State,
-        toolbarIcons: List<Menu.Icon>,
-        toolbarOptions: List<Menu.Dropdown>,
-        fragment: FragmentState,
-        containerId: Int,
+        val content: PermissionScreenContent,
         override val backStack: List<BackStackItem>
-    ): FragmentScreen(state, toolbarIcons, toolbarOptions, fragment, containerId), ScreenWithBackStack, ScreenWithTitle {
+    ): Screen(state), ScreenWithBackStack, ScreenWithTitle {
         override val title = Title.StringResource(R.string.manage_device_card_permission_title)
     }
 
@@ -215,6 +213,12 @@ sealed class Screen(
     ): Screen(state), ScreenWithAuthenticationFab, ScreenWithSnackbar, ScreenWithTitle {
         override val title = Title.StringResource(R.string.diagnose_dom_title)
     }
+
+    class SetupDevicePermissionsScreen(
+        state: State,
+        val content: PermissionScreenContent,
+        val next: () -> Unit
+    ): Screen(state)
 }
 
 interface ScreenWithAuthenticationFab

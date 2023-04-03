@@ -981,9 +981,10 @@
         Diese Berechtigung kann nur durch TimeLimit bzw. ein Elternteil, das TimeLimit deinstalliert, deaktiviert werden.
     </string>
 
-    <string name="manage_device_permission_open_at_target_device">
-        Öffnen Sie diesen Bildschirm am entsprechenden Gerät, um die Berechtigung festzulegen
-    </string>
+    <string name="manage_device_permission_device_owner_unsupported">Die Geräte-Besitzer-Berechtigung
+        ist etwas anderes und ist nicht verfügbar.</string>
+    <string name="manage_device_permission_device_owner_not_granted">Die Geräte-Besitzer-Berechtigung
+        ist etwas anderes und wurde nicht erteilt.</string>
 
     <string name="manage_device_permission_status_granted">Die Berechtigung wurde erteilt</string>
     <string name="manage_device_permission_status_not_granted">Die Berechtigung wurde nicht erteilt</string>
@@ -991,6 +992,12 @@
     <string name="manage_device_permission_status_not_supported">Diese Funktion wird von diesem Gerät nicht unterstützt</string>
 
     <string name="manage_device_permission_btn_modify">Ändern</string>
+
+    <string name="manage_device_permission_link_only_info">Apps können sich keine Berechtigungen selbst erteilen.
+        Sie werden stets zu einer Systemapp weitergeleitet, um die Änderung durchzuführen.
+        Dadurch können die Berechtigungen nicht mittels Fernsteuerung geändert werden.
+        Um Änderungen ohne Passwort zu verhindern müssen Sie die entsprechende Systemapp sperren.
+    </string>
 
     <string name="manage_device_permission_no_ui_usage_stats_text">
         Dieses Gerät hat keine grafische Oberfläche zum Erteilen dieser Berechtigung - diese kann
@@ -1004,6 +1011,20 @@
         \n\n%s
         \n\nDie Berechtigung kann über die Deinstallations-Funktion von TimeLimit deaktiviert werden.
     </string>
+
+    <string name="manage_device_permission_goal_limit_title">Zeitbeschränkungen ermöglichen</string>
+    <string name="manage_device_permission_goal_floating_window">Sperren von Apps in Fenstern ermöglichen</string>
+    <string name="manage_device_permission_goal_background_audio">Einschränkung von Audiowiedergaben im Hintergrund ermöglichen</string>
+    <string name="manage_device_permission_goal_manipulation_protection">Manipulationen verhindern</string>
+    <string name="manage_device_permission_goal_manipulation_protection_unavailable">in der aktuellen Umgebung nicht verfügbar</string>
+    <string name="manage_device_permission_goal_manipulation_protection_check_remotely">öffnen Sie diese Ansicht am entsprechenden Gerät</string>
+    <string name="manage_device_permission_goal_eventually_needs">benötigt evtl.</string>
+    <string name="manage_device_permission_goal_needs">benötigt</string>
+    <string name="manage_device_permission_goal_or">oder</string>
+    <string name="manage_device_permission_goal_reached_by_old_android">benötigt wegen alter Android-Version Nichts weiter</string>
+    <string name="manage_device_permission_goal_needs_device_owner">benötigt Geräte-Besitzer-Berechtigung</string>
+    <string name="manage_device_permission_goal_reached">Ziel erreicht</string>
+    <string name="manage_device_permission_goal_missed">Ziel nicht erreicht</string>
 
     <string name="manage_device_downgrade_title">Downgrade</string>
     <string name="manage_device_downgrade_text">Auf diesem Gerät wurde eine neuere Version von TimeLimit durch eine ältere ersetzt</string>
@@ -1387,12 +1408,8 @@
     <string name="set_password_view_label_password_repeat">Neues Passwort wiederholen</string>
     <string name="set_password_view_checkbox_no_password">Passwortschutz nicht verwenden</string>
 
-    <string name="setup_device_permissions_text">
-        TimeLimit benötigt einige Berechtigungen, um funktionieren zu können.
-        Wirklich erforderlich ist nur der Nutzungsdatenzugriff.
-        Ab Android 10 wird zum Öffnen des Sperrbildschirms die Berechtigung
-        \"Über anderen Apps anzeigen\" oder \"Bedienhilfe\" benötigt.
-        Die weiteren Berechtigungen ermöglichen Zusatzfunktionen.
+    <string name="setup_device_permissions_text_short">
+        TimeLimit benötigt einige Berechtigungen, um funktionieren zu können
     </string>
 
     <string name="setup_device_needs_parent">Ein Elternteil muss sich anmelden, um die Einrichtung abzuschließen</string>

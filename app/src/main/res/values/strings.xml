@@ -80,6 +80,8 @@
         (<a href="https://github.com/JetBrains/kotlin/blob/master/license/LICENSE.txt">Apache License, Version 2.0</a>)
         \nAndroid X
         (<a href="https://www.apache.org/licenses/LICENSE-2.0">Apache License, Version 2.0</a>)
+        \n<a href="https://github.com/google/accompanist">Google Accompanist</a>
+        (<a href="https://github.com/google/accompanist/blob/main/LICENSE">Apache License, Version 2.0</a>)
         \nAndroid Navigation Component
         (<a href="https://www.apache.org/licenses/LICENSE-2.0">Apache License, Version 2.0</a>)
         \nAndroid Room
@@ -1029,9 +1031,10 @@
         This permission can only be disabled by TimeLimit/ a parent which uninstalls TimeLimit.
     </string>
 
-    <string name="manage_device_permission_open_at_target_device">
-        Open the screen at the other device to modify the permissions
-    </string>
+    <string name="manage_device_permission_device_owner_unsupported">The device owner permission
+        is something different and not available.</string>
+    <string name="manage_device_permission_device_owner_not_granted">The device
+        owner permission is something different and was not granted.</string>
 
     <string name="manage_device_permission_status_granted">The permission was granted</string>
     <string name="manage_device_permission_status_not_granted">The permission was not granted</string>
@@ -1039,6 +1042,12 @@
     <string name="manage_device_permission_status_not_supported">This feature is not supported by this device</string>
 
     <string name="manage_device_permission_btn_modify">Modify</string>
+
+    <string name="manage_device_permission_link_only_info">Apps can not grant permissions themself.
+        You are redirected to a system App to change the permission.
+        Due to that, you can not change the permissions remotely.
+        To protect the setting, you have to block the corresponding system App.
+    </string>
 
     <string name="manage_device_permission_no_ui_usage_stats_text">
         This device does not allow changing this permission graphically. You can only
@@ -1052,6 +1061,20 @@
         \n\n%s
         \n\nYou can disable it by using the uninstall feature of TimeLimit.
     </string>
+
+    <string name="manage_device_permission_goal_limit_title">Allow applying limits</string>
+    <string name="manage_device_permission_goal_floating_window">Allow blocking floating windows</string>
+    <string name="manage_device_permission_goal_background_audio">Allow limiting background audio</string>
+    <string name="manage_device_permission_goal_manipulation_protection">Protect against manipulation</string>
+    <string name="manage_device_permission_goal_manipulation_protection_unavailable">unavailable in the current environment</string>
+    <string name="manage_device_permission_goal_manipulation_protection_check_remotely">open this screen at the device</string>
+    <string name="manage_device_permission_goal_eventually_needs">eventually needs</string>
+    <string name="manage_device_permission_goal_needs">needs</string>
+    <string name="manage_device_permission_goal_or">or</string>
+    <string name="manage_device_permission_goal_reached_by_old_android">needs nothing due to old Android version</string>
+    <string name="manage_device_permission_goal_needs_device_owner">needs device owner</string>
+    <string name="manage_device_permission_goal_reached">goal reached</string>
+    <string name="manage_device_permission_goal_missed">goal not reached</string>
 
     <string name="manage_device_downgrade_title">Downgrade</string>
     <string name="manage_device_downgrade_text">On this device, a newer version of TimeLimit was replaced by an older one</string>
@@ -1432,12 +1455,8 @@
     <string name="set_password_view_label_password_repeat">Repeat new password</string>
     <string name="set_password_view_checkbox_no_password">Disable password protection</string>
 
-    <string name="setup_device_permissions_text">
-        TimeLimit needs some permissions to work.
-        Only the usage stats access permission is absolutely necessary.
-        Starting Android 10, the permission \"Draw over other Apps\" or \"Accessibility service\"
-        is required to open the lockscreen.
-        The other permissions are required for some extra features.
+    <string name="setup_device_permissions_text_short">
+        TimeLimit needs some permissions to work
     </string>
 
     <string name="setup_device_needs_parent">A parent must authenticate to finish the setup</string>

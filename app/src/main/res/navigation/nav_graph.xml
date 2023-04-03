@@ -85,15 +85,6 @@
             app:argType="string" />
     </fragment>
     <fragment
-        android:id="@+id/manageDevicePermissionsFragment"
-        android:name="io.timelimit.android.ui.manage.device.manage.permission.ManageDevicePermissionsFragment"
-        android:label="manage_device_permissions_fragment"
-        tools:layout="@layout/manage_device_permissions_fragment" >
-        <argument
-            android:name="deviceId"
-            app:argType="string" />
-    </fragment>
-    <fragment
         android:id="@+id/manageDeviceFeaturesFragment"
         android:name="io.timelimit.android.ui.manage.device.manage.feature.ManageDeviceFeaturesFragment"
         android:label="manage_device_features_fragment"

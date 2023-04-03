@@ -45,6 +45,7 @@ import io.timelimit.android.R
 import io.timelimit.android.data.IdGenerator
 import io.timelimit.android.data.model.UserType
 import io.timelimit.android.extensions.showSafe
+import io.timelimit.android.integration.platform.SystemPermissionConfirmationLevel
 import io.timelimit.android.integration.platform.android.NotificationChannels
 import io.timelimit.android.livedata.ignoreUnchanged
 import io.timelimit.android.livedata.liveDataFromNullableValue
@@ -141,6 +142,9 @@ class MainActivity : AppCompatActivity(), ActivityViewModelHolder, U2fManager.De
                     ActivityCommand.ShowCanNotAddDevicesInLocalModeDialogFragment -> CanNotAddDevicesInLocalModeDialogFragment().show(supportFragmentManager)
                     ActivityCommand.ShowAuthenticationScreen -> showAuthenticationScreen()
                     ActivityCommand.ShowMissingPremiumDialog -> RequiresPurchaseDialogFragment().show(supportFragmentManager)
+                    is ActivityCommand.LaunchSystemSettings -> mainModel.logic.platformIntegration.openSystemPermissionScren(
+                        this@MainActivity, message.permission, SystemPermissionConfirmationLevel.Suggestion
+                    )
                 }
             }
         }
