@@ -405,7 +405,7 @@ class EditTimeLimitRuleDialogFragment : BottomSheetDialogFragment() {
         // from https://stackoverflow.com/a/43602359
         dialog.setOnShowListener {
             BottomSheetBehavior.from(
-                    dialog.findViewById<View>(R.id.design_bottom_sheet)
+                    dialog.findViewById<View>(com.google.android.material.R.id.design_bottom_sheet)
             ).setState(BottomSheetBehavior.STATE_EXPANDED)
         }
 
