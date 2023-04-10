@@ -224,5 +224,5 @@ dependencies {
 
     implementation 'com.google.zxing:core:3.3.3'
 
-    api "com.squareup.wire:wire-runtime:4.4.0"
+    api "com.squareup.wire:wire-runtime:4.4.3"
 }
