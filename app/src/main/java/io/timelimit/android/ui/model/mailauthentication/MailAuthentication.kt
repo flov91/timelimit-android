@@ -31,6 +31,7 @@ import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.combine
 import kotlinx.coroutines.launch
 import java.io.IOException
+import java.io.Serializable
 
 object MailAuthentication {
     sealed class State: java.io.Serializable {
@@ -120,7 +121,7 @@ object MailAuthentication {
         data class Error(val dialog: ErrorDialog, val close: () -> Unit)
     }
 
-    sealed class ErrorDialog {
+    sealed class ErrorDialog: Serializable {
         object RateLimit: ErrorDialog()
         object BlockedMailServer: ErrorDialog()
         object MailAddressNotAllowed: ErrorDialog()

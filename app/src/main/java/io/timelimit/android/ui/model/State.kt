@@ -262,7 +262,7 @@ sealed class State (val previous: State?): Serializable {
             val previousSelectMode: SelectMode,
             val currentDialog: Dialog? = null
         ): Setup(previous = previousSelectMode) {
-            sealed class Dialog
+            sealed class Dialog: Serializable
 
             data class SystemPermissionDialog(val permission: SystemPermission): Dialog()
             object ParentKeyDialog: Dialog()
