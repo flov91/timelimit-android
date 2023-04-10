@@ -22,8 +22,10 @@ import io.timelimit.android.R
 import io.timelimit.android.logic.AppLogic
 import io.timelimit.android.sync.network.api.*
 import io.timelimit.android.ui.diagnose.exception.ExceptionUtil
+import io.timelimit.android.util.MailValidation
 import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.Job
+import kotlinx.coroutines.delay
 import kotlinx.coroutines.flow.Flow
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.combine
@@ -32,34 +34,85 @@ import java.io.IOException
 
 object MailAuthentication {
     sealed class State: java.io.Serializable {
+        abstract val error: ErrorDialog?
+        abstract fun withError(error: ErrorDialog?): State
+
         sealed class InitialState: State()
 
-        data class ConfirmMailSending(val mail: String, val error: ErrorDialog? = null): InitialState()
+        data class EnterMailAddress(val mail: String = "", override val error: ErrorDialog? = null): InitialState() {
+            override fun withError(error: ErrorDialog?) = copy(error = error)
+        }
+
+        data class ConfirmMailSending(val mail: String, override val error: ErrorDialog? = null): InitialState() {
+            override fun withError(error: ErrorDialog?) = copy(error = error)
+        }
+
+        data class PickMailAddress(
+            val originalMail: String,
+            val options: List<String>,
+            val selectedIndex: Int? = null,
+            override val error: ErrorDialog? = null
+        ): State() {
+            init { if (selectedIndex != null) {
+                if (selectedIndex < 0 || selectedIndex >= options.size) throw IllegalArgumentException()
+            } }
+
+            override fun withError(error: ErrorDialog?) = copy(error = error)
+        }
 
         data class EnterReceivedCode(
             val mail: String,
             val serverToken: String,
             val codeInput: String,
-            val error: ErrorDialog?,
+            override val error: ErrorDialog?,
             val initialState: InitialState
-        ): State()
+        ): State() {
+            override fun withError(error: ErrorDialog?) = copy(error = error)
+        }
     }
 
     sealed class Screen {
+        abstract val error: Error?
+
+        class EnterMailAddress(
+            val mail: String,
+            override val error: Error?,
+            val actions: Actions?
+        ): Screen() {
+            class Actions(
+                val updateMailAddress: (String) -> Unit,
+                val confirm: () -> Unit
+            )
+        }
+
         class ConfirmMailSending(
             val mail: String,
-            val error: Error?,
+            override val error: Error?,
             val confirm: (() -> Unit)?
         ): Screen()
+
+        class PickMailAddress(
+            val options: List<String>,
+            val selectedIndex: Int?,
+            override val error: Error?,
+            val actions: Actions?
+        ): Screen() {
+            class Actions(
+                val updateSelectedIndex: (Int) -> Unit,
+                val back: () -> Unit,
+                val confirm: (() -> Unit)?,
+            )
+        }
 
         class EnterReceivedCode(
             val mail: String,
             val codeInput: String,
-            val error: Error?,
+            override val error: Error?,
             val actions: Actions?
         ): Screen() {
             class Actions(
                 val updateCodeInput: (String) -> Unit,
+                val back: (() -> Unit)?,
                 val confirmCodeInput: () -> Unit
             )
         }
@@ -85,74 +138,158 @@ object MailAuthentication {
         var lastErrorJob: Job? = null
         val isWorkingLive = MutableStateFlow(false)
 
+        fun showGenericExceptionMessage(ex: Exception) {
+            lastErrorJob = scope.launch {
+                val result = snackbarHostState.showSnackbar(
+                    logic.context.getString(
+                        when (ex) {
+                            is HttpError -> R.string.error_server_rejected
+                            is IOException -> R.string.error_network
+                            else -> R.string.error_general
+                        }
+                    ),
+                    actionLabel = logic.context.getString(R.string.generic_show_details),
+                    duration = SnackbarDuration.Short
+                )
+
+                if (result == SnackbarResult.ActionPerformed) {
+                    val message = ExceptionUtil.format(ex)
+
+                    updateState { it.withError(error = ErrorDialog.ExceptionDetails(message)) }
+                }
+            }
+        }
+
+        suspend fun confirmMailAddressInternal(mail: String, initialState: State.InitialState) {
+            try {
+                val serverConfiguration = logic.serverLogic.getServerConfigCoroutine()
+
+                val serverToken = serverConfiguration.api.sendMailLoginCode(
+                    mail = mail,
+                    locale = logic.context.resources.configuration.locale.language,
+                    deviceAuthToken = serverConfiguration.deviceAuthToken.ifEmpty { null }
+                )
+
+                updateState { State.EnterReceivedCode(
+                    mail = mail,
+                    serverToken = serverToken,
+                    codeInput = "",
+                    error = null,
+                    initialState = initialState
+                ) }
+            } catch (ex: TooManyRequestsHttpError) {
+                updateState { it.withError(error = ErrorDialog.RateLimit) }
+            } catch (ex: MailServerBlacklistedException) {
+                updateState { it.withError(error = ErrorDialog.BlockedMailServer) }
+            } catch (ex: MailAddressNotWhitelistedException) {
+                updateState { it.withError(error = ErrorDialog.MailAddressNotAllowed) }
+            } catch (ex: Exception) {
+                showGenericExceptionMessage(ex)
+            }
+        }
+
+        fun confirmMailAddress(mail: String, initialState: State.InitialState) {
+            scope.launch {
+                if (isWorkingLive.compareAndSet(expect = false, update = true)) try {
+                    lastErrorJob?.cancel()
+
+                    confirmMailAddressInternal(mail, initialState)
+                } finally {
+                    isWorkingLive.value = false
+                }
+            }
+        }
+
         return combine(stateLive, isWorkingLive) { state, isWorking ->
+            val error = state.error?.let {
+                Screen.Error(it) { updateState{ it.withError(error = null) } }
+            }
+
             when (state) {
-                is State.ConfirmMailSending -> {
-                    val update: ((State.ConfirmMailSending) -> State) -> Unit = { modifier ->
+                is State.EnterMailAddress -> {
+                    val update: ((State.EnterMailAddress) -> State) -> Unit = { modifier ->
                         updateState { oldState ->
-                            if (oldState is State.ConfirmMailSending) modifier(oldState)
+                            if (oldState is State.EnterMailAddress) modifier(oldState)
                             else oldState
                         }
                     }
 
-                    val confirm: () -> Unit = { scope.launch {
-                        if (isWorkingLive.compareAndSet(expect = false, update = true)) try {
-                            lastErrorJob?.cancel()
+                    val actions = Screen.EnterMailAddress.Actions(
+                        updateMailAddress = { mail -> update { it.copy(mail = mail) } },
+                        confirm = {
+                            val mail = state.mail
 
-                            val serverConfiguration = logic.serverLogic.getServerConfigCoroutine()
+                            scope.launch {
+                                if (isWorkingLive.compareAndSet(expect = false, update = true)) try {
+                                    lastErrorJob?.cancel()
 
-                            val serverToken = serverConfiguration.api.sendMailLoginCode(
-                                mail = state.mail,
-                                locale = logic.context.resources.configuration.locale.language,
-                                deviceAuthToken = serverConfiguration.deviceAuthToken.ifEmpty { null }
-                            )
+                                    delay(100)
 
-                            update { State.EnterReceivedCode(
-                                mail = state.mail,
-                                serverToken = serverToken,
-                                codeInput = "",
-                                error = null,
-                                initialState = State.ConfirmMailSending(mail = state.mail, error = null)
-                            ) }
-                        } catch (ex: TooManyRequestsHttpError) {
-                            update { it.copy(error = ErrorDialog.RateLimit) }
-                        } catch (ex: MailServerBlacklistedException) {
-                            update { it.copy(error = ErrorDialog.BlockedMailServer) }
-                        } catch (ex: MailAddressNotWhitelistedException) {
-                            update { it.copy(error = ErrorDialog.MailAddressNotAllowed) }
-                        } catch (ex: Exception) {
-                            lastErrorJob = scope.launch {
-                                val result = snackbarHostState.showSnackbar(
-                                    logic.context.getString(
-                                        when (ex) {
-                                            is HttpError -> R.string.error_server_rejected
-                                            is IOException -> R.string.error_network
-                                            else -> R.string.error_general
+                                    when (val validation = MailValidation.validate(mail)) {
+                                        MailValidation.Result.Valid -> confirmMailAddressInternal(mail = mail, initialState = State.EnterMailAddress())
+                                        MailValidation.Result.Invalid -> lastErrorJob = scope.launch {
+                                            snackbarHostState.showSnackbar(
+                                                logic.context.getString(R.string.authenticate_by_mail_snackbar_invalid_address)
+                                            )
                                         }
-                                    ),
-                                    actionLabel = logic.context.getString(R.string.generic_show_details),
-                                    duration = SnackbarDuration.Short
-                                )
+                                        is MailValidation.Result.InvalidWithSuggestion -> {
+                                            update { it.copy(mail = validation.suggestion) }
 
-                                if (result == SnackbarResult.ActionPerformed) {
-                                    val message = ExceptionUtil.format(ex)
-
-                                    update { it.copy(error = ErrorDialog.ExceptionDetails(message)) }
+                                            lastErrorJob = scope.launch {
+                                                snackbarHostState.showSnackbar(
+                                                    logic.context.getString(R.string.authenticate_by_mail_snackbar_invalid_address_suggest)
+                                                )
+                                            }
+                                        }
+                                        is MailValidation.Result.ValidWithSuggestion -> update {
+                                            State.PickMailAddress(mail, listOf(validation.suggestion, mail))
+                                        }
+                                    }
+                                } finally {
+                                    isWorkingLive.value = false
                                 }
                             }
-                        } finally {
-                            isWorkingLive.value = false
                         }
-                    } }
+                    )
 
-                    val error = state.error?.let {
-                        Screen.Error(it) { update { it.copy(error = null) } }
+                    Screen.EnterMailAddress(
+                        mail = state.mail,
+                        error = error,
+                        actions = if (isWorking) null else actions
+                    )
+                }
+                is State.ConfirmMailSending -> {
+                    val confirm: () -> Unit = {
+                        confirmMailAddress(state.mail, State.ConfirmMailSending(mail = state.mail))
                     }
 
                     Screen.ConfirmMailSending(
                         mail = state.mail,
                         error = error,
                         confirm = if (isWorking) null else confirm
+                    )
+                }
+                is State.PickMailAddress -> {
+                    val update: ((State.PickMailAddress) -> State) -> Unit = { modifier ->
+                        updateState { oldState ->
+                            if (oldState is State.PickMailAddress) modifier(oldState)
+                            else oldState
+                        }
+                    }
+
+                    val actions = Screen.PickMailAddress.Actions(
+                        confirm = if (state.selectedIndex != null) ({
+                            confirmMailAddress(state.options[state.selectedIndex], State.EnterMailAddress())
+                        }) else null,
+                        back = { updateState { State.EnterMailAddress(state.originalMail) } },
+                        updateSelectedIndex = { selectedIndex -> update { it.copy(selectedIndex = selectedIndex) } }
+                    )
+
+                    Screen.PickMailAddress(
+                        options = state.options,
+                        selectedIndex = state.selectedIndex,
+                        error = error,
+                        actions = if (isWorking) null else actions
                     )
                 }
                 is State.EnterReceivedCode -> {
@@ -167,6 +304,11 @@ object MailAuthentication {
                         updateCodeInput = { code ->
                             if (!isWorkingLive.value) update { it.copy(codeInput = code) }
                         },
+                        back = if (state.initialState is State.EnterMailAddress) ({
+                            updateState {
+                                state.initialState.copy(mail = state.mail)
+                            }
+                        }) else null,
                         confirmCodeInput = { scope.launch {
                             if (isWorkingLive.compareAndSet(expect = false, update = true)) try {
                                 lastErrorJob?.cancel()
@@ -193,34 +335,12 @@ object MailAuthentication {
                                 // go back to first step
                                 update { it.initialState }
                             } catch (ex: Exception) {
-                                lastErrorJob = scope.launch {
-                                    val result = snackbarHostState.showSnackbar(
-                                        logic.context.getString(
-                                            when (ex) {
-                                                is HttpError -> R.string.error_server_rejected
-                                                is IOException -> R.string.error_network
-                                                else -> R.string.error_general
-                                            }
-                                        ),
-                                        actionLabel = logic.context.getString(R.string.generic_show_details),
-                                        duration = SnackbarDuration.Short
-                                    )
-
-                                    if (result == SnackbarResult.ActionPerformed) {
-                                        val message = ExceptionUtil.format(ex)
-
-                                        update { it.copy(error = ErrorDialog.ExceptionDetails(message)) }
-                                    }
-                                }
+                                showGenericExceptionMessage(ex)
                             } finally {
                                 isWorkingLive.value = false
                             }
                         } }
                     )
-
-                    val error = state.error?.let {
-                        Screen.Error(it) { update { it.copy(error = null) } }
-                    }
 
                     Screen.EnterReceivedCode(
                         mail = state.mail,

@@ -16,159 +16,45 @@
 package io.timelimit.android.ui.authentication
 
 import android.app.Application
-import android.util.Log
-import androidx.lifecycle.AndroidViewModel
-import androidx.lifecycle.MutableLiveData
-import androidx.lifecycle.map
-import androidx.lifecycle.switchMap
-import io.timelimit.android.BuildConfig
-import io.timelimit.android.coroutines.runAsync
-import io.timelimit.android.data.model.User
-import io.timelimit.android.livedata.*
+import androidx.compose.material.SnackbarHostState
+import androidx.lifecycle.*
 import io.timelimit.android.logic.DefaultAppLogic
-import io.timelimit.android.sync.network.api.*
-import java.io.IOException
+import io.timelimit.android.ui.model.mailauthentication.MailAuthentication
+import kotlinx.coroutines.flow.*
 
 class AuthenticateByMailModel(application: Application): AndroidViewModel(application) {
-    companion object {
-        private const val LOG_TAG = "AuthenticateByMailModel"
-    }
-
     private val logic = DefaultAppLogic.with(application)
-    private val isBusyInternal = MutableLiveData<Boolean>().apply { value = false }
-    private val mailAuthTokenInternal = MutableLiveData<String?>().apply { value = null }
-    private val mailAddressToWhichCodeWasSentInternal = MutableLiveData<String?>().apply { value = null }
-    private var mailLoginToken: String? = null
+    private val stateLive = MutableStateFlow(emptyMap<String, MailAuthentication.State>())
+    private val mailAuthTokenLive = MutableStateFlow<String?>(null)
 
-    val recoveryUserId = MutableLiveData<String?>().apply { value = null }
-    private val forcedMailAddress = recoveryUserId.switchMap { userId ->
-        if (userId != null) {
-            logic.database.user().getParentUserByIdLive(userId)
-        } else {
-            liveDataFromNullableValue(null as User?)
-        }
-    }.map { it?.mail ?: "" }
-    val screenToShow = isBusyInternal.switchMap { isBusy ->
-        if (isBusy) {
-            liveDataFromNonNullValue(ScreenToShow.Working)
-        } else {
-            mailAddressToWhichCodeWasSentInternal.switchMap { receiverMail ->
-                if (receiverMail != null) {
-                    liveDataFromNonNullValue(ScreenToShow.EnterReceivedCode)
-                } else {
-                    forcedMailAddress.map { forcedMailAddress ->
-                        if (forcedMailAddress.isEmpty()) {
-                            ScreenToShow.EnterMailAddress
-                        } else {
-                            ScreenToShow.ConfirmCurrentMail
-                        }
-                    }
-                }
-            }
-        }
-    }
-    val mailAuthToken = mailAuthTokenInternal.castDown()
-    val errorMessage = MutableLiveData<ErrorMessage?>().apply { value = null }
-    val mailAddressToWhichCodeWasSent = mailAddressToWhichCodeWasSentInternal.castDown()
+    val recoveryUserIdLive = MutableStateFlow<String?>(null)
+    val snackbarHostState = SnackbarHostState()
 
-    fun sendAuthMessageToForcedMailAddress() {
-        isBusyInternal.value = true
-
-        runAsync {
-            val mailAddress = forcedMailAddress.waitForNonNullValue()
-
-            if (mailAddress.isEmpty()) {
-                isBusyInternal.value = false
-                // not correct, but this would happen if the value would be used
-                errorMessage.value = ErrorMessage.ServerRejection
-            } else {
-                sendAuthMessage(mailAddress)
-            }
-        }
+    private val forcedMailAddressLive: Flow<String> = recoveryUserIdLive.transformLatest { userId ->
+        if (userId == null) emit("")
+        else emitAll(logic.database.user().getUserByIdFlow(userId).map { it?.mail ?: "" })
     }
 
-    fun sendAuthMessage(receiver: String) {
-        isBusyInternal.value = true
+    suspend fun getMailAuthToken(): String = mailAuthTokenLive.filterNotNull().first()
 
-        runAsync {
-            try {
-                val serverConfiguration = logic.serverLogic.getServerConfigCoroutine()
+    val screenLive = forcedMailAddressLive.transformLatest { forcedMailAddress ->
+        val initialState =
+            if (forcedMailAddress == "") MailAuthentication.State.EnterMailAddress()
+            else MailAuthentication.State.ConfirmMailSending(forcedMailAddress)
 
-                mailLoginToken = serverConfiguration.api.sendMailLoginCode(
-                        mail = receiver,
-                        locale = getApplication<Application>().resources.configuration.locale.language,
-                        deviceAuthToken = serverConfiguration.deviceAuthToken.let {
-                            if (it.isEmpty()) null else it
-                        }
-                )
-
-                mailAddressToWhichCodeWasSentInternal.value = receiver
-            } catch (ex: TooManyRequestsHttpError) {
-                errorMessage.value = ErrorMessage.TooManyRequests
-            } catch (ex: HttpError) {
-                if (BuildConfig.DEBUG) {
-                    Log.w(LOG_TAG, "sendAuthMessage()", ex)
-                }
-
-                errorMessage.value = ErrorMessage.ServerRejection
-            } catch (ex: MailServerBlacklistedException) {
-                errorMessage.value = ErrorMessage.BlacklistedMailServer
-            } catch (ex: MailAddressNotWhitelistedException) {
-                errorMessage.value = ErrorMessage.NotWhitelistedMailAddress
-            } catch (ex: Exception) {
-                if (BuildConfig.DEBUG) {
-                    Log.w(LOG_TAG, "sendAuthMessage()", ex)
-                }
-
-                errorMessage.value = ErrorMessage.NetworkProblem
-            } finally {
-                isBusyInternal.value = false
-            }
-        }
-    }
-
-    fun confirmCode(code: String) {
-        isBusyInternal.value = true
-
-        runAsync {
-            try {
-                val api = logic.serverLogic.getServerConfigCoroutine().api
-                val mailAuthToken = api.signInByMailCode(mailLoginToken!!, code)
-
-                mailAuthTokenInternal.value = mailAuthToken
-            } catch (ex: ForbiddenHttpError) {
-                errorMessage.value = ErrorMessage.WrongCode
-            } catch (ex: GoneHttpError) {
-                errorMessage.value = ErrorMessage.WrongCode
-
-                // go back to first step
-                mailAddressToWhichCodeWasSentInternal.value = null
-            } catch (ex: HttpError) {
-                if (BuildConfig.DEBUG) {
-                    Log.w(LOG_TAG, "sendAuthMessage()", ex)
-                }
-
-                errorMessage.value = ErrorMessage.ServerRejection
-            } catch (ex: IOException) {
-                if (BuildConfig.DEBUG) {
-                    Log.w(LOG_TAG, "sendAuthMessage()", ex)
-                }
-
-                errorMessage.value = ErrorMessage.NetworkProblem
-            } finally {
-                isBusyInternal.value = false
-            }
-        }
-    }
-}
-
-enum class ErrorMessage {
-    NetworkProblem, ServerRejection, WrongCode, BlacklistedMailServer, NotWhitelistedMailAddress, TooManyRequests
-}
-
-enum class ScreenToShow {
-    EnterMailAddress,
-    EnterReceivedCode,
-    ConfirmCurrentMail,
-    Working
+        emitAll(
+            MailAuthentication.handle(
+                logic,
+                viewModelScope,
+                snackbarHostState,
+                stateLive.map { state ->
+                    state[forcedMailAddress] ?: initialState
+                },
+                updateState = { modifier -> stateLive.update { oldState ->
+                    oldState + Pair(forcedMailAddress, modifier(oldState[forcedMailAddress] ?: initialState))
+                } },
+                processAuthToken = { mailAuthTokenLive.compareAndSet(expect = null, update = it) }
+            )
+        )
+    }.shareIn(viewModelScope, SharingStarted.WhileSubscribed(1000), 1)
 }

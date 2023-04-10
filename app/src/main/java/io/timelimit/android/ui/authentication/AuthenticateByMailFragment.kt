@@ -1,5 +1,5 @@
 /*
- * TimeLimit Copyright <C> 2019 - 2020 Jonas Lochmann
+ * TimeLimit Copyright <C> 2019 - 2023 Jonas Lochmann
  *
  * This program is free software: you can redistribute it and/or modify
  * it under the terms of the GNU General Public License as published by
@@ -19,14 +19,19 @@ import android.os.Bundle
 import android.view.LayoutInflater
 import android.view.View
 import android.view.ViewGroup
+import androidx.compose.foundation.layout.padding
+import androidx.compose.material.Scaffold
+import androidx.compose.material.SnackbarHost
+import androidx.compose.runtime.collectAsState
+import androidx.compose.runtime.getValue
+import androidx.compose.ui.Modifier
+import androidx.compose.ui.platform.ComposeView
 import androidx.fragment.app.Fragment
-import androidx.lifecycle.Observer
-import androidx.lifecycle.ViewModelProviders
-import com.google.android.material.snackbar.Snackbar
-import io.timelimit.android.R
-import io.timelimit.android.databinding.FragmentAuthenticateByMailBinding
-import io.timelimit.android.extensions.setOnEnterListenr
-import io.timelimit.android.util.MailValidation
+import androidx.fragment.app.viewModels
+import androidx.lifecycle.Lifecycle
+import androidx.lifecycle.lifecycleScope
+import androidx.lifecycle.repeatOnLifecycle
+import kotlinx.coroutines.launch
 
 class AuthenticateByMailFragment : Fragment() {
     companion object {
@@ -40,118 +45,40 @@ class AuthenticateByMailFragment : Fragment() {
     }
 
     private val listener: AuthenticateByMailFragmentListener by lazy { parentFragment as AuthenticateByMailFragmentListener }
-    val model: AuthenticateByMailModel by lazy { ViewModelProviders.of(this).get(AuthenticateByMailModel::class.java) }
+    private val model: AuthenticateByMailModel by viewModels()
 
-    override fun onCreateView(inflater: LayoutInflater, container: ViewGroup?, savedInstanceState: Bundle?): View? {
-        val binding = FragmentAuthenticateByMailBinding.inflate(layoutInflater, container, false)
+    override fun onCreate(savedInstanceState: Bundle?) {
+        super.onCreate(savedInstanceState)
 
-        model.recoveryUserId.value = arguments?.getString(RECOVERY_USER_ID)
+        model.recoveryUserIdLive.value = arguments?.getString(RECOVERY_USER_ID)
 
-        fun step1Go() {
-            val mail = binding.step1.mailEdit.text.toString()
+        lifecycleScope.launch {
+            lifecycle.repeatOnLifecycle(Lifecycle.State.STARTED) {
+                val token = model.getMailAuthToken()
 
-            if (!MailValidation.seemsMailAddressValid(mail)) {
-                Snackbar.make(binding.root, R.string.authenticate_by_mail_snackbar_invalid_address, Snackbar.LENGTH_SHORT).show()
-                return
+                listener.onLoginSucceeded(token)
             }
+        }
+    }
 
-            val domain = MailValidation.getDomain(mail)
-            val suggestedDomain = MailValidation.suggestAlternativeDomain(domain)
+    override fun onCreateView(inflater: LayoutInflater, container: ViewGroup?, savedInstanceState: Bundle?): View {
+        return ComposeView(requireContext()).also {
+            it.setContent {
+                val screenLive by model.screenLive.collectAsState(null)
+                val screen = screenLive
 
-            if (!MailValidation.seemsDomainValid(domain)) {
-                if (suggestedDomain == null) {
-                    Snackbar.make(binding.root, R.string.authenticate_by_mail_snackbar_invalid_address, Snackbar.LENGTH_SHORT).show()
-                } else {
-                    val mailWithoutDomain = mail.substring(0, mail.length - domain.length)
-                    val mailWithSuggestedDomain = mailWithoutDomain + suggestedDomain
-
-                    binding.step1.mailEdit.setText(mailWithSuggestedDomain)
-                    Snackbar.make(binding.root, R.string.authenticate_by_mail_snackbar_invalid_address_suggest, Snackbar.LENGTH_SHORT).show()
-                }
-
-                return
-            } else {
-                if (suggestedDomain != null) {
-                    val mailWithoutDomain = mail.substring(0, mail.length - domain.length)
-                    val mailWithSuggestedDomain = mailWithoutDomain + suggestedDomain
-
-                    SelectMailDialogFragment.newInstance(
-                            options = listOf(mailWithSuggestedDomain, mail),
-                            target = this
-                    ).show(fragmentManager!!)
-                } else {
-                    model.sendAuthMessage(mail)
+                Scaffold(
+                    snackbarHost = { SnackbarHost(model.snackbarHostState) }
+                ) { paddingValues ->
+                    if (screen != null) {
+                        AuthenticateByMailScreen(
+                            content = screen,
+                            modifier = Modifier.padding(paddingValues)
+                        )
+                    }
                 }
             }
         }
-
-        binding.step1.mailEdit.setOnEnterListenr { step1Go() }
-        binding.step1.goButton.setOnClickListener { step1Go() }
-
-        fun step2Go() {
-            val code = binding.step2.codeEdit.text.toString()
-
-            if (code.isNotBlank()) {
-                model.confirmCode(code)
-
-                binding.step2.codeEdit.setText("")
-            }
-        }
-
-        binding.step2.codeEdit.setOnEnterListenr { step2Go() }
-        binding.step2.goButton.setOnClickListener { step2Go() }
-
-        binding.step1B.goButton.setOnClickListener {
-            model.sendAuthMessageToForcedMailAddress()
-        }
-
-        model.mailAddressToWhichCodeWasSent.observe(this, Observer {
-            binding.step2.mailAddressToWhichCodeWasSent = it
-        })
-
-        model.screenToShow.observe(this, Observer {
-            binding.flipper.displayedChild = when (it!!) {
-                ScreenToShow.EnterMailAddress -> 0
-                ScreenToShow.EnterReceivedCode -> 1
-                ScreenToShow.ConfirmCurrentMail -> 2
-                ScreenToShow.Working -> 3
-            }
-        })
-
-        model.mailAuthToken.observe(this, Observer {
-            if (it != null) {
-                listener.onLoginSucceeded(it)
-            }
-        })
-
-        model.errorMessage.observe(this, Observer {
-            if (it != null) {
-                if (it == ErrorMessage.BlacklistedMailServer) {
-                    BlacklistedMailServerDialogFragment().show(fragmentManager!!)
-                } else if (it == ErrorMessage.NotWhitelistedMailAddress) {
-                    NotWhitelistedMailAddressDialogFragment().show(fragmentManager!!)
-                } else if (it == ErrorMessage.TooManyRequests) {
-                    TooManyRequestsDialogFragment().show(parentFragmentManager)
-                } else {
-                    Snackbar.make(
-                            binding.root,
-                            when(it) {
-                                ErrorMessage.NetworkProblem -> R.string.error_network
-                                ErrorMessage.ServerRejection -> R.string.error_server_rejected
-                                ErrorMessage.WrongCode -> R.string.authenticate_by_mail_snackbar_wrong_code
-                                ErrorMessage.BlacklistedMailServer -> throw IllegalStateException("should be handled above")
-                                ErrorMessage.NotWhitelistedMailAddress -> throw IllegalStateException("should be handled above")
-                                ErrorMessage.TooManyRequests -> throw IllegalStateException("should be handled above")
-                            },
-                            Snackbar.LENGTH_SHORT
-                    ).show()
-                }
-
-                model.errorMessage.value = null
-            }
-        })
-
-        return binding.root
     }
 }
 

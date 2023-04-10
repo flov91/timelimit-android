@@ -1,5 +1,5 @@
 /*
- * TimeLimit Copyright <C> 2019 Jonas Lochmann
+ * TimeLimit Copyright <C> 2019 - 2023 Jonas Lochmann
  *
  * This program is free software: you can redistribute it and/or modify
  * it under the terms of the GNU General Public License as published by
@@ -18,6 +18,13 @@ package io.timelimit.android.util
 import org.apache.commons.text.similarity.LevenshteinDistance
 
 object MailValidation {
+    sealed class Result {
+        object Valid: Result()
+        object Invalid: Result()
+        class InvalidWithSuggestion(val suggestion: String): Result()
+        class ValidWithSuggestion(val suggestion: String): Result()
+    }
+
     private val mailProviders = listOf(
             "gmail.com",
             "googlemail.com",
@@ -40,6 +47,23 @@ object MailValidation {
             return null
         } else {
             return suggestion
+        }
+    }
+
+    fun validate(mail: String): Result {
+        if (!seemsMailAddressValid(mail)) return Result.Invalid
+
+        val domain = getDomain(mail)
+        val suggestedDomain = suggestAlternativeDomain(domain)
+        val mailWithoutDomain = mail.substring(0, mail.length - domain.length)
+        val mailWithSuggestedDomain = mailWithoutDomain + suggestedDomain
+
+        return if (seemsDomainValid(domain)) {
+            if (suggestedDomain == null) Result.Valid
+            else Result.ValidWithSuggestion(mailWithSuggestedDomain)
+        } else {
+            if (suggestedDomain == null) Result.Invalid
+            else Result.InvalidWithSuggestion(mailWithSuggestedDomain)
         }
     }
 }

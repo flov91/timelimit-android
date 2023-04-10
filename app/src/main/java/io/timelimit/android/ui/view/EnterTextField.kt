@@ -32,7 +32,8 @@ fun EnterTextField(
     onConfirmInput: () -> Unit,
     modifier: Modifier = Modifier,
     enabled: Boolean = true,
-    label: @Composable (() -> Unit)? = null
+    label: @Composable (() -> Unit)? = null,
+    keyboardOptions: KeyboardOptions = KeyboardOptions()
 ) {
     TextField(
         label = label,
@@ -40,7 +41,7 @@ fun EnterTextField(
         onValueChange = onValueChange,
         enabled = enabled,
         singleLine = true,
-        keyboardOptions = KeyboardOptions(imeAction = ImeAction.Go),
+        keyboardOptions = keyboardOptions.copy(imeAction = ImeAction.Go),
         keyboardActions = KeyboardActions(onGo = { onConfirmInput() }),
         modifier = modifier.onPreviewKeyEvent { keyEvent ->
             if (keyEvent.type == KeyEventType.KeyDown && keyEvent.key == Key.Enter) {
