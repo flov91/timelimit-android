@@ -1,5 +1,5 @@
 /*
- * TimeLimit Copyright <C> 2019 Jonas Lochmann
+ * TimeLimit Copyright <C> 2019 - 2023 Jonas Lochmann
  *
  * This program is free software: you can redistribute it and/or modify
  * it under the terms of the GNU General Public License as published by
@@ -13,10 +13,8 @@
  * You should have received a copy of the GNU General Public License
  * along with this program. If not, see <https://www.gnu.org/licenses/>.
  */
-package io.timelimit.android.ui.manage.category.blocked_times
+package io.timelimit.android.extensions
 
-enum class MinuteTileMode {
-    Allowed,
-    Blocked,
-    Mixed
-}
+fun <T: Comparable<T>> Pair<T, T>.sorted() =
+    if (first > second) Pair(second, first)
+    else this

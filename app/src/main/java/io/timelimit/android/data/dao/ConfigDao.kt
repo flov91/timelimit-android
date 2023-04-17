@@ -213,6 +213,13 @@ abstract class ConfigDao {
         )
     }
 
+    fun setHintsNotShownSync(flags: Long) {
+        updateValueSync(
+            ConfigurationItemType.ShownHints,
+            (getShownHintsSync() and flags.inv()).toString(16)
+        )
+    }
+
     fun resetShownHintsSync() {
         updateValueSync(ConfigurationItemType.ShownHints, null)
     }

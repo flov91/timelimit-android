@@ -215,19 +215,33 @@
         Dabei können Sie die Sperrzeit einer Kategorie minutengenau festlegen.
     </string>
 
+    <string name="blocked_time_areas_help_about_data">
+        Die Sperrzeiten sind nur eine andere Sicht auf die Zeitbegrenzungsregeln.
+        Die entsprechenden Zeitbegrenzungsregeln werden bei den Sperrzeiten angezeigt und
+        Änderungen an den Sperrzeiten wirken sich auf die Zeitbegrenzungsregeln aus.
+    </string>
+
     <string name="blocked_time_areas_help_colors">
         In dieser Ansicht gibt es zwei Farben: Grün bedeutet freigegeben, rot bedeutet gesperrt.
     </string>
 
     <string name="blocked_time_areas_help_structure">
-        Die Tage und Stunden werden hier als Überschriften angezeigt, die Minuten als Kacheln.
-        Sie können mit dem Tages-Dropdown zu einem bestimmten Tag springen.
+        Die Tage werden hier als Überschriften und die Stunden als Kacheln angezeigt.
+        Mit einem Tippen auf eine Stunde können Sie diese ausklappen. Dann werden Kacheln
+        für die Minuten angezeigt.
     </string>
 
     <string name="blocked_time_areas_help_modify">
-        Zum Ändern eines Bereiches tippen Sie auf die Startzeit, diese erscheint dann blau.
-        Wählen Sie danach die Endzeit.
+        Zum Ändern eines Bereiches tippen Sie auf die Startminute, diese erscheint dann blau.
+        Wählen Sie danach die Endminute.
         Nun wird der Bereich invertiert auf der Basis des Wertes, der davor in diesem Bereich überwiegend vorhanden war.
+    </string>
+
+    <string name="blocked_time_areas_help_copy">
+        Sie können die Einstellungen von einem Tag zu anderen Tagen kopieren, indem Sie
+        auf das Kopie-Symbol tippen.
+        Danach können Sie das Einfügen-Symbol bei den Zieltagen auswählen. Diese ändern dann ihre Farbe.
+        Abschließend müssen Sie das Soeichern-Symbol, das beim Quelltag angezeigt wird, antippen.
     </string>
 
     <string name="blocked_time_areas_snackbar_modified">
@@ -236,11 +250,9 @@
 
     <string name="blocked_time_areas_snackbar_child_hint">Ohne Anmeldung als Elternteil können nur Sperrzeiten hinzugefügt werden</string>
 
-    <string name="blocked_time_areas_checkbox_detailed">detailliertere Einstellungen anzeigen</string>
-
     <string name="blocked_time_areas_copy_to_other_days">Einstellungen von einem Tag zu den anderen Tagen kopieren</string>
-    <string name="blocked_time_areas_copy_from">Kopiere von</string>
-    <string name="blocked_time_areas_copy_to">Kopiere von %s nach</string>
+        <string name="blocked_time_areas_copy_to_yes">zum %s kopieren</string>
+    <string name="blocked_time_areas_copy_to_no">nicht zum %s kopieren</string>
 
     <string name="category_apps_title">zugeordnete Apps</string>
 
@@ -1154,10 +1166,6 @@
     </string>
     <string name="must_read_add_already_assigned_apps">
         Apps mit Kategorie werden beim Hinzufügen aus der vorherigen Kategorie entfernt - für mehrere Kategorien gleichzeitig können Sie Ober- und Unter-Kategorien verwenden
-    </string>
-    <string name="must_read_blocked_time_areas_obsolete">
-        Die Sperrzeiten sind alt. Die meisten Fälle werden durch
-        die Zeitbegrenzungsregeln für Teile eines Tages mit 0 Minuten Dauer besser abgedeckt.
     </string>
 
     <string name="notification_channel_app_status_title">App-Status</string>

@@ -1,5 +1,5 @@
 /*
- * TimeLimit Copyright <C> 2019 - 2022 Jonas Lochmann
+ * TimeLimit Copyright <C> 2019 - 2023 Jonas Lochmann
  *
  * This program is free software: you can redistribute it and/or modify
  * it under the terms of the GNU General Public License as published by
@@ -275,24 +275,4 @@ object CategoryTimeWarnings {
 object CategoryFlags {
     const val HAS_BLOCKED_NETWROK_LIST = 1L
     const val ALL = HAS_BLOCKED_NETWROK_LIST
-}
-
-fun ImmutableBitmask.withConfigCopiedToOtherDates(sourceDay: Int, targetDays: Set<Int>): ImmutableBitmask {
-    val result = dataNotToModify.clone() as BitSet
-
-    val configForSelectedDay = result.get(
-            sourceDay * Category.MINUTES_PER_DAY,
-            (sourceDay + 1) * Category.MINUTES_PER_DAY
-    )
-
-    // update all days
-    targetDays.forEach { day ->
-        val startWriteIndex = day * Category.MINUTES_PER_DAY
-
-        for (i in 0..(Category.MINUTES_PER_DAY - 1)) {
-            result[startWriteIndex + i] = configForSelectedDay[i]
-        }
-    }
-
-    return ImmutableBitmask(result)
 }

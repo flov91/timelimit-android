@@ -40,6 +40,10 @@ data class MutableBitmask (val data: BitSet): Bitmask(data) {
 
 @Parcelize
 data class ImmutableBitmask(val dataNotToModify: BitSet): Bitmask(dataNotToModify), Parcelable {
+    companion object {
+        val empty = ImmutableBitmask(BitSet())
+    }
+
     fun toMutable(): MutableBitmask {
         return MutableBitmask(dataNotToModify)
     }

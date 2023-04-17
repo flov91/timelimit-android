@@ -265,8 +265,9 @@ object HintsToShow {
     const val TIME_LIMIT_RULE_INTRODUCTION = 8L
     const val CONTACTS_INTRO = 16L
     private const val OBSOLETE_TIMELIMIT_RULE_MUSTREAD = 32L
-    const val BLOCKED_TIME_AREAS_OBSOLETE = 64L
+    private const val OBSOLETE_BLOCKED_TIME_AREAS_OBSOLETE = 64L
     const val TASKS_INTRODUCTION = 128L
+    const val BLOCKED_TIME_AREAS = 1L shl 8
 }
 
 object ExperimentalFlags {

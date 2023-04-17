@@ -150,6 +150,11 @@ android {
         targetCompatibility JavaVersion.VERSION_17
     }
 
+    kotlinOptions {
+        def outputDir = project.buildDir.path + "/compose-reports"
+        freeCompilerArgs += ["-P", "plugin:androidx.compose.compiler.plugins.kotlin:reportsDestination=$outputDir"]
+    }
+
     composeOptions {
         kotlinCompilerExtensionVersion = "1.4.3"
     }
@@ -176,6 +181,7 @@ dependencies {
     implementation 'androidx.activity:activity-compose:1.7.0'
     implementation "com.google.accompanist:accompanist-flowlayout:0.30.0"
     implementation 'androidx.compose.material:material-icons-extended:1.4.1'
+    debugImplementation "androidx.compose.ui:ui-tooling:1.4.1"
     implementation 'androidx.fragment:fragment-ktx:1.5.6'
 
     implementation "androidx.navigation:navigation-fragment-ktx:$nav_version"

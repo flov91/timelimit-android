@@ -127,17 +127,6 @@
             app:argType="string" />
     </fragment>
     <fragment
-        android:id="@+id/blockedTimeAreasFragmentWrapper"
-        android:name="io.timelimit.android.ui.fragment.BlockedTimeAreasFragmentWrapper"
-        android:label="BlockedTimeAreasFragmentWrapper" >
-        <argument
-            android:name="childId"
-            app:argType="string" />
-        <argument
-            android:name="categoryId"
-            app:argType="string" />
-    </fragment>
-    <fragment
         android:id="@+id/categoryAdvancedFragmentWrapper"
         android:name="io.timelimit.android.ui.fragment.CategoryAdvancedFragmentWrapper"
         android:label="CategoryAdvancedFragmentWrapper" >

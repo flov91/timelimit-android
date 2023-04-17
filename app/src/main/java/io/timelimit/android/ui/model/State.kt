@@ -49,6 +49,7 @@ import io.timelimit.android.ui.manage.parent.u2fkey.ManageParentU2FKeyFragmentAr
 import io.timelimit.android.ui.model.account.AccountDeletion
 import io.timelimit.android.ui.model.diagnose.DeviceOwnerHandling
 import io.timelimit.android.ui.model.main.OverviewHandling
+import io.timelimit.android.ui.model.managechild.ManageCategoryBlockedTimes
 import io.timelimit.android.ui.overview.uninstall.UninstallFragment
 import io.timelimit.android.ui.parentmode.ParentModeFragment
 import io.timelimit.android.ui.payment.PurchaseFragment
@@ -156,14 +157,10 @@ sealed class State (val previous: State?): Serializable {
                 fragmentClass: Class<out Fragment>
             ): ManageCategory(previous, previousCategory.previousChild, previousCategory.categoryId, fragmentClass)
 
-            class BlockedTimes(
-                previousCategory: Main
-            ): Sub(previousCategory, previousCategory, BlockedTimeAreasFragmentWrapper::class.java) {
-                override val arguments: Bundle get() = BlockedTimeAreasFragmentWrapperArgs(
-                    childId = previousCategory.previousChild.childId,
-                    categoryId = previousCategory.categoryId
-                ).toBundle()
-            }
+            data class BlockedTimes(
+                val previousMain2: Main,
+                val details: ManageCategoryBlockedTimes.State = ManageCategoryBlockedTimes.State.initial
+            ): Sub(previousMain2, previousMain2, Fragment::class.java)
 
             class Advanced(
                 previousCategory: Main

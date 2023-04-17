@@ -23,7 +23,9 @@ import io.timelimit.android.R
 import io.timelimit.android.ui.manage.device.manage.permission.PermissionScreenContent
 import io.timelimit.android.ui.model.account.AccountDeletion
 import io.timelimit.android.ui.model.diagnose.DeviceOwnerHandling
+import io.timelimit.android.ui.model.intro.IntroHandling
 import io.timelimit.android.ui.model.main.OverviewHandling
+import io.timelimit.android.ui.model.managechild.ManageCategoryBlockedTimes
 import io.timelimit.android.ui.model.managedevice.ManageDeviceUser
 
 sealed class Screen(
@@ -154,10 +156,11 @@ sealed class Screen(
         state: State,
         toolbarIcons: List<Menu.Icon>,
         toolbarOptions: List<Menu.Dropdown>,
-        fragment: FragmentState,
-        containerId: Int,
-        override val backStack: List<BackStackItem>
-    ): FragmentScreen(state, toolbarIcons, toolbarOptions, fragment, containerId), ScreenWithBackStack, ScreenWithTitle {
+        val content: ManageCategoryBlockedTimes.Screen,
+        val intro: IntroHandling.Screen,
+        override val backStack: List<BackStackItem>,
+        override val snackbarHostState: SnackbarHostState
+    ): Screen(state, toolbarIcons, toolbarOptions), ScreenWithBackStack, ScreenWithTitle, ScreenWithSnackbar, ScreenWithAuthenticationFab {
         override val title = Title.StringResource(R.string.blocked_time_areas)
     }
 

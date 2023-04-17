@@ -15,20 +15,33 @@
  */
 package io.timelimit.android.ui.model.managechild
 
+import androidx.compose.material.SnackbarHostState
+import androidx.compose.material.icons.Icons
+import androidx.compose.material.icons.outlined.Info
 import io.timelimit.android.R
 import io.timelimit.android.data.model.Category
+import io.timelimit.android.data.model.HintsToShow
 import io.timelimit.android.logic.AppLogic
+import io.timelimit.android.ui.manage.category.blocked_times.BlockedTimesData
+import io.timelimit.android.ui.model.ActivityCommand
+import io.timelimit.android.ui.model.AuthenticationModelApi
 import io.timelimit.android.ui.model.BackStackItem
+import io.timelimit.android.ui.model.Menu
 import io.timelimit.android.ui.model.Screen
 import io.timelimit.android.ui.model.State
 import io.timelimit.android.ui.model.Title
 import io.timelimit.android.ui.model.flow.Case
 import io.timelimit.android.ui.model.flow.splitConflated
+import io.timelimit.android.ui.model.intro.IntroHandling
+import kotlinx.coroutines.CoroutineScope
+import kotlinx.coroutines.channels.SendChannel
 import kotlinx.coroutines.flow.*
 
 object ManageCategoryHandling {
     fun processState(
         logic: AppLogic,
+        activityCommand: SendChannel<ActivityCommand>,
+        authentication: AuthenticationModelApi,
         stateLive: Flow<State.ManageChild.ManageCategory>,
         parentBackStackLive: Flow<List<BackStackItem>>,
         updateState: ((State.ManageChild.ManageCategory) -> State) -> Unit
@@ -45,7 +58,7 @@ object ManageCategoryHandling {
                     if (hasCategory) emitAll(
                         state.splitConflated(
                             Case.simple<_, _, State.ManageChild.ManageCategory.Main> { processMainState(it, parentBackStackLive, foundCategoryLive) },
-                            Case.simple<_, _, State.ManageChild.ManageCategory.Sub> { processSubState(share(it), parentBackStackLive, foundCategoryLive, updateMethod(updateState)) },
+                            Case.simple<_, _, State.ManageChild.ManageCategory.Sub> { processSubState(childId, categoryId, logic, activityCommand, authentication, share(it), parentBackStackLive, foundCategoryLive, updateMethod(updateState)) },
                         )
                     )
                     else updateState { it.previousChild }
@@ -71,6 +84,11 @@ object ManageCategoryHandling {
     }
 
     private fun processSubState(
+        childId: String,
+        categoryId: String,
+        logic: AppLogic,
+        activityCommand: SendChannel<ActivityCommand>,
+        authentication: AuthenticationModelApi,
         stateLive: SharedFlow<State.ManageChild.ManageCategory.Sub>,
         parentBackStackLive: Flow<List<BackStackItem>>,
         categoryLive: Flow<Category>,
@@ -82,7 +100,7 @@ object ManageCategoryHandling {
 
         return stateLive.splitConflated(
             Case.simple<_, _, State.ManageChild.ManageCategory.Advanced> { processAdvancedState(it, subBackStackLive) },
-            Case.simple<_, _, State.ManageChild.ManageCategory.BlockedTimes> { processBlockedTimesState(it, subBackStackLive) },
+            Case.simple<_, _, State.ManageChild.ManageCategory.BlockedTimes> { processBlockedTimesState(childId, categoryId, logic, activityCommand, authentication, scope, categoryLive, share(it), subBackStackLive, updateMethod(updateState)) },
         )
     }
 
@@ -101,16 +119,64 @@ object ManageCategoryHandling {
     }
 
     private fun processBlockedTimesState(
-        stateLive: Flow<State.ManageChild.ManageCategory.BlockedTimes>,
-        parentBackStackLive: Flow<List<BackStackItem>>
-    ): Flow<Screen> = combine(stateLive, parentBackStackLive) { state, backStack ->
-        Screen.ManageBlockedTimes(
-            state,
-            state.toolbarIcons,
-            state.toolbarOptions,
-            state,
-            R.id.fragment_manage_category_blocked_times,
-            backStack
+        childId: String,
+        categoryId: String,
+        logic: AppLogic,
+        activityCommand: SendChannel<ActivityCommand>,
+        authentication: AuthenticationModelApi,
+        scope: CoroutineScope,
+        categoryLive: Flow<Category>,
+        stateLive: SharedFlow<State.ManageChild.ManageCategory.BlockedTimes>,
+        parentBackStackLive: Flow<List<BackStackItem>>,
+        updateState: ((State.ManageChild.ManageCategory.BlockedTimes) -> State) -> Unit
+    ): Flow<Screen> = flow {
+        val snackbarHostState = SnackbarHostState()
+
+        val traditionalBlockedTimeAreasLive =
+            categoryLive
+                .map { BlockedTimesData(BlockedTimesData.RangeList.fromBitmask(it.blockedMinutesInWeek)) }
+
+        val ruleBasedBlockedTimeAreasLive = logic.database.timeLimitRules().getTimeLimitRulesByCategoryFlow(categoryId).map {
+            BlockedTimesData.fromRules(it)
+        }
+
+        val blockedTimeAreasLive = combine(traditionalBlockedTimeAreasLive, ruleBasedBlockedTimeAreasLive) { a, b ->
+            a.union(b)
+        }.shareIn(scope, SharingStarted.WhileSubscribed(1000), 1)
+
+        val nestedLive = ManageCategoryBlockedTimes.handle(
+            childId = childId,
+            categoryId = categoryId,
+            logic = logic,
+            scope = scope,
+            snackbarHostState = snackbarHostState,
+            authentication = authentication,
+            blockedTimeAreasLive = blockedTimeAreasLive,
+            stateLive = stateLive.map { it.details },
+            updateState = { modifier -> updateState { parentState ->
+                parentState.copy(details = modifier(parentState.details))
+            }}
         )
+
+        val introLive = IntroHandling.handle(logic, HintsToShow.BLOCKED_TIME_AREAS)
+
+        emitAll(combine(stateLive, parentBackStackLive, nestedLive, introLive) { state, backStack, nested, intro ->
+            val toolbarIcons =
+                if (intro is IntroHandling.Screen.Hidden) listOf(Menu.Icon(
+                    Icons.Outlined.Info,
+                    R.string.generic_help,
+                    handler = intro.show
+                )) else emptyList()
+
+            Screen.ManageBlockedTimes(
+                state,
+                toolbarIcons,
+                state.toolbarOptions,
+                nested,
+                intro,
+                backStack,
+                snackbarHostState
+            )
+        })
     }
 }

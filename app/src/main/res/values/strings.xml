@@ -258,19 +258,32 @@
         You can define the time area to the minute.
     </string>
 
+    <string name="blocked_time_areas_help_about_data">
+        The blocked time areas are just another view for time limit rules. The effect of the time limit
+        rules is shown in the blocked time areas and changes of the blocked time areas affect the
+        time limit rules.
+    </string>
+
     <string name="blocked_time_areas_help_colors">
         There are 2 colors in this view: green means allowed, red means blocked.
     </string>
 
     <string name="blocked_time_areas_help_structure">
-        The days and hour are displayed as headlines, the minutes as tiles.
-        You can jump to a day using the day dropdown.
+        The days are displayed as headlines, the hours as tiles.
+        You can tap an hour to expand it. Then you will see tiles for the minutes.
     </string>
 
     <string name="blocked_time_areas_help_modify">
-        To change one area, tap on the start time. It will become blue.
-        Then select the end time.
+        To change one area, tap on the start minute. It will become blue.
+        Then select the end minute.
         Now, the area colors will be inverted.
+    </string>
+
+    <string name="blocked_time_areas_help_copy">
+        You can copy the settings from one day to another by tapping the copy icon.
+        After this, you can tap the paste icon for all target days. The icons will change
+        their color.
+        To save the changes, tap the save icon that is shown on the source day.
     </string>
 
     <string name="blocked_time_areas_snackbar_modified">
@@ -279,11 +292,9 @@
 
     <string name="blocked_time_areas_snackbar_child_hint">You can only add limits without parent; Undoing is not possible</string>
 
-    <string name="blocked_time_areas_checkbox_detailed">show detailed settings</string>
-
     <string name="blocked_time_areas_copy_to_other_days">Copy settings from one day to other days</string>
-    <string name="blocked_time_areas_copy_from">Copy from</string>
-    <string name="blocked_time_areas_copy_to">Copy from %s to</string>
+    <string name="blocked_time_areas_copy_to_yes">copy to %s</string>
+    <string name="blocked_time_areas_copy_to_no">do not copy to %s</string>
 
     <string name="category_apps_title">assigned Apps</string>
 
@@ -1204,10 +1215,6 @@
     <string name="must_read_add_already_assigned_apps">
         Apps with category are removed from the previous category when they are added to a new category -
         use parent and child categories to \"add\" an App to multiple categories
-    </string>
-    <string name="must_read_blocked_time_areas_obsolete">
-        The blocked time areas are old. For most cases, using time limit rules with 0 minutes duration
-        for a part of a day is a better solution.
     </string>
 
     <string name="notification_channel_app_status_title">Apps status</string>

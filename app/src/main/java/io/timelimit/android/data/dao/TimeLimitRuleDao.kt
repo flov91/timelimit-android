@@ -1,5 +1,5 @@
 /*
- * TimeLimit Copyright <C> 2019 - 2020 Jonas Lochmann
+ * TimeLimit Copyright <C> 2019 - 2023 Jonas Lochmann
  *
  * This program is free software: you can redistribute it and/or modify
  * it under the terms of the GNU General Public License as published by
@@ -18,11 +18,15 @@ package io.timelimit.android.data.dao
 import androidx.lifecycle.LiveData
 import androidx.room.*
 import io.timelimit.android.data.model.TimeLimitRule
+import kotlinx.coroutines.flow.Flow
 
 @Dao
 abstract class TimeLimitRuleDao {
     @Query("SELECT * FROM time_limit_rule WHERE category_id = :categoryId")
     abstract fun getTimeLimitRulesByCategory(categoryId: String): LiveData<List<TimeLimitRule>>
+
+    @Query("SELECT * FROM time_limit_rule WHERE category_id = :categoryId")
+    abstract fun getTimeLimitRulesByCategoryFlow(categoryId: String): Flow<List<TimeLimitRule>>
 
     @Query("SELECT * FROM time_limit_rule WHERE category_id = :categoryId")
     abstract suspend fun getTimeLimitRulesByCategoryCoroutine(categoryId: String): List<TimeLimitRule>

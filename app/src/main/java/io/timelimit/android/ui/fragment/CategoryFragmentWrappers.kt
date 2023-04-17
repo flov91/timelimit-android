@@ -21,7 +21,6 @@ import android.view.View
 import androidx.fragment.app.Fragment
 import androidx.lifecycle.LiveData
 import io.timelimit.android.data.model.User
-import io.timelimit.android.ui.manage.category.blocked_times.BlockedTimeAreasFragment
 import io.timelimit.android.ui.manage.category.settings.CategorySettingsFragment
 import io.timelimit.android.ui.model.UpdateStateCommand
 import io.timelimit.android.ui.model.execute
@@ -45,13 +44,6 @@ abstract class CategoryFragmentWrapper: SingleFragmentWrapper() {
             if (it == null) requireActivity().execute(UpdateStateCommand.ManageChild.LeaveCategory)
         }
     }
-}
-
-class BlockedTimeAreasFragmentWrapper: CategoryFragmentWrapper() {
-    private val params by lazy { BlockedTimeAreasFragmentWrapperArgs.fromBundle(requireArguments()) }
-    override val childId: String get() = params.childId
-    override val categoryId: String get() = params.categoryId
-    override fun createChildFragment(): Fragment = BlockedTimeAreasFragment.newInstance(childId = childId, categoryId = categoryId)
 }
 
 class CategoryAdvancedFragmentWrapper: CategoryFragmentWrapper() {

@@ -19,17 +19,22 @@ import io.timelimit.android.R
 import io.timelimit.android.data.model.User
 import io.timelimit.android.data.model.UserType
 import io.timelimit.android.logic.AppLogic
+import io.timelimit.android.ui.model.ActivityCommand
+import io.timelimit.android.ui.model.AuthenticationModelApi
 import io.timelimit.android.ui.model.BackStackItem
 import io.timelimit.android.ui.model.Screen
 import io.timelimit.android.ui.model.State
 import io.timelimit.android.ui.model.Title
 import io.timelimit.android.ui.model.flow.Case
 import io.timelimit.android.ui.model.flow.splitConflated
+import kotlinx.coroutines.channels.SendChannel
 import kotlinx.coroutines.flow.*
 
 object ManageChildHandling {
     fun processState(
         logic: AppLogic,
+        activityCommand: SendChannel<ActivityCommand>,
+        authentication: AuthenticationModelApi,
         state: Flow<State.ManageChild>,
         updateState: ((State.ManageChild) -> State) -> Unit
     ): Flow<Screen> = state.splitConflated(
@@ -53,7 +58,7 @@ object ManageChildHandling {
                 hasUserLive.transformLatest { hasUser ->
                     if (hasUser) emitAll(state3.splitConflated(
                         Case.simple<_, _, State.ManageChild.Main> { processMainState(it, baseBackStackLive, foundUserLive) },
-                        Case.simple<_, _, State.ManageChild.Sub> { processSubState(logic, share(it), baseBackStackLive, foundUserLive, updateMethod(updateState)) },
+                        Case.simple<_, _, State.ManageChild.Sub> { processSubState(logic, activityCommand, authentication, share(it), baseBackStackLive, foundUserLive, updateMethod(updateState)) },
                     ))
                     else updateState { it.previousOverview }
                 }
@@ -79,6 +84,8 @@ object ManageChildHandling {
 
     private fun processSubState(
         logic: AppLogic,
+        activityCommand: SendChannel<ActivityCommand>,
+        authentication: AuthenticationModelApi,
         stateLive: SharedFlow<State.ManageChild.Sub>,
         parentBackStackLive: Flow<List<BackStackItem>>,
         userLive: Flow<User>,
@@ -96,7 +103,7 @@ object ManageChildHandling {
             Case.simple<_, _, State.ManageChild.Contacts> { processContactsState(it, subBackStackLive) },
             Case.simple<_, _, State.ManageChild.UsageHistory> { processUsageHistoryState(it, subBackStackLive) },
             Case.simple<_, _, State.ManageChild.Tasks> { processTasksState(it, subBackStackLive) },
-            Case.simple<_, _, State.ManageChild.ManageCategory> { ManageCategoryHandling.processState(logic, it, subBackStackLive, updateMethod(updateState)) },
+            Case.simple<_, _, State.ManageChild.ManageCategory> { ManageCategoryHandling.processState(logic, activityCommand, authentication, it, subBackStackLive, updateMethod(updateState)) },
         )
     }
 
