@@ -19,7 +19,6 @@ package io.timelimit.android.ui.fragment
 import android.os.Bundle
 import android.view.View
 import androidx.fragment.app.Fragment
-import io.timelimit.android.ui.manage.category.usagehistory.UsageHistoryFragment
 import io.timelimit.android.ui.manage.child.advanced.ManageChildAdvancedFragment
 import io.timelimit.android.ui.manage.child.apps.ChildAppsFragment
 import io.timelimit.android.ui.manage.child.tasks.ManageChildTasksFragment
@@ -53,14 +52,6 @@ class ChildAdvancedFragmentWrapper: ChildFragmentWrapper() {
     override val childId: String get() = params.childId
 
     override fun createChildFragment(): Fragment = ManageChildAdvancedFragment.newInstance(childId = childId)
-}
-
-class ChildUsageHistoryFragmentWrapper: ChildFragmentWrapper() {
-    private val params by lazy { ChildUsageHistoryFragmentWrapperArgs.fromBundle(arguments!!) }
-    override val childId: String get() = params.childId
-    override val showAuthButton: Boolean = false
-
-    override fun createChildFragment(): Fragment = UsageHistoryFragment.newInstance(userId = childId, categoryId = null)
 }
 
 class ChildTasksFragmentWrapper: ChildFragmentWrapper() {

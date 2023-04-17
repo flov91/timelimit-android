@@ -58,7 +58,7 @@ object ManageChildHandling {
                 hasUserLive.transformLatest { hasUser ->
                     if (hasUser) emitAll(state3.splitConflated(
                         Case.simple<_, _, State.ManageChild.Main> { processMainState(it, baseBackStackLive, foundUserLive) },
-                        Case.simple<_, _, State.ManageChild.Sub> { processSubState(logic, activityCommand, authentication, share(it), baseBackStackLive, foundUserLive, updateMethod(updateState)) },
+                        Case.simple<_, _, State.ManageChild.Sub> { processSubState(logic, activityCommand, authentication, share(it), baseBackStackLive, childId, foundUserLive, updateMethod(updateState)) },
                     ))
                     else updateState { it.previousOverview }
                 }
@@ -88,6 +88,7 @@ object ManageChildHandling {
         authentication: AuthenticationModelApi,
         stateLive: SharedFlow<State.ManageChild.Sub>,
         parentBackStackLive: Flow<List<BackStackItem>>,
+        childId: String,
         userLive: Flow<User>,
         updateState: ((State.ManageChild.Sub) -> State) -> Unit
     ): Flow<Screen> {
@@ -101,7 +102,7 @@ object ManageChildHandling {
             Case.simple<_, _, State.ManageChild.Apps> { processAppsState(it, subBackStackLive) },
             Case.simple<_, _, State.ManageChild.Advanced> { processAdvancedState(it, subBackStackLive) },
             Case.simple<_, _, State.ManageChild.Contacts> { processContactsState(it, subBackStackLive) },
-            Case.simple<_, _, State.ManageChild.UsageHistory> { processUsageHistoryState(it, subBackStackLive) },
+            Case.simple<_, _, State.ManageChild.UsageHistory> { processUsageHistoryState(logic, childId, share(it), updateMethod(updateState), subBackStackLive) },
             Case.simple<_, _, State.ManageChild.Tasks> { processTasksState(it, subBackStackLive) },
             Case.simple<_, _, State.ManageChild.ManageCategory> { ManageCategoryHandling.processState(logic, activityCommand, authentication, it, subBackStackLive, updateMethod(updateState)) },
         )
@@ -150,17 +151,30 @@ object ManageChildHandling {
     }
 
     private fun processUsageHistoryState(
-        stateLive: Flow<State.ManageChild.UsageHistory>,
+        logic: AppLogic,
+        childId: String,
+        stateLive: SharedFlow<State.ManageChild.UsageHistory>,
+        updateState: ((State.ManageChild.UsageHistory) -> State) -> Unit,
         parentBackStackLive: Flow<List<BackStackItem>>
-    ): Flow<Screen> = stateLive.combine(parentBackStackLive) { state, backStack ->
-        Screen.ManageChildUsageHistory(
-            state,
-            state.toolbarIcons,
-            state.toolbarOptions,
-            state,
-            R.id.fragment_manage_child_usage_history,
-            backStack
+    ): Flow<Screen> {
+        val nestedLive = ManageChildUsageHistory.handle(
+            logic = logic,
+            childId = childId,
+            stateLive = stateLive.map { it.state },
+            updateState = { modifier ->
+                updateState { it.copy(state = modifier(it.state)) }
+            }
         )
+
+        return combine(stateLive, nestedLive, parentBackStackLive) { state, nested, backStack ->
+            Screen.ChildUsageHistory(
+                state,
+                state.toolbarIcons,
+                state.toolbarOptions,
+                nested,
+                backStack
+            )
+        }
     }
 
     private fun processTasksState(

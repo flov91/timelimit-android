@@ -21,6 +21,7 @@ import androidx.fragment.app.FragmentManager
 import io.timelimit.android.ui.account.DeleteRegistrationScreen
 import io.timelimit.android.ui.diagnose.deviceowner.DeviceOwnerScreen
 import io.timelimit.android.ui.manage.category.blocked_times.BlockedTimesScreen
+import io.timelimit.android.ui.manage.child.usagehistory.UsageHistoryScreen
 import io.timelimit.android.ui.manage.device.manage.permission.ManageDevicePermissionScreen
 import io.timelimit.android.ui.manage.device.manage.user.ManageDeviceUserScreen
 import io.timelimit.android.ui.model.Screen
@@ -50,5 +51,6 @@ fun ScreenMultiplexer(
         is Screen.SetupSelectModeScreen -> SelectModeScreen(selectLocal = screen.selectLocal, selectConnected = screen.selectConnected, selectUninstall = screen.selectUninstall, modifier = modifier)
         is Screen.DeleteRegistration -> DeleteRegistrationScreen(screen.content, modifier)
         is Screen.ManageBlockedTimes -> BlockedTimesScreen(screen.content, screen.intro, modifier)
+        is Screen.ChildUsageHistory -> UsageHistoryScreen(screen.content, modifier)
     }
 }

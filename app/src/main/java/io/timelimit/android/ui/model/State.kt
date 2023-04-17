@@ -50,6 +50,7 @@ import io.timelimit.android.ui.model.account.AccountDeletion
 import io.timelimit.android.ui.model.diagnose.DeviceOwnerHandling
 import io.timelimit.android.ui.model.main.OverviewHandling
 import io.timelimit.android.ui.model.managechild.ManageCategoryBlockedTimes
+import io.timelimit.android.ui.model.managechild.ManageChildUsageHistory
 import io.timelimit.android.ui.overview.uninstall.UninstallFragment
 import io.timelimit.android.ui.parentmode.ParentModeFragment
 import io.timelimit.android.ui.payment.PurchaseFragment
@@ -123,9 +124,10 @@ sealed class State (val previous: State?): Serializable {
             override val arguments: Bundle get() = ChildAdvancedFragmentWrapperArgs(previousChild.childId).toBundle()
         }
         class Contacts(val previousChild: Main): Sub(previousChild, previousChild, ContactsFragment::class.java)
-        class UsageHistory(val previousChild: Main): Sub(previousChild, previousChild, ChildUsageHistoryFragmentWrapper::class.java) {
-            override val arguments: Bundle get() = ChildUsageHistoryFragmentWrapperArgs(previousChild.childId).toBundle()
-        }
+        data class UsageHistory(
+            val previousChild: Main,
+            val state: ManageChildUsageHistory.State = ManageChildUsageHistory.State()
+        ): Sub(previousChild, previousChild, Fragment::class.java)
         class Tasks(val previousChild: Main): Sub(previousChild, previousChild, ChildTasksFragmentWrapper::class.java) {
             override val arguments: Bundle get() = ChildTasksFragmentWrapperArgs(previousChild.childId).toBundle()
         }

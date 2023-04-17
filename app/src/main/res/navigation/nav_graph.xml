@@ -119,14 +119,6 @@
             app:argType="string" />
     </fragment>
     <fragment
-        android:id="@+id/childUsageHistoryFragmentWrapper"
-        android:name="io.timelimit.android.ui.fragment.ChildUsageHistoryFragmentWrapper"
-        android:label="ChildUsageHistoryFragmentWrapper" >
-        <argument
-            android:name="childId"
-            app:argType="string" />
-    </fragment>
-    <fragment
         android:id="@+id/categoryAdvancedFragmentWrapper"
         android:name="io.timelimit.android.ui.fragment.CategoryAdvancedFragmentWrapper"
         android:label="CategoryAdvancedFragmentWrapper" >

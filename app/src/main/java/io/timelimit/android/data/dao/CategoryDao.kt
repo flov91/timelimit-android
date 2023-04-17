@@ -16,7 +16,6 @@
 package io.timelimit.android.data.dao
 
 import androidx.lifecycle.LiveData
-import androidx.lifecycle.map
 import androidx.room.*
 import io.timelimit.android.data.customtypes.ImmutableBitmask
 import io.timelimit.android.data.customtypes.ImmutableBitmaskAdapter
@@ -29,11 +28,8 @@ abstract class CategoryDao {
     @Query("SELECT * FROM category WHERE child_id = :childId")
     abstract fun getCategoriesByChildId(childId: String): LiveData<List<Category>>
 
-    fun getCategoriesByChildIdMappedByCategoryId(childId: String): LiveData<Map<String, Category>> = getCategoriesByChildId(childId).map {
-        val result = HashMap<String, Category>()
-        it.forEach { result[it.id] = it }
-        Collections.unmodifiableMap(result)
-    }
+    @Query("SELECT * FROM category WHERE child_id = :childId")
+    abstract fun getCategoriesByChildIdFlow(childId: String): Flow<List<Category>>
 
     @Query("SELECT * FROM category WHERE child_id = :childId AND id = :categoryId")
     abstract fun getCategoryByChildIdAndId(childId: String, categoryId: String): LiveData<Category?>

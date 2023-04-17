@@ -26,6 +26,7 @@ import io.timelimit.android.ui.model.diagnose.DeviceOwnerHandling
 import io.timelimit.android.ui.model.intro.IntroHandling
 import io.timelimit.android.ui.model.main.OverviewHandling
 import io.timelimit.android.ui.model.managechild.ManageCategoryBlockedTimes
+import io.timelimit.android.ui.model.managechild.ManageChildUsageHistory
 import io.timelimit.android.ui.model.managedevice.ManageDeviceUser
 
 sealed class Screen(
@@ -109,14 +110,13 @@ sealed class Screen(
         override val title = Title.StringResource(R.string.contacts_title_long)
     }
 
-    class ManageChildUsageHistory(
+    class ChildUsageHistory(
         state: State,
         toolbarIcons: List<Menu.Icon>,
         toolbarOptions: List<Menu.Dropdown>,
-        fragment: FragmentState,
-        containerId: Int,
+        val content: ManageChildUsageHistory.Screen,
         override val backStack: List<BackStackItem>
-    ): FragmentScreen(state, toolbarIcons, toolbarOptions, fragment, containerId), ScreenWithBackStack, ScreenWithTitle {
+    ): Screen(state, toolbarIcons, toolbarOptions), ScreenWithBackStack, ScreenWithTitle {
         override val title = Title.StringResource(R.string.usage_history_title)
     }
 
