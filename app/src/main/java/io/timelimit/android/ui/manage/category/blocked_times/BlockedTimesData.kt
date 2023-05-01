@@ -164,7 +164,10 @@ class BlockedTimesData (val ranges: RangeList) {
                 else if (previous.last + 1 < r.first) {
                     result.add(previous)
                     result.add(r)
-                } else result.add(Range(previous.first, r.last))
+                } else result.add(Range(
+                    previous.first,
+                    r.last.coerceAtLeast(previous.last)
+                ))
             }
 
             return RangeList(result)
