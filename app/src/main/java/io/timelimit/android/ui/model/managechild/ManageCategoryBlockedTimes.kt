@@ -219,7 +219,7 @@ object ManageCategoryBlockedTimes {
                 val range = Pair(selectedMinuteOfWeek, minute).sorted().let { (from, to) -> BlockedTimesData.Range(from, to) }
                 val oldBlockedTimeAreas = blockedTimeAreasLive.first()
 
-                val willBlockRange = isChild || oldBlockedTimeAreas.ranges.readFrom(range.first).countSetBits(range.last - range.first + 1) < (range.last - range.first) / 2
+                val willBlockRange = isChild || oldBlockedTimeAreas.ranges.readFrom(range.first).countSetBits(range.last - range.first + 1) <= (range.last - range.first) / 2
 
                 val newBlockedTimeAreas = oldBlockedTimeAreas.withUpdatedRange(range, willBlockRange)
 
