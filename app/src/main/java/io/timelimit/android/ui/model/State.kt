@@ -22,6 +22,8 @@ import androidx.compose.material.icons.filled.Phone
 import androidx.fragment.app.Fragment
 import io.timelimit.android.R
 import io.timelimit.android.integration.platform.SystemPermission
+import io.timelimit.android.sync.network.StatusOfMailAddress
+import io.timelimit.android.sync.network.StatusOfMailAddressResponse
 import io.timelimit.android.ui.contacts.ContactsFragment
 import io.timelimit.android.ui.diagnose.*
 import io.timelimit.android.ui.diagnose.exitreason.DiagnoseExitReasonFragment
@@ -48,9 +50,11 @@ import io.timelimit.android.ui.manage.parent.u2fkey.ManageParentU2FKeyFragment
 import io.timelimit.android.ui.manage.parent.u2fkey.ManageParentU2FKeyFragmentArgs
 import io.timelimit.android.ui.model.account.AccountDeletion
 import io.timelimit.android.ui.model.diagnose.DeviceOwnerHandling
+import io.timelimit.android.ui.model.mailauthentication.MailAuthentication
 import io.timelimit.android.ui.model.main.OverviewHandling
 import io.timelimit.android.ui.model.managechild.ManageCategoryBlockedTimes
 import io.timelimit.android.ui.model.managechild.ManageChildUsageHistory
+import io.timelimit.android.ui.model.setup.SetupParentHandling
 import io.timelimit.android.ui.overview.uninstall.UninstallFragment
 import io.timelimit.android.ui.parentmode.ParentModeFragment
 import io.timelimit.android.ui.payment.PurchaseFragment
@@ -58,8 +62,8 @@ import io.timelimit.android.ui.payment.StayAwesomeFragment
 import io.timelimit.android.ui.setup.*
 import io.timelimit.android.ui.setup.child.SetupRemoteChildFragment
 import io.timelimit.android.ui.setup.device.SetupDeviceFragment
-import io.timelimit.android.ui.setup.parent.SetupParentModeFragment
 import io.timelimit.android.ui.user.create.AddUserFragment
+import io.timelimit.android.ui.view.NotifyPermissionCard
 import java.io.Serializable
 
 sealed class State (val previous: State?): Serializable {
@@ -270,7 +274,42 @@ sealed class State (val previous: State?): Serializable {
         class ConnectedPrivacy(previousSelectMode: SelectMode): Setup(previousSelectMode)
         class SelectConnectedMode(previousConnectedPrivacy: ConnectedPrivacy): Setup(previousConnectedPrivacy)
         class RemoteChild(previous: SelectConnectedMode): FragmentStateLegacy(previous = previous, fragmentClass = SetupRemoteChildFragment::class.java)
-        class ParentMode(previous: SelectConnectedMode): FragmentStateLegacy(previous = previous, fragmentClass = SetupParentModeFragment::class.java)
+        sealed class ParentModeSetup(previous: State): Setup(previous)
+        data class ParentMailAuthentication(
+            val previousSelectConnectedMode: SelectConnectedMode,
+            val content: MailAuthentication.State = MailAuthentication.State.initial
+        ): ParentModeSetup(previous = previousSelectConnectedMode)
+        class SignUpBlocked(previous: ParentMailAuthentication): ParentModeSetup(previous)
+        class SignInWrongMailAddress(previous: ConfirmNewParentAccount): ParentModeSetup(previous)
+        data class ConfirmNewParentAccount(
+            val previousParentMailAuthentication: ParentMailAuthentication,
+            val mailAuthToken: String,
+            val mailStatus: StatusOfMailAddressResponse
+        ): ParentModeSetup(previous = previousParentMailAuthentication)
+        data class ParentBaseConfiguration(
+            val previousState: State,
+            val previousParentMailAuthentication: ParentMailAuthentication,
+            val mailAuthToken: String,
+            val mailStatus: StatusOfMailAddressResponse,
+            val deviceName: String,
+            val newUser: SetupParentHandling.NewUserDetails?
+        ): ParentModeSetup(previousState) {
+            init {
+                if ((newUser != null) != (mailStatus.status == StatusOfMailAddress.MailAddressWithoutFamily))
+                    throw IllegalStateException()
+            }
+        }
+        data class ParentConsent(
+            val baseConfig: ParentBaseConfiguration,
+            val backgroundSync: Boolean,
+            val notificationAccess: NotifyPermissionCard.Status,
+            val enableUpdates: Boolean,
+            val error: String?
+        ): ParentModeSetup(baseConfig) {
+            init {
+                if (baseConfig.newUser != null && !baseConfig.newUser.ready) throw IllegalStateException()
+            }
+        }
     }
     class ParentMode: FragmentStateLegacy(previous = null, fragmentClass = ParentModeFragment::class.java)
     object Purchase {

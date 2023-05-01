@@ -28,7 +28,7 @@ object SetupSelectConnectedMode {
         return stateLive.map { state ->
             Screen.SetupSelectConnectedModeScreen(
                 state = state,
-                mailLogin = { updateState { State.Setup.ParentMode(it) } },
+                mailLogin = { updateState { State.Setup.ParentMailAuthentication(it) } },
                 codeLogin = { updateState { State.Setup.RemoteChild(it) } }
             )
         }

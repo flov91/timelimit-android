@@ -23,11 +23,13 @@ import io.timelimit.android.ui.model.flow.Case
 import io.timelimit.android.ui.model.flow.splitConflated
 import kotlinx.coroutines.channels.SendChannel
 import kotlinx.coroutines.flow.Flow
+import kotlinx.coroutines.flow.SharedFlow
 
 object SetupHandling {
     fun handle(
         logic: AppLogic,
         activityCommand: SendChannel<ActivityCommand>,
+        permissionsChanged: SharedFlow<Unit>,
         stateLive: Flow<State.Setup>,
         updateState: ((State.Setup) -> State) -> Unit
     ): Flow<Screen> = stateLive.splitConflated(
@@ -35,5 +37,6 @@ object SetupHandling {
         Case.simple<_, _, State.Setup.DevicePermissions> { SetupLocalModePermissions.handle(logic, scope, activityCommand, it, updateMethod(updateState)) },
         Case.simple<_, _, State.Setup.ConnectedPrivacy> { SetupConnectedModePrivacy.handle(logic, it, updateMethod(updateState)) },
         Case.simple<_, _, State.Setup.SelectConnectedMode> { SetupSelectConnectedMode.handle(it, updateMethod(updateState)) },
+        Case.simple<_, _, State.Setup.ParentModeSetup> { SetupParentHandling.handle(logic, activityCommand, permissionsChanged, it, updateMethod(updateState)) }
     )
 }

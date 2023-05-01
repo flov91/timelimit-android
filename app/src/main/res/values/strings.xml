@@ -1342,6 +1342,7 @@
         reset/reinstall TimeLimit.
     </string>
 
+    <string name="password_validator_empty">The password must not be empty</string>
     <string name="password_validator_too_short">The password must have at least <xliff:g example="5" id="number of chars">%d</xliff:g> characters</string>
 
     <string name="primary_device_title">Current device</string>
@@ -1512,6 +1513,18 @@
     <string name="setup_parent_mode_explaination_device_title_field_hint">Device name</string>
 
     <string name="setup_parent_mode_error_signup_disabled">It is currently not possible to create new accounts</string>
+
+    <string name="setup_parent_mode_error_wrong_mail_address_title">wrong mail address</string>
+    <string name="setup_parent_mode_error_wrong_mail_address_text">There is no registration
+        for the mail address that you provided. Do some research to find the correct one.
+        Otherwise, you will loose any premium version and linked devices. You can see the
+        mail address at other devices if TimeLimit is still installed. Moreover, you can check
+        your mailboxes to see at which mail address the login mail was sent in the past.
+        For privacy reasons, the support cannot tell you which registered mail addresses
+        with your name exist.
+    </string>
+
+    <string name="setup_parent_confirm_new_account_text">Did you already sign up for the connected mode/did you buy the premium version already?</string>
 
     <string name="setup_privacy_connected_title">Networking and Privacy</string>
     <string name="setup_privacy_connected_text_general_intro">For the connected mode,

@@ -24,10 +24,12 @@ import io.timelimit.android.ui.manage.device.manage.permission.PermissionScreenC
 import io.timelimit.android.ui.model.account.AccountDeletion
 import io.timelimit.android.ui.model.diagnose.DeviceOwnerHandling
 import io.timelimit.android.ui.model.intro.IntroHandling
+import io.timelimit.android.ui.model.mailauthentication.MailAuthentication
 import io.timelimit.android.ui.model.main.OverviewHandling
 import io.timelimit.android.ui.model.managechild.ManageCategoryBlockedTimes
 import io.timelimit.android.ui.model.managechild.ManageChildUsageHistory
 import io.timelimit.android.ui.model.managedevice.ManageDeviceUser
+import io.timelimit.android.ui.model.setup.SetupParentHandling
 
 sealed class Screen(
     val state: State,
@@ -270,6 +272,37 @@ sealed class Screen(
     ): Screen(state), ScreenWithSnackbar, ScreenWithTitle {
         override val title: Title = Title.StringResource(R.string.account_deletion_title)
     }
+
+    class SetupParentMailAuthentication(
+        state: State.Setup.ParentMailAuthentication,
+        val content: MailAuthentication.Screen,
+        override val snackbarHostState: SnackbarHostState
+    ): Screen(state), ScreenWithSnackbar
+
+    class SignupBlocked(state: State.Setup.SignUpBlocked): Screen(state)
+
+    class SignInWrongMailAddress(state: State.Setup.SignInWrongMailAddress): Screen(state)
+    class ConfirmNewParentAccount(
+        state: State.Setup.ConfirmNewParentAccount,
+        val reject: () -> Unit,
+        val confirm: () -> Unit
+    ): Screen(state)
+
+    class ParentBaseConfiguration(
+        state: State.Setup.ParentBaseConfiguration,
+        val content: SetupParentHandling.ParentBaseConfiguration
+    ): Screen(state), ScreenWithTitle {
+        override val title: Title get() =
+            if (content.newUserDetails != null) Title.StringResource(R.string.setup_parent_mode_create_family)
+            else Title.StringResource(R.string.setup_parent_mode_add_device)
+    }
+
+    class ParentSetupConsent(
+        state: State.Setup.ParentConsent,
+        val content: SetupParentHandling.ParentSetupConsent,
+        override val snackbarHostState: SnackbarHostState,
+        val errorDialog: Pair<String, () -> Unit>?
+    ): Screen(state), ScreenWithSnackbar
 }
 
 interface ScreenWithAuthenticationFab

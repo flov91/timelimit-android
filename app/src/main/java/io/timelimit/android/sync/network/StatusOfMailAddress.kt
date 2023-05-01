@@ -1,5 +1,5 @@
 /*
- * TimeLimit Copyright <C> 2019 - 2020 Jonas Lochmann
+ * TimeLimit Copyright <C> 2019 - 2023 Jonas Lochmann
  *
  * This program is free software: you can redistribute it and/or modify
  * it under the terms of the GNU General Public License as published by
@@ -16,13 +16,14 @@
 package io.timelimit.android.sync.network
 
 import android.util.JsonReader
+import java.io.Serializable
 
 data class StatusOfMailAddressResponse(
         val mail: String,
         val status: StatusOfMailAddress,
         val canCreateFamily: Boolean,
         val alwaysPro: Boolean
-) {
+): Serializable {
     companion object {
         fun parse(reader: JsonReader): StatusOfMailAddressResponse {
             var mail: String? = null

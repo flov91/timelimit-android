@@ -63,6 +63,7 @@ class MainModel(application: Application): AndroidViewModel(application) {
 
     private val activityCommandInternal = Channel<ActivityCommand>()
     private val authenticationScreenClosed = MutableSharedFlow<Unit>(extraBufferCapacity = 1)
+    private val permissionsChanged = MutableSharedFlow<Unit>(extraBufferCapacity = 1)
 
     private val authenticationModelApi = object: AuthenticationModelApi {
         override val authenticatedParentOnly: Flow<AuthenticationModelApi.Parent?> =
@@ -114,7 +115,7 @@ class MainModel(application: Application): AndroidViewModel(application) {
         Case.simple<_, _, State.ManageChild> { state -> ManageChildHandling.processState(logic, activityCommandInternal, authenticationModelApi, state, updateMethod(::updateState)) },
         Case.simple<_, _, State.ManageDevice> { state -> ManageDeviceHandling.processState(logic, activityCommandInternal, authenticationModelApi, state, updateMethod(::updateState)) },
         Case.simple<_, _, State.DiagnoseScreen.DeviceOwner> { DeviceOwnerHandling.processState(logic, scope, authenticationModelApi, state) },
-        Case.simple<_, _, State.Setup> { state -> SetupHandling.handle(logic, activityCommandInternal, state, updateMethod(::updateState)) },
+        Case.simple<_, _, State.Setup> { state -> SetupHandling.handle(logic, activityCommandInternal, permissionsChanged, state, updateMethod(::updateState)) },
         Case.simple<_, _, State.DeleteAccount> { AccountDeletion.handle(logic, scope, share(it), updateMethod(::updateState)) },
         Case.simple<_, _, FragmentState> { state ->
             state.transform {
@@ -139,6 +140,10 @@ class MainModel(application: Application): AndroidViewModel(application) {
 
     fun reportAuthenticationScreenClosed() {
         authenticationScreenClosed.tryEmit(Unit)
+    }
+
+    fun reportPermissionsChanged() {
+        permissionsChanged.tryEmit(Unit)
     }
 
     private fun updateState(method: (State) -> State): Unit = state.update(method)

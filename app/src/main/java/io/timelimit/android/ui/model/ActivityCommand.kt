@@ -24,4 +24,5 @@ sealed class ActivityCommand {
     object ShowMissingPremiumDialog: ActivityCommand()
     class LaunchSystemSettings(val permission: SystemPermission): ActivityCommand()
     class TriggerUninstall(val packageName: String, val errorHandler: () -> Unit): ActivityCommand()
+    object RequestNotifyPermission: ActivityCommand()
 }

@@ -17,6 +17,7 @@ package io.timelimit.android.ui.view
 
 import androidx.compose.foundation.clickable
 import androidx.compose.foundation.interaction.MutableInteractionSource
+import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.Spacer
 import androidx.compose.foundation.layout.fillMaxWidth
@@ -36,7 +37,8 @@ fun SwitchRow(
     checked: Boolean,
     onCheckedChange: (Boolean) -> Unit,
     modifier: Modifier = Modifier,
-    enabled: Boolean = true
+    enabled: Boolean = true,
+    reverse: Boolean = false
 ) {
     Row (
         modifier
@@ -51,14 +53,21 @@ fun SwitchRow(
             ),
         verticalAlignment = Alignment.CenterVertically
     ) {
+        if (reverse) {
+            Text(label)
+            Spacer(Modifier.width(8.dp))
+            Spacer(Modifier.weight(1f))
+        }
+
         Switch(
             checked = checked,
             onCheckedChange = onCheckedChange,
             enabled = enabled
         )
 
-        Spacer(Modifier.width(8.dp))
-
-        Text(label)
+        if (!reverse) {
+            Spacer(Modifier.width(8.dp))
+            Text(label)
+        }
     }
 }

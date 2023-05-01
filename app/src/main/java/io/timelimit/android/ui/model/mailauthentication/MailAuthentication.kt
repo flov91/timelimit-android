@@ -35,6 +35,10 @@ import java.io.Serializable
 
 object MailAuthentication {
     sealed class State: java.io.Serializable {
+        companion object {
+            val initial = State.EnterMailAddress()
+        }
+
         abstract val error: ErrorDialog?
         abstract fun withError(error: ErrorDialog?): State
 

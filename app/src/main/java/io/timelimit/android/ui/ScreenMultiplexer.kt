@@ -19,6 +19,7 @@ import androidx.compose.runtime.Composable
 import androidx.compose.ui.Modifier
 import androidx.fragment.app.FragmentManager
 import io.timelimit.android.ui.account.DeleteRegistrationScreen
+import io.timelimit.android.ui.authentication.AuthenticateByMailScreen
 import io.timelimit.android.ui.diagnose.deviceowner.DeviceOwnerScreen
 import io.timelimit.android.ui.manage.category.blocked_times.BlockedTimesScreen
 import io.timelimit.android.ui.manage.child.usagehistory.UsageHistoryScreen
@@ -28,6 +29,11 @@ import io.timelimit.android.ui.model.Screen
 import io.timelimit.android.ui.overview.overview.OverviewScreen
 import io.timelimit.android.ui.setup.selectmode.SelectConnectedModeScreen
 import io.timelimit.android.ui.setup.SetupDevicePermissionsScreen
+import io.timelimit.android.ui.setup.parent.ConfirmNewParentAccount
+import io.timelimit.android.ui.setup.parent.ParentBaseConfiguration
+import io.timelimit.android.ui.setup.parent.ParentSetupConsent
+import io.timelimit.android.ui.setup.parent.SignInWrongMailAddress
+import io.timelimit.android.ui.setup.parent.SignupBlockedScreen
 import io.timelimit.android.ui.setup.privacy.SetupConnectedModePrivacyScreen
 import io.timelimit.android.ui.setup.selectmode.SelectModeScreen
 
@@ -52,5 +58,11 @@ fun ScreenMultiplexer(
         is Screen.DeleteRegistration -> DeleteRegistrationScreen(screen.content, modifier)
         is Screen.ManageBlockedTimes -> BlockedTimesScreen(screen.content, screen.intro, modifier)
         is Screen.ChildUsageHistory -> UsageHistoryScreen(screen.content, modifier)
+        is Screen.SetupParentMailAuthentication -> AuthenticateByMailScreen(screen.content, modifier)
+        is Screen.SignupBlocked -> SignupBlockedScreen(modifier)
+        is Screen.SignInWrongMailAddress -> SignInWrongMailAddress(modifier)
+        is Screen.ConfirmNewParentAccount -> ConfirmNewParentAccount(confirm = screen.confirm, reject = screen.reject, modifier = modifier)
+        is Screen.ParentBaseConfiguration -> ParentBaseConfiguration(content = screen.content, modifier = modifier)
+        is Screen.ParentSetupConsent -> ParentSetupConsent(content = screen.content, errorDialog = screen.errorDialog, modifier = modifier)
     }
 }

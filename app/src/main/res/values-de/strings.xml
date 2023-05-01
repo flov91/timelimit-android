@@ -1296,6 +1296,7 @@
         dann installieren Sie TimeLimit erneut.
     </string>
 
+    <string name="password_validator_empty">Das Passwort darf nicht leer sein</string>
     <string name="password_validator_too_short">Das Passwort muss mindestens <xliff:g example="5" id="number of chars">%d</xliff:g> Zeichen haben</string>
 
     <string name="primary_device_title">Aktuelles Gerät</string>
@@ -1470,6 +1471,18 @@
     <string name="setup_parent_mode_explaination_device_title_field_hint">Gerät-Name</string>
 
     <string name="setup_parent_mode_error_signup_disabled">Momentan sind keine Neuanmeldungen möglich</string>
+
+    <string name="setup_parent_mode_error_wrong_mail_address_title">falsche E-Mail-Adresse</string>
+    <string name="setup_parent_mode_error_wrong_mail_address_text">Es liegt keine Registrierung mit
+        der von Ihnen angegebenen E-Mail-Adresse vor. Finden Sie heraus, mit welcher E-Mail-Adresse
+        Sie sich ursprünglich angemeldet haben. Ansonsten gehen die bestehenden Verknüpfungen mit
+        anderen Geräten und eine evtl. vorhandene Vollversion verloren. Sie können die E-Mail-Adresse
+        bei noch bestehenden TimeLimit-Installationen einsehen oder in Ihren Postfächern nachsehen,
+        wohin damals die Anmelde-E-Mail gesendet wurde. Der Support kann Ihnen aus Datenschutzgründen
+        nicht mitteilen, welche E-Mail-Adresse Ihren Namen trägt und registriert ist.
+    </string>
+
+    <string name="setup_parent_confirm_new_account_text">Haben Sie sich bereits für TimeLimit mit Vernetzung registriert oder haben Sie bereits die Vollversion erworben?</string>
 
     <string name="setup_privacy_connected_title">Vernetzung und Datenschutz</string>
     <string name="setup_privacy_connected_text_general_intro">Für den vernetzten Modus

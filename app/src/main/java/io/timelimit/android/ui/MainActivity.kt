@@ -15,6 +15,7 @@
  */
 package io.timelimit.android.ui
 
+import android.Manifest
 import android.app.NotificationManager
 import android.content.Context
 import android.content.Intent
@@ -26,6 +27,7 @@ import android.provider.Settings
 import android.util.Log
 import androidx.activity.compose.BackHandler
 import androidx.activity.compose.setContent
+import androidx.activity.result.contract.ActivityResultContracts
 import androidx.activity.viewModels
 import androidx.appcompat.app.AppCompatActivity
 import androidx.compose.animation.AnimatedContent
@@ -123,6 +125,10 @@ class MainActivity : AppCompatActivity(), ActivityViewModelHolder, U2fManager.De
     override var ignoreStop: Boolean = false
     override val showPasswordRecovery: Boolean = true
 
+    private val requestNotifyPermission = registerForActivityResult(ActivityResultContracts.RequestPermission()) { granted ->
+        if (granted) mainModel.reportPermissionsChanged()
+    }
+
     @OptIn(ExperimentalAnimationApi::class)
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
@@ -162,6 +168,7 @@ class MainActivity : AppCompatActivity(), ActivityViewModelHolder, U2fManager.De
                     } catch (ex: Exception) {
                         message.errorHandler()
                     }
+                    ActivityCommand.RequestNotifyPermission -> requestNotifyPermission.launch(Manifest.permission.POST_NOTIFICATIONS)
                 }
             }
         }
