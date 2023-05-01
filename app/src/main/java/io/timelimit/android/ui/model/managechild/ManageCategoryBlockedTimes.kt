@@ -47,7 +47,7 @@ import kotlinx.coroutines.flow.flow
 import kotlinx.coroutines.launch
 import kotlinx.coroutines.sync.Mutex
 import java.io.Serializable
-import kotlin.experimental.and
+import kotlin.experimental.or
 
 object ManageCategoryBlockedTimes {
     private const val LOG_TAG = "ManageBlockedTimes"
@@ -157,10 +157,13 @@ object ManageCategoryBlockedTimes {
                     if (existingRuleId == null) rulesToCreate.add(rule.value)
                     else rulesToUpdate.add(rule.value.copy(id = existingRuleId))
                 } else {
-                    if (!isChild || currentRule.dayMask and rule.value.dayMask == currentRule.dayMask)
-                        if (currentRule.dayMask != rule.value.dayMask) rulesToUpdate.add(
-                            currentRule.copy(dayMask = rule.value.dayMask)
-                        )
+                    val targetDayMask =
+                        if (isChild) currentRule.dayMask or rule.value.dayMask
+                        else rule.value.dayMask
+
+                    if (currentRule.dayMask != targetDayMask) rulesToUpdate.add(
+                        currentRule.copy(dayMask = targetDayMask)
+                    )
                 }
             }
 
