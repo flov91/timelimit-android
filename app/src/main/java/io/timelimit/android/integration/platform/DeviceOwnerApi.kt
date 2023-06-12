@@ -22,4 +22,5 @@ interface DeviceOwnerApi {
 
     fun setDelegations(packageName: String, scopes: List<DelegationScope>)
     fun getDelegations(): Map<String, List<DelegationScope>>
+    fun setOrganizationName(name: String)
 }

@@ -15,11 +15,13 @@
  */
 package io.timelimit.android.ui.diagnose.deviceowner
 
+import androidx.compose.animation.AnimatedVisibility
 import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.*
 import androidx.compose.foundation.lazy.LazyColumn
 import androidx.compose.foundation.lazy.items
 import androidx.compose.foundation.rememberScrollState
+import androidx.compose.foundation.text.KeyboardOptions
 import androidx.compose.foundation.verticalScroll
 import androidx.compose.material.*
 import androidx.compose.material.icons.Icons
@@ -29,6 +31,7 @@ import androidx.compose.runtime.key
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.res.stringResource
+import androidx.compose.ui.text.input.ImeAction
 import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.text.style.TextOverflow
 import androidx.compose.ui.unit.dp
@@ -58,7 +61,22 @@ fun DeviceOwnerScreen(
             modifier = modifier.verticalScroll(rememberScrollState()),
             verticalArrangement = Arrangement.spacedBy(8.dp)
         ) {
-            Spacer(modifier = Modifier.height(8.dp))
+            TextField(
+                value = screen.organizationName,
+                onValueChange = screen.actions.updateOrganizationName ?: {},
+                enabled = screen.actions.updateOrganizationName != null,
+                keyboardOptions = KeyboardOptions(imeAction = ImeAction.Done),
+                singleLine = true,
+                label = { Text(stringResource(R.string.diagnose_don_title)) },
+                modifier = Modifier.fillMaxWidth()
+            )
+
+            AnimatedVisibility(visible = !screen.isParentAuthenticated) {
+                Text(
+                    stringResource(R.string.diagnose_don_auth),
+                    modifier = Modifier.padding(horizontal = 16.dp)
+                )
+            }
 
             Text(
                 stringResource(

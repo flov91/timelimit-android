@@ -561,8 +561,7 @@
     <string name="diagnose_bat_level">Akkustand: %d\%%</string>
 
     <string name="diagnose_don_title">Gerätebesitzerorganisationsname</string>
-    <string name="diagnose_don_no_owner_toast">TimeLimit ist KEIN Geräte-Besitzer</string>
-    <string name="diagnose_don_not_supported_toast">Ihr System ermöglicht es nicht, einen Organisationsnamen zu hinterlegen</string>
+    <string name="diagnose_don_auth">Melden Sie sich an, um den Namen zu ändern</string>
 
     <string name="diagnose_dom_title">Geräte-Besitzer</string>
     <string name="diagnose_dom_error">Diese Funktion erfordert eine ausreichend neue Android-Version und die Geräte-Besitzer-Berechtigung</string>

@@ -181,9 +181,6 @@ class DummyIntegration(
 
     override fun getCurrentNetworkId(): NetworkId = NetworkId.NoNetworkConnected
 
-    override fun canSetOrganizationName(): Boolean = false
-    override fun setOrganizationName(name: String): Boolean = false
-
     override fun openSystemPermissionScren(
         activity: FragmentActivity,
         permission: SystemPermission,
@@ -202,5 +199,7 @@ class DummyIntegration(
         }
 
         override fun getDelegations(): Map<String, List<DeviceOwnerApi.DelegationScope>> = emptyMap()
+
+        override fun setOrganizationName(name: String) = throw SecurityException()
     }
 }

@@ -89,13 +89,6 @@
 
                 <Button
                     style="?materialButtonOutlinedStyle"
-                    android:id="@+id/diagnose_organization_name_button"
-                    android:text="@string/diagnose_don_title"
-                    android:layout_width="match_parent"
-                    android:layout_height="wrap_content" />
-
-                <Button
-                    style="?materialButtonOutlinedStyle"
                     android:id="@+id/diagnose_dom"
                     android:text="@string/diagnose_dom_title"
                     android:layout_width="match_parent"

@@ -614,8 +614,7 @@
     <string name="diagnose_bat_level">Level: %d\%%</string>
 
     <string name="diagnose_don_title">Device Owner Organization Name</string>
-    <string name="diagnose_don_no_owner_toast">TimeLimit is NOT set as device owner</string>
-    <string name="diagnose_don_not_supported_toast">Your system does not support setting the organization name</string>
+    <string name="diagnose_don_auth">Sign in to change the name</string>
 
     <string name="diagnose_dom_title">Device Owner</string>
     <string name="diagnose_dom_error">You need a recent Android version and the device owner permission to use this</string>

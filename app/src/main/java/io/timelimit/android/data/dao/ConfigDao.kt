@@ -333,7 +333,7 @@ abstract class ConfigDao {
             }
     )
 
-    suspend fun getCustomOrganizationName(): String = getValueOfKeyCoroutine(ConfigurationItemType.CustomOrganizationName) ?: ""
+    suspend fun getCustomOrganizationName(): String? = getValueOfKeyCoroutine(ConfigurationItemType.CustomOrganizationName)
     fun setCustomOrganizationName(value: String) = updateValueSync(ConfigurationItemType.CustomOrganizationName, value)
 
     fun getServerApiLevelSync() = getValueOfKeySync(ConfigurationItemType.ServerApiLevel).let { it?.toInt() ?: 0 }

@@ -94,4 +94,12 @@ class AndroidDeviceOwnerApi(
             entry.value.map { it.second }
         }
     }
+
+    override fun setOrganizationName(name: String) {
+        if (VERSION.SDK_INT >= VERSION_CODES.O && !BuildConfig.storeCompilant) {
+            if (devicePolicyManager.isDeviceOwnerApp(componentName.packageName)) {
+                devicePolicyManager.setOrganizationName(componentName, name)
+            } else throw SecurityException()
+        } else throw SecurityException()
+    }
 }

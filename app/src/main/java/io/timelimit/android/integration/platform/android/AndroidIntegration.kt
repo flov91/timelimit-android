@@ -1,5 +1,5 @@
 /*
- * TimeLimit Copyright <C> 2019 - 2022 Jonas Lochmann
+ * TimeLimit Copyright <C> 2019 - 2023 Jonas Lochmann
  *
  * This program is free software: you can redistribute it and/or modify
  * it under the terms of the GNU General Public License as published by
@@ -627,28 +627,6 @@ class AndroidIntegration(context: Context): PlatformIntegration(maximumProtectio
         return session.playbackState?.state == PlaybackState.STATE_PLAYING ||
                 session.playbackState?.state == PlaybackState.STATE_FAST_FORWARDING ||
                 session.playbackState?.state == PlaybackState.STATE_REWINDING
-    }
-
-    override fun canSetOrganizationName(): Boolean {
-        return if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.O && !BuildConfig.storeCompilant) {
-            policyManager.isDeviceOwnerApp(context.packageName)
-        } else false
-    }
-
-    override fun setOrganizationName(name: String): Boolean {
-        if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.O && !BuildConfig.storeCompilant) {
-            if (policyManager.isDeviceOwnerApp(context.packageName)) {
-                return try {
-                    policyManager.setOrganizationName(deviceAdmin, name)
-
-                    true
-                } catch (ex: SecurityException) {
-                    false
-                }
-            }
-        }
-
-        return false
     }
 
     override fun openSystemPermissionScren(

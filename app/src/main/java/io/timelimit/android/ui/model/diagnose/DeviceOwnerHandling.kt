@@ -16,8 +16,12 @@
 package io.timelimit.android.ui.model.diagnose
 
 import android.graphics.drawable.Drawable
+import android.util.Log
 import androidx.compose.material.SnackbarHostState
+import io.timelimit.android.BuildConfig
 import io.timelimit.android.R
+import io.timelimit.android.async.Threads
+import io.timelimit.android.coroutines.executeAndWait
 import io.timelimit.android.data.IdGenerator
 import io.timelimit.android.data.model.App
 import io.timelimit.android.extensions.whileTrue
@@ -33,21 +37,33 @@ import kotlinx.coroutines.channels.Channel
 import kotlinx.coroutines.channels.ReceiveChannel
 import kotlinx.coroutines.flow.*
 import kotlinx.coroutines.launch
+import java.io.Serializable
 
 object DeviceOwnerHandling {
+    private const val LOG_TAG = "DeviceOwnerHandling"
+
     data class OwnerState(
         val appListDialog: AppListDialog? = null,
-        val apps: List<String> = emptyList()
-    ): java.io.Serializable {
+        val apps: List<String> = emptyList(),
+        val organizationName: OrganizationName = OrganizationName.Original
+    ): Serializable {
         data class AppListDialog(
             val filter: String = ""
-        ): java.io.Serializable
+        ): Serializable
+    }
+
+    sealed class OrganizationName: Serializable {
+        object Original: OrganizationName()
+        object Error: OrganizationName()
+        class Modified(val value: String): OrganizationName()
     }
 
     sealed class OwnerScreen {
         object Error: OwnerScreen()
 
         data class Normal(
+            val isParentAuthenticated: Boolean,
+            val organizationName: String,
             val appListDialog: AppListDialog?,
             val scopes: List<DeviceOwnerApi.DelegationScope>,
             val apps: List<AppInfo>,
@@ -66,6 +82,7 @@ object DeviceOwnerHandling {
             )
 
             data class Actions(
+                val updateOrganizationName: ((String) -> Unit)?,
                 val showAppListDialog: () -> Unit,
                 val dismissAppListDialog: () -> Unit,
                 val addApp: (String) -> Unit,
@@ -132,7 +149,40 @@ object DeviceOwnerHandling {
 
         val refreshSignal = Channel<Unit>(Channel.CONFLATED)
 
+        val hadUpdateOrganizationNameErrorLive = state.map { it.organizationName == OrganizationName.Error }.distinctUntilChanged()
+        val isParentAuthenticatedLive = authentication.authenticatedParentOnly.map { it != null }.distinctUntilChanged()
+
+        val organizationNameLive = state.map { it.organizationName }.distinctUntilChanged().map {
+            when (it) {
+                is OrganizationName.Modified -> it.value
+                is OrganizationName.Error, OrganizationName.Original -> logic.database.config().getCustomOrganizationName() ?: ""
+            }
+        }
+
         val actions = OwnerScreen.Normal.Actions(
+            updateOrganizationName = { organizationName ->
+                updateState { state ->
+                    if (state.organizationName == OrganizationName.Error) state
+                    else state.copy(organizationName = OrganizationName.Modified(organizationName))
+                }
+
+                launch {
+                    if (isParentAuthenticatedLive.first()) try {
+                        owner.setOrganizationName(organizationName)
+
+                        Threads.database.executeAndWait {
+                            logic.database.config().setCustomOrganizationName(organizationName)
+                        }
+                    } catch (ex: Exception) {
+                        updateState { it.copy(organizationName = OrganizationName.Error) }
+
+                        throw ex
+                    } else updateState { state ->
+                        if (state.organizationName == OrganizationName.Error) state
+                        else state.copy(organizationName = OrganizationName.Original)
+                    }
+                }
+            },
             addApp = { packageName ->
                 launch {
                     if (authentication.authenticatedParentOnly.first() != null) updateState { state ->
@@ -182,16 +232,30 @@ object DeviceOwnerHandling {
         )
 
         emitAll(
-            appsLive.combine(dialogLive) { apps, dialog ->
+            combine(
+                appsLive, dialogLive, hadUpdateOrganizationNameErrorLive, isParentAuthenticatedLive, organizationNameLive
+            ) { apps, dialog, hadUpdateOrganizationNameError, isParentAuthenticated, organizationName ->
                 OwnerScreen.Normal(
+                    isParentAuthenticated = isParentAuthenticated,
+                    organizationName = organizationName,
                     appListDialog = dialog,
                     scopes = scopes,
                     apps = apps,
-                    actions = actions
+                    actions = actions.copy(
+                        updateOrganizationName =
+                        if (hadUpdateOrganizationNameError || !isParentAuthenticated) null
+                        else actions.updateOrganizationName
+                    )
                 )
             }
         )
-    }.catch { emit(OwnerScreen.Error) }
+    }.catch {
+        if (BuildConfig.DEBUG) {
+            Log.w(LOG_TAG, "error during generating screen", it)
+        }
+
+        emit(OwnerScreen.Error)
+    }
 
     private fun getApps(
         integration: PlatformIntegration,

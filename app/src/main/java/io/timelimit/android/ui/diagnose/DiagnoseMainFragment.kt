@@ -80,12 +80,6 @@ class DiagnoseMainFragment : Fragment(), FragmentWithCustomTitle {
             }
         })
 
-        binding.diagnoseOrganizationNameButton.setOnClickListener {
-            if (auth.requestAuthenticationOrReturnTrue()) {
-                DiagnoseOrganizationNameDialogFragment.newInstance().show(parentFragmentManager)
-            }
-        }
-
         binding.diagnoseDom.setOnClickListener {
             requireActivity().execute(UpdateStateCommand.Diagnose.DeviceOwner)
         }
