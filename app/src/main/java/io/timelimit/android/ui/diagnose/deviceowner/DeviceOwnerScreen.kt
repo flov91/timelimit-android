@@ -36,7 +36,7 @@ import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.text.style.TextOverflow
 import androidx.compose.ui.unit.dp
 import io.timelimit.android.R
-import io.timelimit.android.ui.model.diagnose.DeviceOwnerHandling
+import io.timelimit.android.ui.model.managedevice.DeviceOwnerHandling
 import io.timelimit.android.ui.overview.overview.ListCardCommon
 import io.timelimit.android.ui.overview.overview.ListCommon
 

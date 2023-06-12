@@ -80,10 +80,6 @@ class DiagnoseMainFragment : Fragment(), FragmentWithCustomTitle {
             }
         })
 
-        binding.diagnoseDom.setOnClickListener {
-            requireActivity().execute(UpdateStateCommand.Diagnose.DeviceOwner)
-        }
-
         binding.diagnoseExitReasonsButton.setOnClickListener {
             requireActivity().execute(UpdateStateCommand.Diagnose.ExitReasons)
         }

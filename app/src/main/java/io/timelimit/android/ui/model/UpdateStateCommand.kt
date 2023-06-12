@@ -316,11 +316,6 @@ sealed class UpdateStateCommand {
                 if (state is State.DiagnoseScreen.Main) State.DiagnoseScreen.Sync(state)
                 else null
         }
-        object DeviceOwner: UpdateStateCommand() {
-            override fun transform(state: State): State? =
-                if (state is State.DiagnoseScreen.Main) State.DiagnoseScreen.DeviceOwner(state)
-                else null
-        }
     }
     object Setup {
         object Help: UpdateStateCommand() {

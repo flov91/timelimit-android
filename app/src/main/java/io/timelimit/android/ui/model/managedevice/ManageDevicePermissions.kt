@@ -17,6 +17,8 @@ package io.timelimit.android.ui.model.managedevice
 
 import io.timelimit.android.data.model.Device
 import io.timelimit.android.data.model.DevicePlatform
+import io.timelimit.android.integration.platform.ProtectionLevel
+import io.timelimit.android.integration.platform.SystemPermission
 import io.timelimit.android.logic.AppLogic
 import io.timelimit.android.ui.manage.device.manage.permission.PermissionScreenContent
 import io.timelimit.android.ui.model.ActivityCommand
@@ -55,9 +57,15 @@ object ManageDevicePermissions {
                         PermissionScreenContent.Dialog(
                             permission = dialog,
                             launchSystemSettings = if (isCurrentDevice) ({
-                                activityCommand.trySend(ActivityCommand.LaunchSystemSettings(dialog))
+                                if (dialog == SystemPermission.DeviceAdmin && deviceStatus.protectionLevel == ProtectionLevel.DeviceOwner) {
+                                    updateState {
+                                        State.ManageDevice.DeviceOwner(it.copy(currentDialog = null))
+                                    }
+                                } else {
+                                    activityCommand.trySend(ActivityCommand.LaunchSystemSettings(dialog))
 
-                                updateState { it.copy(currentDialog = null) }
+                                    updateState { it.copy(currentDialog = null) }
+                                }
                             }) else null,
                             close = { updateState { it.copy(currentDialog = null) } }
                         )

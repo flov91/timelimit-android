@@ -49,7 +49,7 @@ import io.timelimit.android.ui.manage.parent.password.restore.RestoreParentPassw
 import io.timelimit.android.ui.manage.parent.u2fkey.ManageParentU2FKeyFragment
 import io.timelimit.android.ui.manage.parent.u2fkey.ManageParentU2FKeyFragmentArgs
 import io.timelimit.android.ui.model.account.AccountDeletion
-import io.timelimit.android.ui.model.diagnose.DeviceOwnerHandling
+import io.timelimit.android.ui.model.managedevice.DeviceOwnerHandling
 import io.timelimit.android.ui.model.mailauthentication.MailAuthentication
 import io.timelimit.android.ui.model.main.OverviewHandling
 import io.timelimit.android.ui.model.managechild.ManageCategoryBlockedTimes
@@ -67,11 +67,12 @@ import io.timelimit.android.ui.view.NotifyPermissionCard
 import java.io.Serializable
 
 sealed class State (val previous: State?): Serializable {
-    fun hasPrevious(other: State): Boolean = this.previous == other || this.previous?.hasPrevious(other) ?: false
+    fun hasPrevious(other: State): Boolean = this.previous != null && (this.previous.matches(other) || this.previous.hasPrevious(other))
     fun find(predicate: (State) -> Boolean): State? =
         if (predicate(this)) this
         else previous?.find(predicate)
     fun first(): State = previous?.first() ?: this
+    open fun matches(other: State) = this == other
     object LaunchState: State(previous = null)
     data class Overview(
         val state: OverviewHandling.OverviewState = OverviewHandling.OverviewState.empty
@@ -214,9 +215,10 @@ sealed class State (val previous: State?): Serializable {
 
         sealed class Sub(
             val previousManageDeviceMain: Main,
-            fragmentClass: Class<out Fragment>
+            fragmentClass: Class<out Fragment>,
+            previous: State = previousManageDeviceMain
         ): ManageDevice(
-            previousManageDeviceMain,
+            previous,
             previousManageDeviceMain.previousOverview,
             previousManageDeviceMain.deviceId,
             fragmentClass
@@ -231,7 +233,12 @@ sealed class State (val previous: State?): Serializable {
                 object AdjustDefaultUserTimeout: Overlay()
             }
         }
-        data class Permissions(val previousMain: Main, val currentDialog: SystemPermission? = null): Sub(previousMain, Fragment::class.java)
+        data class Permissions(val previousMain: Main, val currentDialog: SystemPermission? = null): Sub(previousMain, Fragment::class.java) {
+            override fun matches(other: State): Boolean =
+                if (other is Permissions) this.previousMain.matches(other.previousMain)
+                else false
+        }
+        data class DeviceOwner(val previousPermissions: Permissions, val details: DeviceOwnerHandling.OwnerState = DeviceOwnerHandling.OwnerState()): Sub(previousPermissions.previousMain, Fragment::class.java, previousPermissions)
         class Features(previousMain: Main): Sub(previousMain, ManageDeviceFeaturesFragment::class.java) {
             override val arguments: Bundle get() = ManageDeviceFeaturesFragmentArgs(deviceId).toBundle()
         }
@@ -255,7 +262,6 @@ sealed class State (val previous: State?): Serializable {
         class Crypto(previous: Main): FragmentStateLegacy(previous, DiagnoseCryptoFragment::class.java)
         class ForegroundApp(previous: Main): FragmentStateLegacy(previous, DiagnoseForegroundAppFragment::class.java)
         class Sync(previous: Main): FragmentStateLegacy(previous, DiagnoseSyncFragment::class.java)
-        data class DeviceOwner(val previousMain: Main, val details: DeviceOwnerHandling.OwnerState = DeviceOwnerHandling.OwnerState()): State(previousMain)
     }
     sealed class Setup(previous: State): State(previous) {
         class SetupTerms: FragmentStateLegacy(previous = null, fragmentClass = SetupTermsFragment::class.java)

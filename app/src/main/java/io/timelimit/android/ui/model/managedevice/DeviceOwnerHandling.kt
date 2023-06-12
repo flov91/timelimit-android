@@ -13,22 +13,24 @@
  * You should have received a copy of the GNU General Public License
  * along with this program. If not, see <https://www.gnu.org/licenses/>.
  */
-package io.timelimit.android.ui.model.diagnose
+package io.timelimit.android.ui.model.managedevice
 
 import android.graphics.drawable.Drawable
 import android.util.Log
 import androidx.compose.material.SnackbarHostState
+import androidx.lifecycle.asFlow
 import io.timelimit.android.BuildConfig
 import io.timelimit.android.R
 import io.timelimit.android.async.Threads
 import io.timelimit.android.coroutines.executeAndWait
 import io.timelimit.android.data.IdGenerator
 import io.timelimit.android.data.model.App
-import io.timelimit.android.extensions.whileTrue
+import io.timelimit.android.data.model.Device
 import io.timelimit.android.integration.platform.DeviceOwnerApi
 import io.timelimit.android.integration.platform.PlatformIntegration
 import io.timelimit.android.logic.AppLogic
 import io.timelimit.android.ui.model.AuthenticationModelApi
+import io.timelimit.android.ui.model.BackStackItem
 import io.timelimit.android.ui.model.Screen
 import io.timelimit.android.ui.model.State
 import kotlinx.coroutines.CoroutineScope
@@ -96,39 +98,40 @@ object DeviceOwnerHandling {
         logic: AppLogic,
         scope: CoroutineScope,
         authentication: AuthenticationModelApi,
-        stateLive: MutableStateFlow<State>
+        deviceLive: SharedFlow<Device>,
+        ownerStateLive: SharedFlow<State.ManageDevice.DeviceOwner>,
+        backStackLive: Flow<List<BackStackItem>>,
+        updateState: ((State.ManageDevice.DeviceOwner) -> State) -> Unit
     ): Flow<Screen> {
         val snackbarHostState = SnackbarHostState()
 
-        val hasMatchingState = stateLive.map { it is State.DiagnoseScreen.DeviceOwner }
-        val ownerStateLive = stateLive.transform { if (it is State.DiagnoseScreen.DeviceOwner) emit (it) }
+        val isMatchingDeviceLive = combine(deviceLive, logic.deviceId.asFlow()) { device, id ->
+            device.id == id
+        }.distinctUntilChanged()
 
         val screenLive = getScreen(
             logic,
             ownerStateLive.map { it.details },
+            isMatchingDeviceLive,
             scope,
             authentication,
             snackbarHostState,
             updateState = { transformState ->
-                stateLive.update { oldState ->
-                    if (oldState is State.DiagnoseScreen.DeviceOwner)
-                        oldState.copy(details = transformState(oldState.details))
-                    else
-                        oldState
+                updateState {
+                    it.copy(details = transformState(it.details))
                 }
             }
         )
 
-        return hasMatchingState.whileTrue {
-            ownerStateLive.combine(screenLive) { state, screen ->
-                Screen.DeviceOwnerScreen(state, screen, snackbarHostState) as Screen
-            }
+        return combine(ownerStateLive, screenLive, backStackLive) { state, screen, backStack ->
+            Screen.DeviceOwnerScreen(state, screen, backStack, snackbarHostState) as Screen
         }
     }
 
     private fun getScreen(
         logic: AppLogic,
         state: Flow<OwnerState>,
+        isMatchingDeviceLive: Flow<Boolean>,
         scope: CoroutineScope,
         authentication: AuthenticationModelApi,
         snackbarHostState: SnackbarHostState,
@@ -233,9 +236,13 @@ object DeviceOwnerHandling {
 
         emitAll(
             combine(
-                appsLive, dialogLive, hadUpdateOrganizationNameErrorLive, isParentAuthenticatedLive, organizationNameLive
-            ) { apps, dialog, hadUpdateOrganizationNameError, isParentAuthenticated, organizationName ->
-                OwnerScreen.Normal(
+                combine(appsLive, dialogLive) { a, b -> Pair(a, b) },
+                hadUpdateOrganizationNameErrorLive, isParentAuthenticatedLive, organizationNameLive,
+                isMatchingDeviceLive
+            ) { appsAndDialog, hadUpdateOrganizationNameError, isParentAuthenticated, organizationName, isMatchingDevice ->
+                val (apps, dialog) = appsAndDialog
+
+                if (isMatchingDevice) OwnerScreen.Normal(
                     isParentAuthenticated = isParentAuthenticated,
                     organizationName = organizationName,
                     appListDialog = dialog,
@@ -246,7 +253,7 @@ object DeviceOwnerHandling {
                         if (hadUpdateOrganizationNameError || !isParentAuthenticated) null
                         else actions.updateOrganizationName
                     )
-                )
+                ) else OwnerScreen.Error
             }
         )
     }.catch {

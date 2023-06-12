@@ -22,7 +22,7 @@ import androidx.compose.material.icons.outlined.Info
 import io.timelimit.android.R
 import io.timelimit.android.ui.manage.device.manage.permission.PermissionScreenContent
 import io.timelimit.android.ui.model.account.AccountDeletion
-import io.timelimit.android.ui.model.diagnose.DeviceOwnerHandling
+import io.timelimit.android.ui.model.managedevice.DeviceOwnerHandling
 import io.timelimit.android.ui.model.intro.IntroHandling
 import io.timelimit.android.ui.model.mailauthentication.MailAuthentication
 import io.timelimit.android.ui.model.main.OverviewHandling
@@ -222,8 +222,9 @@ sealed class Screen(
     class DeviceOwnerScreen(
         state: State,
         val content: DeviceOwnerHandling.OwnerScreen,
+        override val backStack: List<BackStackItem>,
         override val snackbarHostState: SnackbarHostState
-    ): Screen(state), ScreenWithAuthenticationFab, ScreenWithSnackbar, ScreenWithTitle {
+    ): Screen(state), ScreenWithAuthenticationFab, ScreenWithSnackbar, ScreenWithTitle, ScreenWithBackStack {
         override val title = Title.StringResource(R.string.diagnose_dom_title)
     }
 

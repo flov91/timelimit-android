@@ -15,6 +15,7 @@
  */
 package io.timelimit.android.ui.model.managedevice
 
+import androidx.lifecycle.asFlow
 import io.timelimit.android.R
 import io.timelimit.android.data.model.Device
 import io.timelimit.android.logic.AppLogic
@@ -127,6 +128,23 @@ object ManageDeviceHandling {
                     subBackStackLive,
                     deviceLive,
                     updateMethod(updateState)
+                )
+            },
+            Case.simple<_, _, State.ManageDevice.DeviceOwner> {
+                val subUpdateState = updateMethod<State, State.ManageDevice.DeviceOwner>(updateState)
+
+                DeviceOwnerHandling.processState(
+                    logic,
+                    scope,
+                    authentication,
+                    deviceLive,
+                    share(it),
+                    subBackStackLive.map {
+                        it + BackStackItem(Title.StringResource(R.string.manage_device_card_permission_title)) {
+                            subUpdateState { it.previousPermissions }
+                        }
+                    },
+                    subUpdateState
                 )
             },
             Case.simple<_, _, State.ManageDevice.Features> {
