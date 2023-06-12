@@ -16,11 +16,10 @@
 package io.timelimit.android.sync.actions
 
 import io.timelimit.android.data.model.AppRecommendation
+import io.timelimit.android.data.model.DevicePlatform
 import io.timelimit.android.integration.platform.NewPermissionStatus
 import io.timelimit.android.integration.platform.ProtectionLevel
 import io.timelimit.android.integration.platform.RuntimePermissionStatus
-import io.timelimit.android.sync.network.ParentPassword
-import org.json.JSONObject
 import org.junit.Test
 
 class Actions {
@@ -87,7 +86,9 @@ class Actions {
                     newNotificationAccessPermission = NewPermissionStatus.Granted,
                     newOverlayPermission = RuntimePermissionStatus.NotRequired,
                     newUsageStatsPermissionStatus = RuntimePermissionStatus.NotGranted,
-                    addedManipulationFlags = 0L
+                    addedManipulationFlags = 0L,
+                    newPlatformType = DevicePlatform.ANDROID,
+                    newPlatformLevel = 0
             ),
             TriedDisablingDeviceAdminAction
     )
@@ -101,10 +102,7 @@ class Actions {
     )
 
     private val childActions: List<ChildAction> = listOf(
-            ChildSignInAction,
-            ChildChangePasswordAction(
-                    password = ParentPassword.createSync("test")
-            )
+            ChildSignInAction
     )
 
     @Test
