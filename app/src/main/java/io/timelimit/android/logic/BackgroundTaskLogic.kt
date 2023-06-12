@@ -37,6 +37,7 @@ import io.timelimit.android.extensions.MinuteOfDay
 import io.timelimit.android.extensions.nextBlockedMinuteOfWeek
 import io.timelimit.android.integration.platform.*
 import io.timelimit.android.integration.platform.android.AccessibilityService
+import io.timelimit.android.integration.platform.android.BackgroundService
 import io.timelimit.android.livedata.*
 import io.timelimit.android.logic.blockingreason.AppBaseHandling
 import io.timelimit.android.logic.blockingreason.CategoryHandlingCache
@@ -178,6 +179,7 @@ class BackgroundTaskLogic(val appLogic: AppLogic) {
 
     private suspend fun backgroundServiceLoop() {
         val realTime = RealTime.newInstance()
+        var skipBackgroundRestrictionChecks = 0
 
         while (true) {
             val backgroundServiceInterval = when (slowMainLoop) {
@@ -244,6 +246,24 @@ class BackgroundTaskLogic(val appLogic: AppLogic) {
 
             // loop logic
             try {
+                if (skipBackgroundRestrictionChecks <= 0) {
+                    if (BackgroundService.isBackgroundActivityRestricted(appLogic.context)) {
+                        commitUsedTimeUpdaters()
+                        undisturbedCategoryUsageCounter.reset()
+
+                        appLogic.platformIntegration.setShowBlockingOverlay(false)
+                        appLogic.platformIntegration.setAppStatusMessage(
+                            AppStatusMessage(
+                                appLogic.context.getString(R.string.background_logic_error),
+                                appLogic.context.getString(R.string.background_logic_error_permission)
+                            )
+                        )
+
+                        appLogic.timeApi.sleep(BACKGROUND_SERVICE_INTERVAL_LONG)
+                        continue
+                    } else skipBackgroundRestrictionChecks = 128
+                } else skipBackgroundRestrictionChecks--
+
                 // get the current time
                 appLogic.realTimeLogic.getRealTime(realTime)
 

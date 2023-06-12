@@ -1033,6 +1033,7 @@
     <string name="manage_device_permission_goal_manipulation_protection_unavailable">in der aktuellen Umgebung nicht verfügbar</string>
     <string name="manage_device_permission_goal_manipulation_protection_check_remotely">öffnen Sie diese Ansicht am entsprechenden Gerät</string>
     <string name="manage_device_permission_goal_eventually_needs">benötigt evtl.</string>
+    <string name="manage_device_permission_goal_eventually_needs_future">benötigt zukünftig</string>
     <string name="manage_device_permission_goal_needs">benötigt</string>
     <string name="manage_device_permission_goal_or">oder</string>
     <string name="manage_device_permission_goal_reached_by_old_android">benötigt wegen alter Android-Version Nichts weiter</string>

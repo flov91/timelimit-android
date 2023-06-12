@@ -1082,6 +1082,7 @@
     <string name="manage_device_permission_goal_manipulation_protection_unavailable">unavailable in the current environment</string>
     <string name="manage_device_permission_goal_manipulation_protection_check_remotely">open this screen at the device</string>
     <string name="manage_device_permission_goal_eventually_needs">eventually needs</string>
+    <string name="manage_device_permission_goal_eventually_needs_future">needs in the future</string>
     <string name="manage_device_permission_goal_needs">needs</string>
     <string name="manage_device_permission_goal_or">or</string>
     <string name="manage_device_permission_goal_reached_by_old_android">needs nothing due to old Android version</string>

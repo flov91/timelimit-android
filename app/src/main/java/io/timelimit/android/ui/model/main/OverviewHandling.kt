@@ -412,7 +412,9 @@ object OverviewHandling {
     data class UserList(val list: List<UserItem>, val canAdd: Boolean, val canShowMore: Boolean)
     data class DeviceItem(val device: Device, val userName: String?, val userType: UserType?, val isCurrentDevice: Boolean, val isConnected: Boolean) {
         val isMissingRequiredPermission = userType == UserType.Child && (
-                device.currentUsageStatsPermission == RuntimePermissionStatus.NotGranted || device.missingPermissionAtQOrLater)
+                device.currentUsageStatsPermission == RuntimePermissionStatus.NotGranted ||
+                        device.missingPermissionAtQOrLater ||
+                        device.missingDeviceAdminPermission)
     }
     data class DeviceList(val list: List<DeviceItem>, val canAdd: Boolean, val canShowMore: OverviewState.DeviceList?)
 }

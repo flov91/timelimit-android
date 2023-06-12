@@ -30,6 +30,7 @@
         tools:ignore="ProtectedPermissions" />
     <uses-permission android:name="android.permission.WAKE_LOCK" />
     <uses-permission android:name="android.permission.FOREGROUND_SERVICE" />
+    <uses-permission android:name="android.permission.FOREGROUND_SERVICE_SYSTEM_EXEMPTED" />
     <uses-permission android:name="android.permission.CALL_PHONE" />
     <uses-permission android:name="android.permission.QUERY_ALL_PACKAGES" />
     <!-- for the categories which are limited to a wifi network -->
@@ -136,6 +137,7 @@
         </receiver>
 
         <service
+            android:foregroundServiceType="systemExempted"
             android:name=".integration.platform.android.BackgroundService"
             android:exported="false" />
 

@@ -16,6 +16,7 @@
 package io.timelimit.android.ui.model.managedevice
 
 import io.timelimit.android.data.model.Device
+import io.timelimit.android.data.model.DevicePlatform
 import io.timelimit.android.logic.AppLogic
 import io.timelimit.android.ui.manage.device.manage.permission.PermissionScreenContent
 import io.timelimit.android.ui.model.ActivityCommand
@@ -82,7 +83,8 @@ object ManageDevicePermissions {
             usageStats = device.currentUsageStatsPermission,
             overlay = device.currentOverlayPermission,
             accessibility = device.accessibilityServiceEnabled,
-            isQOrLater = device.qOrLater
+            isQOrLater = device.qOrLater,
+            androidPlatformLevel = if (device.platformType == DevicePlatform.ANDROID) device.platformLevel else 0
         )
     }.distinctUntilChanged()
 }

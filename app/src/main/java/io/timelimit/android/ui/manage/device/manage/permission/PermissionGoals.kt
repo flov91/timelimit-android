@@ -38,7 +38,8 @@ fun PermissionGoals(status: PermissionScreenContent.Status) {
     PermissionGoal(
         stringResource(R.string.manage_device_permission_goal_limit_title),
         status.usageStats != RuntimePermissionStatus.NotGranted &&
-                (!status.isQOrLater || status.overlay == RuntimePermissionStatus.Granted || status.accessibility),
+                (!status.isQOrLater || status.overlay == RuntimePermissionStatus.Granted || status.accessibility) &&
+                (status.androidPlatformLevel < 2 || status.protectionLevel != ProtectionLevel.None)
     ) {
         if (status.usageStats != RuntimePermissionStatus.NotRequired) FlowRow {
             Text(stringResource(R.string.manage_device_permission_goal_needs))
@@ -52,8 +53,13 @@ fun PermissionGoals(status: PermissionScreenContent.Status) {
             PermissionIcon(SystemPermission.AccessibilityService, status.accessibility)
         }
 
-        if (status.usageStats == RuntimePermissionStatus.NotRequired && !status.isQOrLater)
-            Text(stringResource(R.string.manage_device_permission_goal_reached_by_old_android))
+        FlowRow {
+            Text(stringResource(
+                if (status.androidPlatformLevel >= 2) R.string.manage_device_permission_goal_needs
+                else R.string.manage_device_permission_goal_eventually_needs_future
+            ))
+            PermissionIcon(SystemPermission.DeviceAdmin, status.protectionLevel != ProtectionLevel.None)
+        }
     }
 
     PermissionGoal(

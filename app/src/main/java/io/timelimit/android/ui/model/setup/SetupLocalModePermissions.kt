@@ -108,7 +108,8 @@ object SetupLocalModePermissions {
                     usageStats = platformIntegration.getForegroundAppPermissionStatus(),
                     overlay = platformIntegration.getDrawOverOtherAppsPermissionStatus(true),
                     accessibility = platformIntegration.isAccessibilityServiceEnabled(),
-                    isQOrLater = AndroidVersion.qOrLater
+                    isQOrLater = AndroidVersion.qOrLater,
+                    androidPlatformLevel = AndroidVersion.platformLevel
                 )
             )
 

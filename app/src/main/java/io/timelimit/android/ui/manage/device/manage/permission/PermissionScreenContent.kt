@@ -32,7 +32,8 @@ data class PermissionScreenContent(
         val usageStats: RuntimePermissionStatus,
         val overlay: RuntimePermissionStatus,
         val accessibility: Boolean,
-        val isQOrLater: Boolean
+        val isQOrLater: Boolean,
+        val androidPlatformLevel: Int
     )
 
     data class Dialog(

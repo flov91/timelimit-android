@@ -69,7 +69,7 @@ class NFCU2FManager (val parent: U2fManager, context: Context) {
     private val nfcReceiverIntent = PendingIntent.getBroadcast(
         context,
         PendingIntentIds.U2F_NFC_DISCOVERY,
-        Intent(nfcReceiverAction),
+        Intent(nfcReceiverAction).setPackage(context.packageName),
         PendingIntentIds.PENDING_INTENT_FLAGS_ALLOW_MUTATION
     )
 

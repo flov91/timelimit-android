@@ -361,7 +361,13 @@ data class Device(
             (currentProtectionLevel != ProtectionLevel.DeviceOwner)
 
     @Transient
-    val isImportant = hasAnyManipulation || missingPermissionAtQOrLater || didReportUninstall
+    val missingDeviceAdminPermission =
+        platformType == DevicePlatform.ANDROID &&
+                platformLevel >= 2 &&
+                currentProtectionLevel == ProtectionLevel.None
+
+    @Transient
+    val isImportant = hasAnyManipulation || missingPermissionAtQOrLater || missingDeviceAdminPermission || didReportUninstall
 }
 
 enum class NetworkTime {
