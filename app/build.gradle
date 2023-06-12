@@ -23,7 +23,7 @@ apply plugin: 'com.squareup.wire'
 
 android {
     namespace 'io.timelimit.android'
-    compileSdkVersion 33
+    compileSdkVersion 34
     defaultConfig {
         applicationId "io.timelimit.android"
         minSdkVersion 21

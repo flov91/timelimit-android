@@ -1,5 +1,5 @@
 /*
- * TimeLimit Copyright <C> 2019 - 2022 Jonas Lochmann
+ * TimeLimit Copyright <C> 2019 - 2023 Jonas Lochmann
  *
  * This program is free software: you can redistribute it and/or modify
  * it under the terms of the GNU General Public License as published by
@@ -94,7 +94,11 @@ data class Device(
         @ColumnInfo(name = "q_or_later")
         val qOrLater: Boolean,
         @ColumnInfo(name = "manipulation_flags")
-        val manipulationFlags: Long
+        val manipulationFlags: Long,
+        @ColumnInfo(name = "platform_type")
+        val platformType: String?,
+        @ColumnInfo(name = "platform_level", defaultValue = "0")
+        val platformLevel: Int
 ): JsonSerializable {
     companion object {
         private const val ID = "id"
@@ -129,6 +133,8 @@ data class Device(
         private const val ENABLE_ACTIVITY_LEVEL_BLOCKING = "ealb"
         private const val Q_OR_LATER = "qol"
         private const val MANIPULATION_FLAGS = "mf"
+        private const val PLATFORM_TYPE = "pt"
+        private const val PLATFORM_LEVEL = "pl"
 
         fun parse(reader: JsonReader): Device {
             var id: String? = null
@@ -163,6 +169,8 @@ data class Device(
             var enableActivityLevelBlocking = false
             var qOrLater = false
             var manipulationFlags = 0L
+            var platformType: String? = null
+            var platformLevel = 0
 
             reader.beginObject()
 
@@ -200,6 +208,8 @@ data class Device(
                     ENABLE_ACTIVITY_LEVEL_BLOCKING -> enableActivityLevelBlocking = reader.nextBoolean()
                     Q_OR_LATER -> qOrLater = reader.nextBoolean()
                     MANIPULATION_FLAGS -> manipulationFlags = reader.nextLong()
+                    PLATFORM_TYPE -> platformType = reader.nextString()
+                    PLATFORM_LEVEL -> platformLevel = reader.nextInt()
                     else -> reader.skipValue()
                 }
             }
@@ -238,7 +248,9 @@ data class Device(
                     wasAccessibilityServiceEnabled = wasAccessibilityServiceEnabled,
                     enableActivityLevelBlocking = enableActivityLevelBlocking,
                     qOrLater = qOrLater,
-                    manipulationFlags = manipulationFlags
+                    manipulationFlags = manipulationFlags,
+                    platformType = platformType,
+                    platformLevel = platformLevel
             )
         }
     }
@@ -310,6 +322,8 @@ data class Device(
         writer.name(ENABLE_ACTIVITY_LEVEL_BLOCKING).value(enableActivityLevelBlocking)
         writer.name(Q_OR_LATER).value(qOrLater)
         writer.name(MANIPULATION_FLAGS).value(manipulationFlags)
+        platformType?.let { writer.name(PLATFORM_TYPE).value(it) }
+        writer.name(PLATFORM_LEVEL).value(platformLevel)
 
         writer.endObject()
     }
@@ -392,4 +406,8 @@ object HadManipulationFlag {
 
 object ManipulationFlag {
     const val USED_FGS_KILLER = 1L shl 0
+}
+
+object DevicePlatform {
+    const val ANDROID = "android"
 }

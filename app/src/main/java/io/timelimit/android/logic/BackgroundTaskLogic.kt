@@ -26,6 +26,7 @@ import io.timelimit.android.coroutines.executeAndWait
 import io.timelimit.android.coroutines.runAsync
 import io.timelimit.android.coroutines.runAsyncExpectForever
 import io.timelimit.android.data.backup.DatabaseBackup
+import io.timelimit.android.data.model.DevicePlatform
 import io.timelimit.android.data.model.ExperimentalFlags
 import io.timelimit.android.data.model.ManipulationFlag
 import io.timelimit.android.data.model.UserType
@@ -982,6 +983,8 @@ class BackgroundTaskLogic(val appLogic: AppLogic) {
             val overlayPermission = appLogic.platformIntegration.getDrawOverOtherAppsPermissionStatus(useStrictChecking)
             val accessibilityService = appLogic.platformIntegration.isAccessibilityServiceEnabled()
             val qOrLater = AndroidVersion.qOrLater
+            val platformType = DevicePlatform.ANDROID
+            val platformLevel = AndroidVersion.platformLevel
 
             if (protectionLevel != deviceEntry.currentProtectionLevel) {
                 changes = changes.copy(
@@ -1019,6 +1022,14 @@ class BackgroundTaskLogic(val appLogic: AppLogic) {
 
             if (qOrLater && !deviceEntry.qOrLater) {
                 changes = changes.copy(isQOrLaterNow = true)
+            }
+
+            if (deviceEntry.platformType != platformType) {
+                changes = changes.copy(newPlatformType = platformType)
+            }
+
+            if (deviceEntry.platformLevel != platformLevel) {
+                changes = changes.copy(newPlatformLevel = platformLevel)
             }
         }
 

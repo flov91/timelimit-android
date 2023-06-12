@@ -323,7 +323,9 @@ data class ServerDeviceData(
         val enableActivityLevelBlocking: Boolean,
         val qOrLater: Boolean,
         val manipulationFlags: Long,
-        val publicKey: ByteArray?
+        val publicKey: ByteArray?,
+        val platformType: String?,
+        val platformLevel: Int?
 ) {
     companion object {
         private const val DEVICE_ID = "deviceId"
@@ -358,6 +360,8 @@ data class ServerDeviceData(
         private const val Q_OR_LATER = "qOrLater"
         private const val MANIPULATION_FLAGS = "mFlags"
         private const val PUBLIC_KEY = "pk"
+        private const val PLATFORM_TYPE = "pType"
+        private const val PLATFORM_LEVEL = "pLevel"
 
         fun parse(reader: JsonReader): ServerDeviceData {
             var deviceId: String? = null
@@ -392,6 +396,8 @@ data class ServerDeviceData(
             var qOrLater = false
             var manipulationFlags = 0L
             var publicKey: ByteArray? = null
+            var platformType: String? = null
+            var platformLevel: Int? = null
 
             reader.beginObject()
             while (reader.hasNext()) {
@@ -428,6 +434,8 @@ data class ServerDeviceData(
                     Q_OR_LATER -> qOrLater = reader.nextBoolean()
                     MANIPULATION_FLAGS -> manipulationFlags = reader.nextLong()
                     PUBLIC_KEY -> publicKey = reader.nextString().parseBase64()
+                    PLATFORM_TYPE -> platformType = reader.nextString()
+                    PLATFORM_LEVEL -> platformLevel = reader.nextInt()
                     else -> reader.skipValue()
                 }
             }
@@ -465,7 +473,9 @@ data class ServerDeviceData(
                     enableActivityLevelBlocking = enableActivityLevelBlocking,
                     qOrLater = qOrLater,
                     manipulationFlags = manipulationFlags,
-                    publicKey = publicKey
+                    publicKey = publicKey,
+                    platformType = platformType,
+                    platformLevel = platformLevel
             )
         }
 

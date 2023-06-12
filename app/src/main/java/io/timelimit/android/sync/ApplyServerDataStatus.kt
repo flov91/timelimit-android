@@ -194,7 +194,9 @@ object ApplyServerDataStatus {
                                         wasAccessibilityServiceEnabled = newDevice.wasAccessibilityServiceEnabled,
                                         enableActivityLevelBlocking = newDevice.enableActivityLevelBlocking,
                                         qOrLater = newDevice.qOrLater,
-                                        manipulationFlags = newDevice.manipulationFlags
+                                        manipulationFlags = newDevice.manipulationFlags,
+                                        platformType = newDevice.platformType,
+                                        platformLevel = newDevice.platformLevel ?: 0
                                 ))
 
                                 newDeviceTitles.add(newDevice.name)
@@ -231,7 +233,9 @@ object ApplyServerDataStatus {
                                         wasAccessibilityServiceEnabled = newDevice.wasAccessibilityServiceEnabled,
                                         enableActivityLevelBlocking = newDevice.enableActivityLevelBlocking,
                                         qOrLater = newDevice.qOrLater,
-                                        manipulationFlags = newDevice.manipulationFlags
+                                        manipulationFlags = newDevice.manipulationFlags,
+                                        platformType = newDevice.platformType ?: oldDeviceEntry.platformType,
+                                        platformLevel = newDevice.platformLevel ?: oldDeviceEntry.platformLevel
                                 )
 
                                 if (updatedDeviceEntry != oldDeviceEntry) {

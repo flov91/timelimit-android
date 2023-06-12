@@ -1,5 +1,5 @@
 /*
- * TimeLimit Copyright <C> 2019 - 2022 Jonas Lochmann
+ * TimeLimit Copyright <C> 2019 - 2023 Jonas Lochmann
  *
  * This program is free software: you can redistribute it and/or modify
  * it under the terms of the GNU General Public License as published by
@@ -303,6 +303,14 @@ object LocalDatabaseAppLogicActionDispatcher {
 
                     if (action.isQOrLaterNow && !device.qOrLater) {
                         device = device.copy(qOrLater = true)
+                    }
+
+                    if (action.newPlatformType != null) {
+                        device = device.copy(platformType = action.newPlatformType)
+                    }
+
+                    if (action.newPlatformLevel != null) {
+                        device = device.copy(platformLevel = action.newPlatformLevel)
                     }
 
                     if (action.addedManipulationFlags != 0L) {

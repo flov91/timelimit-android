@@ -1,5 +1,5 @@
 /*
- * TimeLimit Copyright <C> 2019 Jonas Lochmann
+ * TimeLimit Copyright <C> 2019 - 2023 Jonas Lochmann
  *
  * This program is free software: you can redistribute it and/or modify
  * it under the terms of the GNU General Public License as published by
@@ -19,4 +19,9 @@ import android.os.Build
 
 object AndroidVersion {
     val qOrLater = Build.VERSION.SDK_INT >= Build.VERSION_CODES.Q
+
+    val platformLevel =
+        if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.UPSIDE_DOWN_CAKE) 2
+        else if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.Q) 1
+        else 0
 }

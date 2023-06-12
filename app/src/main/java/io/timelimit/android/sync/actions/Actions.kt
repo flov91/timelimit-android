@@ -1,5 +1,5 @@
 /*
- * TimeLimit Copyright <C> 2019 - 2022 Jonas Lochmann
+ * TimeLimit Copyright <C> 2019 - 2023 Jonas Lochmann
  *
  * This program is free software: you can redistribute it and/or modify
  * it under the terms of the GNU General Public License as published by
@@ -1220,7 +1220,9 @@ data class UpdateDeviceStatusAction(
         val newAppVersion: Int?,
         val didReboot: Boolean,
         val isQOrLaterNow: Boolean,
-        val addedManipulationFlags: Long
+        val addedManipulationFlags: Long,
+        val newPlatformType: String?,
+        val newPlatformLevel: Int?
 ): AppLogicAction() {
     companion object {
         const val TYPE_VALUE = "UPDATE_DEVICE_STATUS"
@@ -1233,6 +1235,8 @@ data class UpdateDeviceStatusAction(
         private const val DID_REBOOT = "didReboot"
         private const val IS_Q_OR_LATER_NOW = "isQOrLaterNow"
         private const val ADDED_MANIPULATION_FLAGS = "addedManipulationFlags"
+        private const val PLATFORM_TYPE = "platformType"
+        private const val PLATFORM_LEVEL = "platformLevel"
 
         val empty = UpdateDeviceStatusAction(
                 newProtectionLevel = null,
@@ -1243,12 +1247,22 @@ data class UpdateDeviceStatusAction(
                 newAppVersion = null,
                 didReboot = false,
                 isQOrLaterNow = false,
-                addedManipulationFlags = 0L
+                addedManipulationFlags = 0L,
+                newPlatformType = null,
+                newPlatformLevel = null
         )
     }
 
     init {
         if (newAppVersion != null && newAppVersion < 0) {
+            throw IllegalArgumentException()
+        }
+
+        if (newPlatformType != null && newPlatformType.isEmpty()) {
+            throw IllegalArgumentException()
+        }
+
+        if (newPlatformLevel != null && newPlatformLevel < 0) {
             throw IllegalArgumentException()
         }
     }
@@ -1302,6 +1316,14 @@ data class UpdateDeviceStatusAction(
 
         if (addedManipulationFlags != 0L) {
             writer.name(ADDED_MANIPULATION_FLAGS).value(addedManipulationFlags)
+        }
+
+        if (newPlatformType != null) {
+            writer.name(PLATFORM_TYPE).value(newPlatformType)
+        }
+
+        if (newPlatformLevel != null) {
+            writer.name(PLATFORM_LEVEL).value(newPlatformLevel)
         }
 
         writer.endObject()
