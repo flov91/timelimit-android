@@ -201,5 +201,7 @@ class DummyIntegration(
         override fun getDelegations(): Map<String, List<DeviceOwnerApi.DelegationScope>> = emptyMap()
 
         override fun setOrganizationName(name: String) = throw SecurityException()
+
+        override fun transferOwnership(packageName: String, dryRun: Boolean) = throw IllegalStateException("unsupported operation")
     }
 }

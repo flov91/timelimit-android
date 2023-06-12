@@ -1779,4 +1779,10 @@
     </string>
     <string name="account_deletion_confirmation_premium_toggle">Ich verzichte ersatzlos auf eine evtl. vorhandene Restlaufzeit meiner Vollversion</string>
     <string name="account_deletion_confirmation_button">Löschung anfordern</string>
+
+    <string name="device_owner_transfer_title">Gerätebesitzer übertragen</string>
+    <string name="device_owner_transfer_text">Soll TimeLimit die Gerätebesitzerrolle abgeben und an %s übergeben?
+        Das wird zu einer Manipulationswarnung führen.
+    </string>
+    <string name="device_owner_transfer_confirm">Berechtigung übertragen</string>
 </resources>

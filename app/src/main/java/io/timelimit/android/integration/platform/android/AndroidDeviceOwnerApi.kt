@@ -15,8 +15,11 @@
  */
 package io.timelimit.android.integration.platform.android
 
+import android.app.admin.DeviceAdminReceiver
 import android.app.admin.DevicePolicyManager
 import android.content.ComponentName
+import android.content.Intent
+import android.content.pm.PackageManager
 import android.os.Build.VERSION
 import android.os.Build.VERSION_CODES
 import android.util.Log
@@ -25,7 +28,8 @@ import io.timelimit.android.integration.platform.DeviceOwnerApi
 
 class AndroidDeviceOwnerApi(
     private val componentName: ComponentName,
-    private val devicePolicyManager: DevicePolicyManager
+    private val devicePolicyManager: DevicePolicyManager,
+    private val packageManager: PackageManager
 ): DeviceOwnerApi {
     companion object {
         private const val LOG_TAG = "AndroidDeviceOwnerApi"
@@ -101,5 +105,22 @@ class AndroidDeviceOwnerApi(
                 devicePolicyManager.setOrganizationName(componentName, name)
             } else throw SecurityException()
         } else throw SecurityException()
+    }
+
+    override fun transferOwnership(packageName: String, dryRun: Boolean) {
+        if (VERSION.SDK_INT < VERSION_CODES.P) throw IllegalStateException()
+        if (!devicePolicyManager.isDeviceOwnerApp(componentName.packageName)) throw SecurityException()
+
+        val targetComponentName = packageManager.queryBroadcastReceivers(
+            Intent(DeviceAdminReceiver.ACTION_DEVICE_ADMIN_ENABLED)
+                .setPackage(packageName),
+            0
+        ).singleOrNull()?.activityInfo?.let { ComponentName(it.packageName, it.name) }
+
+        if (targetComponentName == null) throw RuntimeException("no device admin in the target App found")
+
+        if (dryRun) return
+
+        devicePolicyManager.transferOwnership(componentName, targetComponentName, null)
     }
 }
