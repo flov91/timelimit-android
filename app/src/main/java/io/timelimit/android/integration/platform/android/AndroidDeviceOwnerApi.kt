@@ -121,6 +121,7 @@ class AndroidDeviceOwnerApi(
 
         if (dryRun) return
 
+        devicePolicyManager.setDelegatedScopes(componentName, packageName, emptyList())
         devicePolicyManager.transferOwnership(componentName, targetComponentName, null)
     }
 }
