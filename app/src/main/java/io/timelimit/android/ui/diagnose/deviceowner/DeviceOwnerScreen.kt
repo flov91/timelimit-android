@@ -36,6 +36,7 @@ import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.text.style.TextOverflow
 import androidx.compose.ui.unit.dp
 import io.timelimit.android.R
+import io.timelimit.android.ui.diagnose.exception.SimpleErrorDialog
 import io.timelimit.android.ui.model.managedevice.DeviceOwnerHandling
 import io.timelimit.android.ui.overview.overview.ListCardCommon
 import io.timelimit.android.ui.overview.overview.ListCommon
@@ -126,6 +127,12 @@ fun DeviceOwnerScreen(
                                 Text(scope.label)
                             }
                         }
+
+                        TextButton(
+                            onClick = { screen.actions.transferOwnership(app.packageName) }
+                        ) {
+                            Text(stringResource(R.string.device_owner_transfer_title))
+                        }
                     }
                 }
             }
@@ -138,7 +145,29 @@ fun DeviceOwnerScreen(
 
             Spacer(modifier = Modifier.height(8.dp))
 
-            if (screen.appListDialog != null) AddAppDialog(screen.appListDialog, screen.actions)
+            when (val dialog = screen.dialog) {
+                is DeviceOwnerHandling.OwnerScreen.Normal.AppListDialog -> AddAppDialog(dialog, screen.actions)
+                is DeviceOwnerHandling.OwnerScreen.Normal.TransferOwnershipDialog -> AlertDialog(
+                    title = { Text(stringResource(R.string.device_owner_transfer_title)) },
+                    text = { Text(stringResource(R.string.device_owner_transfer_text, dialog.packageName)) },
+                    buttons = {
+                        TextButton(onClick = dialog.cancel) {
+                            Text(stringResource(R.string.generic_cancel))
+                        }
+
+                        TextButton(onClick = dialog.confirm) {
+                            Text(stringResource(R.string.device_owner_transfer_confirm))
+                        }
+                    },
+                    onDismissRequest = dialog.cancel
+                )
+                is DeviceOwnerHandling.OwnerScreen.Normal.ErrorDialog -> SimpleErrorDialog(
+                    title = null,
+                    message = dialog.message,
+                    close = dialog.close
+                )
+                null -> {}
+            }
         }
     }
 }

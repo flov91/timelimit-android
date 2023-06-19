@@ -17,7 +17,9 @@ package io.timelimit.android.ui.model.managedevice
 
 import android.graphics.drawable.Drawable
 import android.util.Log
+import androidx.compose.material.SnackbarDuration
 import androidx.compose.material.SnackbarHostState
+import androidx.compose.material.SnackbarResult
 import androidx.lifecycle.asFlow
 import io.timelimit.android.BuildConfig
 import io.timelimit.android.R
@@ -28,13 +30,16 @@ import io.timelimit.android.data.model.App
 import io.timelimit.android.data.model.Device
 import io.timelimit.android.integration.platform.DeviceOwnerApi
 import io.timelimit.android.integration.platform.PlatformIntegration
+import io.timelimit.android.integration.platform.ProtectionLevel
 import io.timelimit.android.logic.AppLogic
+import io.timelimit.android.ui.diagnose.exception.ExceptionUtil
 import io.timelimit.android.ui.model.AuthenticationModelApi
 import io.timelimit.android.ui.model.BackStackItem
 import io.timelimit.android.ui.model.Screen
 import io.timelimit.android.ui.model.State
+import io.timelimit.android.ui.model.flow.Case
+import io.timelimit.android.ui.model.flow.splitConflated
 import kotlinx.coroutines.CoroutineScope
-import kotlinx.coroutines.ExperimentalCoroutinesApi
 import kotlinx.coroutines.channels.Channel
 import kotlinx.coroutines.channels.ReceiveChannel
 import kotlinx.coroutines.flow.*
@@ -45,13 +50,23 @@ object DeviceOwnerHandling {
     private const val LOG_TAG = "DeviceOwnerHandling"
 
     data class OwnerState(
-        val appListDialog: AppListDialog? = null,
         val apps: List<String> = emptyList(),
+        val dialog: Dialog? = null,
         val organizationName: OrganizationName = OrganizationName.Original
     ): Serializable {
+        sealed class Dialog: Serializable
+
         data class AppListDialog(
             val filter: String = ""
-        ): Serializable
+        ): Dialog()
+
+        data class TransferOwnershipDialog(
+            val packageName: String
+        ): Dialog()
+
+        data class ErrorDialog(
+            val message: String
+        ): Dialog()
     }
 
     sealed class OrganizationName: Serializable {
@@ -66,7 +81,7 @@ object DeviceOwnerHandling {
         data class Normal(
             val isParentAuthenticated: Boolean,
             val organizationName: String,
-            val appListDialog: AppListDialog?,
+            val dialog: Dialog?,
             val scopes: List<DeviceOwnerApi.DelegationScope>,
             val apps: List<AppInfo>,
             val actions: Actions
@@ -78,10 +93,23 @@ object DeviceOwnerHandling {
                 val scopes: Set<DeviceOwnerApi.DelegationScope>
             )
 
+            sealed class Dialog
+
             data class AppListDialog(
                 val filter: String,
                 val apps: List<App>
-            )
+            ): Dialog()
+
+            data class TransferOwnershipDialog(
+                val packageName: String,
+                val confirm: () -> Unit,
+                val cancel: () -> Unit
+            ): Dialog()
+
+            data class ErrorDialog(
+                val message: String,
+                val close: () -> Unit
+            ): Dialog()
 
             data class Actions(
                 val updateOrganizationName: ((String) -> Unit)?,
@@ -89,6 +117,7 @@ object DeviceOwnerHandling {
                 val dismissAppListDialog: () -> Unit,
                 val addApp: (String) -> Unit,
                 val updateScopeEnabled: (String, DeviceOwnerApi.DelegationScope, Boolean) -> Unit,
+                val transferOwnership: (String) -> Unit,
                 val updateDialogSearch: (String) -> Unit
             )
         }
@@ -106,7 +135,7 @@ object DeviceOwnerHandling {
         val snackbarHostState = SnackbarHostState()
 
         val isMatchingDeviceLive = combine(deviceLive, logic.deviceId.asFlow()) { device, id ->
-            device.id == id
+            device.id == id && device.currentProtectionLevel == ProtectionLevel.DeviceOwner
         }.distinctUntilChanged()
 
         val screenLive = getScreen(
@@ -124,7 +153,7 @@ object DeviceOwnerHandling {
         )
 
         return combine(ownerStateLive, screenLive, backStackLive) { state, screen, backStack ->
-            Screen.DeviceOwnerScreen(state, screen, backStack, snackbarHostState) as Screen
+            Screen.DeviceOwnerScreen(state, screen, backStack, snackbarHostState)
         }
     }
 
@@ -145,7 +174,15 @@ object DeviceOwnerHandling {
                 try {
                     action()
                 } catch (ex: Exception) {
-                    snackbarHostState.showSnackbar(logic.context.getString(R.string.error_general))
+                    val result = snackbarHostState.showSnackbar(
+                        logic.context.getString(R.string.error_general),
+                        logic.context.getString(R.string.generic_show_details),
+                        SnackbarDuration.Short
+                    )
+
+                    if (result == SnackbarResult.ActionPerformed) updateState {
+                        it.copy(dialog = OwnerState.ErrorDialog(ExceptionUtil.format(ex)))
+                    }
                 }
             }
         }
@@ -189,17 +226,17 @@ object DeviceOwnerHandling {
             addApp = { packageName ->
                 launch {
                     if (authentication.authenticatedParentOnly.first() != null) updateState { state ->
-                        state.copy(apps = state.apps + packageName, appListDialog = null)
-                    } else updateState { it.copy(appListDialog = null) }
+                        state.copy(apps = state.apps + packageName, dialog = null)
+                    } else updateState { it.copy(dialog = null) }
                 }
             },
             dismissAppListDialog = {
-                updateState { it.copy(appListDialog = null) }
+                updateState { it.copy(dialog = null) }
             },
             showAppListDialog = {
                 launch {
                     authentication.doParentAuthentication()?.also {
-                        updateState { it.copy(appListDialog = OwnerState.AppListDialog()) }
+                        updateState { it.copy(dialog = OwnerState.AppListDialog()) }
                     }
                 }
             },
@@ -215,9 +252,19 @@ object DeviceOwnerHandling {
                     } else authentication.doParentAuthentication()
                 }
             },
+            transferOwnership = { packageName ->
+                launch {
+                    owner.transferOwnership(packageName, dryRun = true)
+
+                    authentication.doParentAuthentication()
+
+                    updateState { it.copy(dialog = OwnerState.TransferOwnershipDialog(packageName)) }
+                }
+            },
             updateDialogSearch = { filter ->
                 updateState {
-                    it.copy(appListDialog = it.appListDialog?.copy(filter = filter))
+                    if (it.dialog is OwnerState.AppListDialog) it.copy(dialog = it.dialog.copy(filter = filter))
+                    else it
                 }
             }
         )
@@ -231,7 +278,9 @@ object DeviceOwnerHandling {
 
         val dialogLive = getNullableDialog(
             logic.platformIntegration,
-            state.map { it.appListDialog }
+            state.map { it.dialog },
+            updateState,
+            ::launch
         )
 
         emitAll(
@@ -245,7 +294,7 @@ object DeviceOwnerHandling {
                 if (isMatchingDevice) OwnerScreen.Normal(
                     isParentAuthenticated = isParentAuthenticated,
                     organizationName = organizationName,
-                    appListDialog = dialog,
+                    dialog = dialog,
                     scopes = scopes,
                     apps = apps,
                     actions = actions.copy(
@@ -311,20 +360,36 @@ object DeviceOwnerHandling {
         }
     }
 
-    @OptIn(ExperimentalCoroutinesApi::class)
     private fun getNullableDialog(
         integration: PlatformIntegration,
-        state: Flow<OwnerState.AppListDialog?>
-    ): Flow<OwnerScreen.Normal.AppListDialog?> {
-        val hasDialog = state.map { it != null }.distinctUntilChanged()
+        state: Flow<OwnerState.Dialog?>,
+        updateState: ((OwnerState) -> OwnerState) -> Unit,
+        launch: (suspend () -> Unit) -> Unit
+    ): Flow<OwnerScreen.Normal.Dialog?> = state.splitConflated(
+        Case.simple<_, _, OwnerState.AppListDialog> { getAppListDialog(integration, it) },
+        Case.simple<_, _, OwnerState.TransferOwnershipDialog> { stateLive ->
+            stateLive.map { OwnerScreen.Normal.TransferOwnershipDialog(
+                packageName = it.packageName,
+                confirm = { launch {
+                    try {
+                        integration.deviceOwner.transferOwnership(it.packageName)
+                    } finally {
+                        updateState { it.copy(dialog = null) }
+                    }
+                } },
+                cancel = { updateState { it.copy(dialog = null) } }
+            ) }
+        },
+        Case.simple<_, _, OwnerState.ErrorDialog> { stateLive ->
+            stateLive.map { OwnerScreen.Normal.ErrorDialog(
+                message = it.message,
+                close = { updateState { it.copy(dialog = null) } }
+            ) }
+        },
+        Case.nil { flowOf(null) }
+    )
 
-        return hasDialog.transformLatest {
-            if (it) emitAll(getDialog(integration, state.filterNotNull()))
-            else emit(null)
-        }
-    }
-
-    private fun getDialog(
+    private fun getAppListDialog(
         integration: PlatformIntegration,
         state: Flow<OwnerState.AppListDialog>
     ): Flow<OwnerScreen.Normal.AppListDialog> {

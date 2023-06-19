@@ -1831,4 +1831,10 @@
     </string>
     <string name="account_deletion_confirmation_premium_toggle">I accept that my premium version (if it exists) will be deleted without replacement</string>
     <string name="account_deletion_confirmation_button">Request Deletion</string>
+
+    <string name="device_owner_transfer_title">Transfer device ownership</string>
+    <string name="device_owner_transfer_text">Do you want that TimeLimit revokes this permission for itself and grants it to %s?
+        This will be interpreted as manipulation.
+    </string>
+    <string name="device_owner_transfer_confirm">Transfer permission</string>
 </resources>
