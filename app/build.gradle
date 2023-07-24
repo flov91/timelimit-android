@@ -14,12 +14,14 @@
  * along with this program. If not, see <https://www.gnu.org/licenses/>.
  */
 
-apply plugin: 'com.android.application'
-apply plugin: 'kotlin-android'
-apply plugin: 'kotlin-parcelize'
-apply plugin: "androidx.navigation.safeargs.kotlin"
-apply plugin: 'kotlin-kapt'
-apply plugin: 'com.squareup.wire'
+plugins {
+    id 'com.android.application'
+    id 'org.jetbrains.kotlin.android'
+    id 'kotlin-parcelize'
+    id "androidx.navigation.safeargs.kotlin"
+    id 'kotlin-kapt'
+    id 'com.squareup.wire'
+}
 
 android {
     namespace 'io.timelimit.android'
@@ -34,9 +36,6 @@ android {
         kapt {
             arguments {
                 arg("room.schemaLocation", "$projectDir/schemas".toString())
-            }
-            javacOptions {
-                option("-Xmaxerrs", 500)
             }
         }
         buildConfigField 'String', 'googlePlayKey', '"MIIBIjANBgkqhkiG9w0BAQEFAAOCAQ8AMIIBCgKCAQEAqxGPPhjSGrSI4jfIJmw83dDGTO4Sg74nXhOoHl5Omyvxa1Hv+Tzp/wC97emXSmKq9Li2bV4q3yJLjtLJtoDmh9V1vpdyjH13qOidhIUYOtlkGexbwKz56jZwRFXGBIy0RFDDr3j5DLfUWMk0dqplLgIHDqsdUNY50419oMGKAOCX3DEw+ky+0zMY/hlUkZHnd0HLi0CYNkdZyMMYnk8OiOZ3YoDU/vz9PTf93MCAONYcXBlo3Y5hdVY2tyH4qNZh1eyqe0Trz4fRf+y1ljoa0s4ZqYskbsgpy+zUbGb82cxmATAsrdJMnNKMEa30HBvfMzKiOPR6sq3A8PPPoWT5KQIDAQAB"'
@@ -156,7 +155,7 @@ android {
     }
 
     composeOptions {
-        kotlinCompilerExtensionVersion = "1.4.3"
+        kotlinCompilerExtensionVersion = "1.4.7"
     }
 }
 
@@ -166,12 +165,12 @@ wire {
 
 dependencies {
     def nav_version = "2.5.3"
-    def room_version = "2.5.1"
+    def room_version = "2.5.2"
     def work_version = '2.8.1'
-    def paging_version = "3.1.1"
+    def paging_version = "3.2.0"
 
     implementation fileTree(dir: 'libs', include: ['*.jar'])
-    implementation "org.jetbrains.kotlin:kotlin-stdlib-jdk8:$kotlin_version"
+    implementation "org.jetbrains.kotlin:kotlin-stdlib-jdk8:1.8.21"
     implementation 'androidx.appcompat:appcompat:1.6.1'
     implementation 'androidx.core:core:1.10.1'
     implementation 'androidx.cardview:cardview:1.0.0'
@@ -182,7 +181,7 @@ dependencies {
     implementation "com.google.accompanist:accompanist-flowlayout:0.30.0"
     implementation 'androidx.compose.material:material-icons-extended:1.4.3'
     debugImplementation "androidx.compose.ui:ui-tooling:1.4.3"
-    implementation 'androidx.fragment:fragment-ktx:1.6.0'
+    implementation 'androidx.fragment:fragment-ktx:1.6.1'
 
     implementation "androidx.navigation:navigation-fragment-ktx:$nav_version"
     implementation "androidx.navigation:navigation-ui:$nav_version"
