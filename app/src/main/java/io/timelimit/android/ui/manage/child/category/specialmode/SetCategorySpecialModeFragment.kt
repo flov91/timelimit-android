@@ -1,5 +1,5 @@
 /*
- * TimeLimit Copyright <C> 2019 - 2022 Jonas Lochmann
+ * TimeLimit Copyright <C> 2019 - 2023 Jonas Lochmann
  *
  * This program is free software: you can redistribute it and/or modify
  * it under the terms of the GNU General Public License as published by
@@ -30,12 +30,14 @@ import com.google.android.material.bottomsheet.BottomSheetDialog
 import io.timelimit.android.R
 import io.timelimit.android.databinding.SpecialModeDialogBinding
 import io.timelimit.android.extensions.showSafe
+import io.timelimit.android.extensions.toInstant
 import io.timelimit.android.ui.main.ActivityViewModel
 import io.timelimit.android.ui.main.getActivityViewModel
 import io.timelimit.android.ui.payment.RequiresPurchaseDialogFragment
 import org.threeten.bp.Instant
 import org.threeten.bp.LocalDate
 import org.threeten.bp.LocalDateTime
+import org.threeten.bp.LocalTime
 import org.threeten.bp.ZoneId
 
 class SetCategorySpecialModeFragment: DialogFragment() {
@@ -48,8 +50,8 @@ class SetCategorySpecialModeFragment: DialogFragment() {
 
         private const val PAGE_TYPE = 0
         private const val PAGE_SUGGESTION = 1
-        private const val PAGE_CLOCK = 2
-        private const val PAGE_CALENDAR = 3
+        private const val PAGE_CALENDAR = 2
+        private const val PAGE_CLOCK = 3
 
         fun newInstance(childId: String, categoryId: String, mode: SpecialModeDialogMode) = SetCategorySpecialModeFragment().apply {
             arguments = Bundle().apply {
@@ -166,24 +168,22 @@ class SetCategorySpecialModeFragment: DialogFragment() {
         }
 
         run {
-            fun readClockTime(timeZone: String, now: Long) = binding.timePicker.let {
-                LocalDateTime.ofInstant(
-                        Instant.ofEpochMilli(now),
-                        ZoneId.of(timeZone)
-                )
-                        .toLocalDate()
-                        .atStartOfDay(ZoneId.of(timeZone))
-                        .plusHours(it.currentHour.toLong())
-                        .plusMinutes(it.currentMinute.toLong())
-                        .toEpochSecond() * 1000
+            fun readClockTime(timeZone: String, localDate: LocalDate?, now: Long) = binding.timePicker.let {
+                val zoneId = ZoneId.of(timeZone)
+
+                LocalDateTime.of(
+                    localDate ?: LocalDateTime.ofInstant(Instant.ofEpochMilli(now), zoneId).toLocalDate(),
+                    LocalTime.of(it.currentHour, it.currentMinute)
+                ).toInstant(zoneId).toEpochMilli()
             }
 
             fun update() {
                 val content = model.content.value
+                val screen = content?.screen
                 val minTime = model.minTimestamp.value
 
-                if (content?.screen is SetCategorySpecialModeModel.Screen.WithType.ClockScreen && minTime != null) {
-                    val currentSelectedTime = readClockTime(content.childTimezone, model.now())
+                if (screen is SetCategorySpecialModeModel.Screen.WithType.ClockScreen && minTime != null) {
+                    val currentSelectedTime = readClockTime(content.childTimezone, screen.date, model.now())
                     val isEnabled = currentSelectedTime > minTime
 
                     binding.confirmTimePickerButton.isEnabled = isEnabled
@@ -203,10 +203,8 @@ class SetCategorySpecialModeFragment: DialogFragment() {
         }
 
         run {
-            fun readCalendarTime(timeZone: String) = binding.datePicker.let {
+            fun readCalendarDate() = binding.datePicker.let {
                 LocalDate.of(it.year, it.month + 1, it.dayOfMonth)
-                        .atStartOfDay(ZoneId.of(timeZone))
-                        .toEpochSecond() * 1000
             }
 
             fun update() {
@@ -214,19 +212,23 @@ class SetCategorySpecialModeFragment: DialogFragment() {
                 val minTime = model.minTimestamp.value
 
                 if (content?.screen is SetCategorySpecialModeModel.Screen.WithType.CalendarScreen && minTime != null) {
-                    val currentSelectedTime = readCalendarTime(content.childTimezone)
-                    val isEnabled = currentSelectedTime > minTime
+                    val zoneId = ZoneId.of(content.childTimezone)
+                    val currentSelectedDate = readCalendarDate()
+                    val currentStartOfDayTime = LocalDateTime.of(currentSelectedDate, LocalTime.MIN).toInstant(zoneId).toEpochMilli()
+                    val currentEndOfDayTime = LocalDateTime.of(currentSelectedDate, LocalTime.of(23, 59)).toInstant(zoneId).toEpochMilli()
 
-                    binding.confirmDatePickerButton.isEnabled = isEnabled
+                    val isConfirmEnabled = currentStartOfDayTime > minTime
+                    val isClockEnabled = currentEndOfDayTime > minTime
 
-                    if (isEnabled) {
-                        binding.confirmDatePickerButton.setOnClickListener {
-                            val currentSelectedTimeNew = readCalendarTime(content.childTimezone)
+                    binding.confirmDatePickerButton.isEnabled = isConfirmEnabled
+                    binding.timeOfDayDatePickerButton.isEnabled = isClockEnabled
 
-                            if (currentSelectedTimeNew > minTime) {
-                                model.applySelection(timeInMillis = currentSelectedTimeNew, auth = auth)
-                            } else update()
-                        }
+                    if (isConfirmEnabled) binding.confirmDatePickerButton.setOnClickListener {
+                        model.applySelection(timeInMillis = currentStartOfDayTime, auth = auth)
+                    }
+
+                    if (isClockEnabled) binding.timeOfDayDatePickerButton.setOnClickListener {
+                        model.openClockScreen(currentSelectedDate)
                     }
                 } else binding.confirmDatePickerButton.isEnabled = false
             }

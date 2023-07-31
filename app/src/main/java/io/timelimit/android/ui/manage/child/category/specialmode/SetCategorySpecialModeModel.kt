@@ -26,6 +26,7 @@ import io.timelimit.android.logic.DefaultAppLogic
 import io.timelimit.android.sync.actions.UpdateCategoryDisableLimitsAction
 import io.timelimit.android.sync.actions.UpdateCategoryTemporarilyBlockedAction
 import io.timelimit.android.ui.main.ActivityViewModel
+import org.threeten.bp.LocalDate
 
 class SetCategorySpecialModeModel(application: Application): AndroidViewModel(application) {
     private val logic = DefaultAppLogic.with(application)
@@ -113,7 +114,7 @@ class SetCategorySpecialModeModel(application: Application): AndroidViewModel(ap
                             options = options
                     )
                 }
-                DurationSelection.Clock -> Screen.WithType.ClockScreen(type = type)
+                is DurationSelection.Clock -> Screen.WithType.ClockScreen(type = type, date = durationSelection.date)
                 DurationSelection.Calendar -> Screen.WithType.CalendarScreen(type = type)
             }
 
@@ -127,11 +128,15 @@ class SetCategorySpecialModeModel(application: Application): AndroidViewModel(ap
     }
 
     fun selectType(type: Type) { typeLive.value = type }
-    fun openClockScreen() { durationSelectionLive.value = DurationSelection.Clock }
+    fun openClockScreen(date: LocalDate? = null) { durationSelectionLive.value = DurationSelection.Clock(date) }
     fun openCalendarScreen() { durationSelectionLive.value = DurationSelection.Calendar }
 
     fun goBack(): Boolean = if (durationSelectionLive.value != DurationSelection.SuggestionList) {
-        durationSelectionLive.value = DurationSelection.SuggestionList
+        val v = durationSelectionLive.value
+
+        durationSelectionLive.value =
+            if (v is DurationSelection.Clock && v.date != null) DurationSelection.Calendar
+            else DurationSelection.SuggestionList
 
         true
     } else if (
@@ -240,10 +245,10 @@ class SetCategorySpecialModeModel(application: Application): AndroidViewModel(ap
         DisableLimits
     }
 
-    internal enum class DurationSelection {
-        SuggestionList,
-        Clock,
-        Calendar
+    internal sealed class DurationSelection {
+        object SuggestionList: DurationSelection()
+        data class Clock(val date: LocalDate?): DurationSelection()
+        object Calendar: DurationSelection()
     }
 
     data class Content(
@@ -259,8 +264,8 @@ class SetCategorySpecialModeModel(application: Application): AndroidViewModel(ap
         sealed class WithType: Screen() {
             abstract val type: Type
 
-            data class ClockScreen(override val type: Type, ): WithType()
-            data class CalendarScreen(override val type: Type, ): WithType()
+            data class ClockScreen(override val type: Type, val date: LocalDate?): WithType()
+            data class CalendarScreen(override val type: Type): WithType()
 
             data class SuggestionList(
                     override val type: Type,

@@ -883,6 +883,7 @@
     <string name="manage_child_special_mode_wizard_block_option">block temporarily</string>
     <string name="manage_child_special_mode_wizard_disable_limits_title">Disable limits for %s</string>
     <string name="manage_child_special_mode_wizard_disable_limits_option">disable limits temporarily</string>
+    <string name="manage_child_special_mode_wizard_time_of_day">Select time</string>
 
     <string name="manage_child_confirm_enable_limits_again_title">Enable limitations</string>
     <string name="manage_child_confirm_enable_limits_again_text">Would you like to enable the limitations for the category %s?</string>
