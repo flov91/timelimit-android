@@ -17,6 +17,7 @@ package io.timelimit.android.ui.model.managedevice
 
 import androidx.compose.material.SnackbarHostState
 import androidx.compose.material.SnackbarResult
+import androidx.lifecycle.asFlow
 import io.timelimit.android.R
 import io.timelimit.android.data.model.Device
 import io.timelimit.android.data.model.UserType
@@ -102,10 +103,22 @@ object ManageDeviceUser {
                     if (result == SnackbarResult.ActionPerformed) {
                         val userEntry = logic.database.user().getUserByIdFlow(user.id).first()!!
 
-                        updateState { state ->
-                            when (userEntry.type) {
-                                UserType.Child -> State.ManageChild.Main(state.previousOverview, user.id)
-                                UserType.Parent -> State.ManageParent.Main(state.previousOverview, user.id)
+                        when (userEntry.type) {
+                            UserType.Child -> {
+                                if (userEntry.restrictViewingToParents) {
+                                    val currentUserId = logic.deviceEntry.asFlow().first()?.currentUserId
+
+                                    if (currentUserId != userEntry.id) {
+                                        authentication.doParentAuthentication() ?: return@launch
+                                    }
+                                }
+
+                                updateState { state ->
+                                    State.ManageChild.Main(state.previousOverview, userEntry.id)
+                                }
+                            }
+                            UserType.Parent -> updateState { state ->
+                                State.ManageParent.Main(state.previousOverview, userEntry.id)
                             }
                         }
                     }
