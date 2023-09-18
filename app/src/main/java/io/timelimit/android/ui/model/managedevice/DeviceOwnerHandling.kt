@@ -256,9 +256,9 @@ object DeviceOwnerHandling {
                 launch {
                     owner.transferOwnership(packageName, dryRun = true)
 
-                    authentication.doParentAuthentication()
-
-                    updateState { it.copy(dialog = OwnerState.TransferOwnershipDialog(packageName)) }
+                    if (authentication.doParentAuthentication() != null) {
+                        updateState { it.copy(dialog = OwnerState.TransferOwnershipDialog(packageName)) }
+                    }
                 }
             },
             updateDialogSearch = { filter ->
@@ -279,6 +279,7 @@ object DeviceOwnerHandling {
         val dialogLive = getNullableDialog(
             logic.platformIntegration,
             state.map { it.dialog },
+            authentication,
             updateState,
             ::launch
         )
@@ -363,6 +364,7 @@ object DeviceOwnerHandling {
     private fun getNullableDialog(
         integration: PlatformIntegration,
         state: Flow<OwnerState.Dialog?>,
+        authentication: AuthenticationModelApi,
         updateState: ((OwnerState) -> OwnerState) -> Unit,
         launch: (suspend () -> Unit) -> Unit
     ): Flow<OwnerScreen.Normal.Dialog?> = state.splitConflated(
@@ -372,6 +374,9 @@ object DeviceOwnerHandling {
                 packageName = it.packageName,
                 confirm = { launch {
                     try {
+                        if (authentication.authenticatedParentOnly.first() == null) throw IllegalStateException()
+                        if (!integration.setEnableSystemLockdown(false)) throw IllegalStateException()
+                        integration.stopSuspendingForAllApps()
                         integration.deviceOwner.transferOwnership(it.packageName)
                     } finally {
                         updateState { it.copy(dialog = null) }
