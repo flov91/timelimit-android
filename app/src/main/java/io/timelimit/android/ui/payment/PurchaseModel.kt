@@ -74,8 +74,8 @@ class PurchaseModel(application: Application): AndroidViewModel(application) {
                     suspend fun canDoPurchase() = if (server.hasAuthToken) server.api.canDoPurchase(server.deviceAuthToken)
                     else CanDoPurchaseStatus.NoForUnknownReason
 
-                    if (!BuildConfig.storeCompilant) {
-                        if (auth.isParentAuthenticated()) {
+                    statusInternal.value = if (!BuildConfig.storeCompilant) when (canDoPurchase()) {
+                        is CanDoPurchaseStatus.Yes -> if (auth.isParentAuthenticated()) {
                             try {
                                 val authData = ApplyDirectCallAuthentication.from(
                                     auth.authenticatedUser.value?.first!!
@@ -87,35 +87,37 @@ class PurchaseModel(application: Application): AndroidViewModel(application) {
                                     parentPasswordSecondHash = authData.parentPasswordSecondHash
                                 )
 
-                                statusInternal.value = Status.ReadyToken(token)
+                                Status.ReadyToken(token)
                             } catch (ex: NotFoundHttpError) {
-                                statusInternal.value = Status.Error.Unrecoverable.ServerClientCombinationUnsupported
+                                Status.Error.Unrecoverable.ServerClientCombinationUnsupported
                             }
-                        } else statusInternal.value = Status.WaitingForAuth
+                        } else Status.WaitingForAuth
+                        CanDoPurchaseStatus.NotDueToOldPurchase -> Status.Error.Unrecoverable.ExistingPaymentError
+                        CanDoPurchaseStatus.NoForUnknownReason -> Status.Error.Unrecoverable.ServerRejectedError
                     } else {
                         val canDoPurchase = canDoPurchase()
 
                         if (canDoPurchase is CanDoPurchaseStatus.Yes) {
                             if (canDoPurchase.publicKey?.contentEquals(Base64.decode(BuildConfig.googlePlayKey, 0)) == false) {
-                                statusInternal.value = Status.Error.Unrecoverable.ServerClientCombinationUnsupported
+                                Status.Error.Unrecoverable.ServerClientCombinationUnsupported
                             } else {
                                 val skus = activityPurchaseModel.queryProducts(PurchaseIds.BUY_SKUS)
 
-                                statusInternal.value = Status.ReadyRegular(
+                                Status.ReadyRegular(
                                         monthPrice = skus.find { it.productId == PurchaseIds.SKU_MONTH }?.oneTimePurchaseOfferDetails?.formattedPrice.toString(),
                                         yearPrice = skus.find { it.productId == PurchaseIds.SKU_YEAR }?.oneTimePurchaseOfferDetails?.formattedPrice.toString()
                                 )
                             }
                         } else if (canDoPurchase == CanDoPurchaseStatus.NotDueToOldPurchase) {
-                            statusInternal.value = Status.Error.Unrecoverable.ExistingPaymentError
+                            Status.Error.Unrecoverable.ExistingPaymentError
                         } else {
-                            statusInternal.value = Status.Error.Unrecoverable.ServerRejectedError
+                            Status.Error.Unrecoverable.ServerRejectedError
                         }
                     }
                 } catch (ex: BillingNotSupportedException) {
-                    statusInternal.value = Status.Error.Unrecoverable.BillingNotSupportedByDevice
+                    Status.Error.Unrecoverable.BillingNotSupportedByDevice
                 } catch (ex: Exception) {
-                    statusInternal.value = Status.Error.Recoverable.NetworkError(ex)
+                    Status.Error.Recoverable.NetworkError(ex)
                 }
             }
         }

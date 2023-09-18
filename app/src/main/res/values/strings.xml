@@ -1391,7 +1391,7 @@
         https://timelimit.io/en/#how-to-purchase provides more details.
     </string>
     <string name="purchase_error_existing_payment">
-        You paid already.
+        You already bought the premium version.
         You can only extend the premium version if it expired or shortly before that.
     </string>
     <string name="purchase_error_server_rejected">The server does not accept payments currently</string>

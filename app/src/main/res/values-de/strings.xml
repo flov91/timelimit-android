@@ -1345,7 +1345,7 @@
         https://timelimit.io/de/#how-to-purchase liefert Ihnen weitere Informationen.
     </string>
     <string name="purchase_error_existing_payment">
-        Sie haben bereits bezahlt. Sie können die Vollversion erst kurz vor dem Ablaufen (oder danach) verlängern
+        Sie haben schon die Vollversion erworben. Sie können die Vollversion erst kurz vor dem Ablauf (oder danach) verlängern
     </string>
     <string name="purchase_error_server_rejected">Der Server akzeptiert momentan keine Bezahlungen</string>
     <string name="purchase_error_server_different_key">Der Server unterstützt möglicherweise Bezahlungen, aber nicht über diesen App-Build</string>
