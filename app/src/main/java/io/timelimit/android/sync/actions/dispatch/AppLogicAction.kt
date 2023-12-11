@@ -84,6 +84,17 @@ object LocalDatabaseAppLogicActionDispatcher {
                                         endMinuteOfDay = limit.endMinuteOfDay
                                 )
 
+                                val fittingDurationItems by lazy {
+                                    database.sessionDuration().getFittingSessionDurationItemsSync(
+                                        categoryId = item.categoryId,
+                                        startMinuteOfDay = limit.startMinuteOfDay,
+                                        endMinuteOfDay = limit.endMinuteOfDay,
+                                        maxSessionDuration = limit.maxSessionDuration,
+                                        sessionPauseDuration = limit.sessionPauseDuration
+                                        // this ignores the last usage that is checked later
+                                    )
+                                }
+
                                 if (BuildConfig.DEBUG) {
                                     Log.d(LOG_TAG, "handle session duration limit $limit")
                                     Log.d(LOG_TAG, "timestamp: ${action.trustedTimestamp}")
@@ -124,16 +135,6 @@ object LocalDatabaseAppLogicActionDispatcher {
                                             lastSessionDuration = if (extendSession) oldItem.lastSessionDuration + item.timeToAdd.toLong() else  item.timeToAdd.toLong()
                                     )
                                 } else {
-                                    val fittingDurationItems =
-                                        database.sessionDuration().getSessionDurationItemsByCategoryIdSync(item.categoryId)
-                                            .filter {
-                                                it.startMinuteOfDay <= limit.startMinuteOfDay &&
-                                                        it.endMinuteOfDay >= limit.endMinuteOfDay &&
-                                                        it.maxSessionDuration >= limit.maxSessionDuration &&
-                                                        it.sessionPauseDuration <= limit.sessionPauseDuration
-                                                        // this ignores the last usage that is checked later
-                                            }
-
                                     if (hasTrustedTimestamp) {
                                         val oldDuration = fittingDurationItems.filter {
                                             action.trustedTimestamp - item.timeToAdd <= it.lastUsage + it.sessionPauseDuration - BackgroundTaskLogic.EXTEND_SESSION_TOLERANCE
