@@ -155,7 +155,7 @@ android {
     }
 
     composeOptions {
-        kotlinCompilerExtensionVersion = "1.4.7"
+        kotlinCompilerExtensionVersion = "1.5.1"
     }
 }
 
@@ -165,23 +165,23 @@ wire {
 
 dependencies {
     def nav_version = "2.5.3"
-    def room_version = "2.5.2"
-    def work_version = '2.8.1'
+    def room_version = "2.6.1"
+    def work_version = '2.9.0'
     def paging_version = "3.2.1"
 
     implementation fileTree(dir: 'libs', include: ['*.jar'])
-    implementation "org.jetbrains.kotlin:kotlin-stdlib-jdk8:1.8.21"
+    implementation "org.jetbrains.kotlin:kotlin-stdlib-jdk8:1.9.0"
     implementation 'androidx.appcompat:appcompat:1.6.1'
     implementation 'androidx.core:core:1.12.0'
     implementation 'androidx.cardview:cardview:1.0.0'
     implementation 'androidx.gridlayout:gridlayout:1.0.0'
-    implementation "com.google.android.material:material:1.9.0"
-    implementation 'androidx.compose.material:material:1.5.1'
-    implementation 'androidx.activity:activity-compose:1.7.2'
+    implementation "com.google.android.material:material:1.10.0"
+    implementation 'androidx.compose.material:material:1.5.4'
+    implementation 'androidx.activity:activity-compose:1.8.1'
     implementation "com.google.accompanist:accompanist-flowlayout:0.30.0"
-    implementation 'androidx.compose.material:material-icons-extended:1.5.1'
-    debugImplementation "androidx.compose.ui:ui-tooling:1.5.1"
-    implementation 'androidx.fragment:fragment-ktx:1.6.1'
+    implementation 'androidx.compose.material:material-icons-extended:1.5.4'
+    debugImplementation "androidx.compose.ui:ui-tooling:1.5.4"
+    implementation 'androidx.fragment:fragment-ktx:1.6.2'
 
     implementation "androidx.navigation:navigation-fragment-ktx:$nav_version"
     implementation "androidx.navigation:navigation-ui:$nav_version"
@@ -198,8 +198,8 @@ dependencies {
     implementation "androidx.work:work-runtime-ktx:$work_version"
     // androidTestImplementation "android.arch.work:work-testing:$work_version"
 
-    implementation 'org.jetbrains.kotlinx:kotlinx-coroutines-core:1.6.4'
-    implementation 'org.jetbrains.kotlinx:kotlinx-coroutines-android:1.6.4'
+    implementation 'org.jetbrains.kotlinx:kotlinx-coroutines-core:1.7.1'
+    implementation 'org.jetbrains.kotlinx:kotlinx-coroutines-android:1.7.1'
 
     testImplementation 'junit:junit:4.13.2'
     androidTestImplementation 'androidx.test:runner:1.5.2'
@@ -217,7 +217,7 @@ dependencies {
     implementation 'com.squareup.okhttp3:okhttp-tls:4.9.3'
     implementation 'com.squareup.okhttp3:logging-interceptor:4.9.3'
 
-    googleApiImplementation "com.android.billingclient:billing-ktx:6.0.1"
+    googleApiImplementation "com.android.billingclient:billing-ktx:6.1.0"
 
     implementation('io.socket:socket.io-client:2.0.0') {
         exclude group: 'org.json', module: 'json'
