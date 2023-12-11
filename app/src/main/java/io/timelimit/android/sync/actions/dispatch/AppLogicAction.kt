@@ -55,7 +55,7 @@ object LocalDatabaseAppLogicActionDispatcher {
                             if (updatedRows == 0) {
                                 // create new entry
 
-                                val oldTime = database.usedTimes().getUsedTimeItemsSyncIncludingBigger(
+                                val oldTime = database.usedTimes().getUsedTimeItemsSyncIncludingSmaller(
                                     item.categoryId, action.dayOfEpoch, start, end
                                 ).map { it.usedMillis }.maxOrNull() ?: 0
 
