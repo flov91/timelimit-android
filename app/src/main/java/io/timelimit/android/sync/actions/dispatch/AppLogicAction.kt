@@ -84,8 +84,8 @@ object LocalDatabaseAppLogicActionDispatcher {
                                         endMinuteOfDay = limit.endMinuteOfDay
                                 )
 
-                                val fittingDurationItems by lazy {
-                                    database.sessionDuration().getFittingSessionDurationItemsSync(
+                                fun oldDuration(): Long {
+                                    val fittingDurationItems = database.sessionDuration().getFittingSessionDurationItemsSync(
                                         categoryId = item.categoryId,
                                         startMinuteOfDay = limit.startMinuteOfDay,
                                         endMinuteOfDay = limit.endMinuteOfDay,
@@ -93,6 +93,13 @@ object LocalDatabaseAppLogicActionDispatcher {
                                         sessionPauseDuration = limit.sessionPauseDuration
                                         // this ignores the last usage that is checked later
                                     )
+
+                                    val fittingDurationItemsLastUsageFiltered =
+                                        if (hasTrustedTimestamp) fittingDurationItems.filter {
+                                            action.trustedTimestamp - item.timeToAdd <= it.lastUsage + it.sessionPauseDuration - BackgroundTaskLogic.EXTEND_SESSION_TOLERANCE
+                                        } else fittingDurationItems
+
+                                    return fittingDurationItemsLastUsageFiltered.map { it.lastSessionDuration }.maxOrNull() ?: 0
                                 }
 
                                 if (BuildConfig.DEBUG) {
@@ -132,37 +139,18 @@ object LocalDatabaseAppLogicActionDispatcher {
 
                                     oldItem.copy(
                                             lastUsage = action.trustedTimestamp.coerceAtLeast(oldItem.lastUsage),
-                                            lastSessionDuration = if (extendSession) oldItem.lastSessionDuration + item.timeToAdd.toLong() else  item.timeToAdd.toLong()
+                                            lastSessionDuration = if (extendSession) oldItem.lastSessionDuration + item.timeToAdd.toLong() else oldDuration() + item.timeToAdd.toLong()
                                     )
                                 } else {
-                                    if (hasTrustedTimestamp) {
-                                        val oldDuration = fittingDurationItems.filter {
-                                            action.trustedTimestamp - item.timeToAdd <= it.lastUsage + it.sessionPauseDuration - BackgroundTaskLogic.EXTEND_SESSION_TOLERANCE
-                                        }.map { it.lastSessionDuration }.maxOrNull() ?: 0
-
-                                        SessionDuration(
-                                            categoryId = item.categoryId,
-                                            maxSessionDuration = limit.maxSessionDuration,
-                                            sessionPauseDuration = limit.sessionPauseDuration,
-                                            startMinuteOfDay = limit.startMinuteOfDay,
-                                            endMinuteOfDay = limit.endMinuteOfDay,
-                                            lastSessionDuration = oldDuration + item.timeToAdd.toLong(),
-                                            lastUsage = action.trustedTimestamp
-                                        )
-                                    } else {
-                                        val oldDuration = fittingDurationItems.map { it.lastSessionDuration }.maxOrNull() ?: 0
-
-                                        SessionDuration(
-                                            categoryId = item.categoryId,
-                                            maxSessionDuration = limit.maxSessionDuration,
-                                            sessionPauseDuration = limit.sessionPauseDuration,
-                                            startMinuteOfDay = limit.startMinuteOfDay,
-                                            endMinuteOfDay = limit.endMinuteOfDay,
-                                            lastSessionDuration = oldDuration + item.timeToAdd.toLong(),
-                                            // this will cause a small loss of session durations
-                                            lastUsage = fittingDurationItems.map { it.lastUsage }.maxOrNull() ?: 0
-                                        )
-                                    }
+                                    SessionDuration(
+                                        categoryId = item.categoryId,
+                                        maxSessionDuration = limit.maxSessionDuration,
+                                        sessionPauseDuration = limit.sessionPauseDuration,
+                                        startMinuteOfDay = limit.startMinuteOfDay,
+                                        endMinuteOfDay = limit.endMinuteOfDay,
+                                        lastSessionDuration = oldDuration() + item.timeToAdd.toLong(),
+                                        lastUsage = action.trustedTimestamp // can be zero
+                                    )
                                 }
 
                                 if (BuildConfig.DEBUG) {
