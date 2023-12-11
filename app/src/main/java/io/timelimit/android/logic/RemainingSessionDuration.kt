@@ -44,8 +44,8 @@ object RemainingSessionDuration {
                             rule.startMinuteOfDay <= minuteOfDay && rule.endMinuteOfDay >= minuteOfDay
             ) {
                 val remaining = durationsOfCategory.filter {
-                    it.startMinuteOfDay <= rule.startMinuteOfDay &&
-                            it.endMinuteOfDay >= rule.endMinuteOfDay &&
+                    it.startMinuteOfDay >= rule.startMinuteOfDay &&
+                            it.endMinuteOfDay <= rule.endMinuteOfDay &&
                             it.maxSessionDuration >= rule.sessionDurationMilliseconds &&
                             it.sessionPauseDuration <= rule.sessionPauseMilliseconds &&
                             it.lastUsage + rule.sessionPauseMilliseconds > timestamp
