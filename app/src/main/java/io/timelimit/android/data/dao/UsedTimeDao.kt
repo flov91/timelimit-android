@@ -45,6 +45,9 @@ abstract class UsedTimeDao {
     @Query("SELECT * FROM used_time WHERE category_id = :categoryId AND day_of_epoch = :dayOfEpoch AND start_time_of_day = :start AND end_time_of_day = :end")
     abstract fun getUsedTimeItemSync(categoryId: String, dayOfEpoch: Int, start: Int, end: Int): UsedTimeItem?
 
+    @Query("SELECT * FROM used_time WHERE category_id = :categoryId AND day_of_epoch = :dayOfEpoch AND start_time_of_day <= :start AND end_time_of_day >= :end")
+    abstract fun getUsedTimeItemsSyncIncludingBigger(categoryId: String, dayOfEpoch: Int, start: Int, end: Int): List<UsedTimeItem>
+
     @Query("DELETE FROM used_time WHERE category_id = :categoryId")
     abstract fun deleteUsedTimeItems(categoryId: String)
 

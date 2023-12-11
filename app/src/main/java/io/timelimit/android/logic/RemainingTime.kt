@@ -1,5 +1,5 @@
 /*
- * TimeLimit Copyright <C> 2019- 2020 Jonas Lochmann
+ * TimeLimit Copyright <C> 2019- 2023 Jonas Lochmann
  *
  * This program is free software: you can redistribute it and/or modify
  * it under the terms of the GNU General Public License as published by
@@ -101,7 +101,7 @@ data class RemainingTime(val includingExtraTime: Long, val default: Long) {
                         val usedTimeItemMatching = if (rule.perDay) doesCurrentDayMatch else doesDayMaskMatch
 
                         if (usedTimeItemMatching) {
-                            if (rule.startMinuteOfDay == usedTimeItem.startTimeOfDay && rule.endMinuteOfDay == usedTimeItem.endTimeOfDay) {
+                            if (rule.startMinuteOfDay >= usedTimeItem.startTimeOfDay && rule.endMinuteOfDay <= usedTimeItem.endTimeOfDay) {
                                 usedTime += usedTimeItem.usedMillis
                             }
                         }
