@@ -55,10 +55,14 @@ object LocalDatabaseAppLogicActionDispatcher {
                             if (updatedRows == 0) {
                                 // create new entry
 
+                                val oldTime = database.usedTimes().getUsedTimeItemsSyncIncludingSmaller(
+                                    item.categoryId, action.dayOfEpoch, start, end
+                                ).map { it.usedMillis }.maxOrNull() ?: 0
+
                                 database.usedTimes().insertUsedTime(UsedTimeItem(
                                         categoryId = item.categoryId,
                                         dayOfEpoch = action.dayOfEpoch,
-                                        usedMillis = item.timeToAdd.coerceAtMost(lengthInMs).toLong(),
+                                        usedMillis = (oldTime + item.timeToAdd).coerceAtMost(lengthInMs.toLong()),
                                         startTimeOfDay = start,
                                         endTimeOfDay = end
                                 ))
@@ -79,6 +83,24 @@ object LocalDatabaseAppLogicActionDispatcher {
                                         startMinuteOfDay = limit.startMinuteOfDay,
                                         endMinuteOfDay = limit.endMinuteOfDay
                                 )
+
+                                fun oldDuration(): Long {
+                                    val fittingDurationItems = database.sessionDuration().getFittingSessionDurationItemsSync(
+                                        categoryId = item.categoryId,
+                                        startMinuteOfDay = limit.startMinuteOfDay,
+                                        endMinuteOfDay = limit.endMinuteOfDay,
+                                        maxSessionDuration = limit.maxSessionDuration,
+                                        sessionPauseDuration = limit.sessionPauseDuration
+                                        // this ignores the last usage that is checked later
+                                    )
+
+                                    val fittingDurationItemsLastUsageFiltered =
+                                        if (hasTrustedTimestamp) fittingDurationItems.filter {
+                                            action.trustedTimestamp - item.timeToAdd <= it.lastUsage + it.sessionPauseDuration - BackgroundTaskLogic.EXTEND_SESSION_TOLERANCE
+                                        } else fittingDurationItems
+
+                                    return fittingDurationItemsLastUsageFiltered.map { it.lastSessionDuration }.maxOrNull() ?: 0
+                                }
 
                                 if (BuildConfig.DEBUG) {
                                     Log.d(LOG_TAG, "handle session duration limit $limit")
@@ -117,18 +139,19 @@ object LocalDatabaseAppLogicActionDispatcher {
 
                                     oldItem.copy(
                                             lastUsage = action.trustedTimestamp.coerceAtLeast(oldItem.lastUsage),
-                                            lastSessionDuration = if (extendSession) oldItem.lastSessionDuration + item.timeToAdd.toLong() else  item.timeToAdd.toLong()
+                                            lastSessionDuration = if (extendSession) oldItem.lastSessionDuration + item.timeToAdd.toLong() else oldDuration() + item.timeToAdd.toLong()
                                     )
-                                } else SessionDuration(
+                                } else {
+                                    SessionDuration(
                                         categoryId = item.categoryId,
                                         maxSessionDuration = limit.maxSessionDuration,
                                         sessionPauseDuration = limit.sessionPauseDuration,
                                         startMinuteOfDay = limit.startMinuteOfDay,
                                         endMinuteOfDay = limit.endMinuteOfDay,
-                                        lastSessionDuration = item.timeToAdd.toLong(),
-                                        // this will cause a small loss of session durations
-                                        lastUsage = if (hasTrustedTimestamp) action.trustedTimestamp else 0
-                                )
+                                        lastSessionDuration = oldDuration() + item.timeToAdd.toLong(),
+                                        lastUsage = action.trustedTimestamp // can be zero
+                                    )
+                                }
 
                                 if (BuildConfig.DEBUG) {
                                     Log.d(LOG_TAG, "newItem: $newItem")
