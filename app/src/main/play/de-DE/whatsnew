@@ -1,4 +1,2 @@
-- Gerätedatenbank aktualisiert
-- In-App-Kauf-Integration aktualisiert (nur bei der Version im Play Store)
-- kein Anzeigen eines Kauftokens, wenn kein Kauf möglich ist
-- Anzeigen der Nutzerliste im Authentifizierungsdialog, wenn ein Elternschlüssel hinterlegt wurde
+- Probleme bei der Selbsteinschränkungshinzufügung behoben
+- enthaltene Komponenten aktualisiert

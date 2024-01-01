@@ -1,4 +1,2 @@
-- update device name database
-- update billing client (Google Play builds only)
-- fix showing a purchase token if a purchase is not possible
-- fix skipping the user list at the authentication dialog if parent keys exist
+- fix issue with the self limitation adding
+- update contained components
