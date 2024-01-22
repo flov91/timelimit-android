@@ -1,5 +1,5 @@
 /*
- * TimeLimit Copyright <C> 2019 - 2023 Jonas Lochmann
+ * TimeLimit Copyright <C> 2019 - 2024 Jonas Lochmann
  *
  * This program is free software: you can redistribute it and/or modify
  * it under the terms of the GNU General Public License as published by
@@ -22,7 +22,6 @@ import android.app.admin.DevicePolicyManager
 import android.content.ComponentName
 import android.content.Context
 import android.content.Intent
-import android.os.Build
 import android.os.Build.VERSION
 import android.os.Build.VERSION_CODES
 import android.os.IBinder
@@ -67,7 +66,9 @@ class BackgroundService: Service() {
 
             if (VERSION.SDK_INT >= VERSION_CODES.P) {
                 if (activityManager.isBackgroundRestricted) {
-                    return true
+                    if (RunInBackgroundPermission.trySelfGrant(context)) {
+                        if (activityManager.isBackgroundRestricted) return true
+                    } else return true
                 }
             }
 
