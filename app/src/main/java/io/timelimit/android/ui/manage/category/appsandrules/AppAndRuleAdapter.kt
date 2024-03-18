@@ -1,5 +1,5 @@
 /*
- * TimeLimit Copyright <C> 2019 - 2023 Jonas Lochmann
+ * TimeLimit Copyright <C> 2019 - 2024 Jonas Lochmann
  *
  * This program is free software: you can redistribute it and/or modify
  * it under the terms of the GNU General Public License as published by
@@ -142,6 +142,7 @@ class AppAndRuleAdapter: RecyclerView.Adapter<AppAndRuleAdapter.Holder>() {
                 binding.subtitle = item.specifier.copy(deviceId = null).encode()
                 binding.card.setOnClickListener { handlers?.onAppClicked(item) }
                 binding.card.setOnLongClickListener { handlers?.onAppLongClicked(item) ?: false }
+                binding.deleteButton.setOnClickListener { handlers?.onRemoveAppClicked(item) }
                 binding.executePendingBindings()
 
                 binding.icon.setImageDrawable(

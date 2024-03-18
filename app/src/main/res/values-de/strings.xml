@@ -1786,4 +1786,8 @@
         Das wird zu einer Manipulationswarnung führen.
     </string>
     <string name="device_owner_transfer_confirm">Berechtigung übertragen</string>
+
+    <string name="app_clicked_dialog_message">Tippen Sie zum Entfernen der App aus der Kategorie auf das Mülleimer-Symbol.
+        Um die Kategorie zu wechseln, müssen Sie lange auf die App tippen.
+    </string>
 </resources>
