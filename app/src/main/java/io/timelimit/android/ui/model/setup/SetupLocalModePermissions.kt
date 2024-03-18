@@ -1,5 +1,5 @@
 /*
- * TimeLimit Copyright <C> 2019 - 2023 Jonas Lochmann
+ * TimeLimit Copyright <C> 2019 - 2024 Jonas Lochmann
  *
  * This program is free software: you can redistribute it and/or modify
  * it under the terms of the GNU General Public License as published by
@@ -22,6 +22,7 @@ import io.timelimit.android.coroutines.executeAndWait
 import io.timelimit.android.crypto.Curve25519
 import io.timelimit.android.data.Database
 import io.timelimit.android.integration.platform.PlatformIntegration
+import io.timelimit.android.integration.platform.ProtectionLevel
 import io.timelimit.android.logic.AppLogic
 import io.timelimit.android.ui.manage.device.manage.permission.PermissionScreenContent
 import io.timelimit.android.ui.model.ActivityCommand
@@ -89,7 +90,11 @@ object SetupLocalModePermissions {
                     confirm = { launch {
                         updateState { it.copy(currentDialog = null) }
 
-                        setupParentKeyMode(logic.database)
+                        if (logic.platformIntegration.getCurrentProtectionLevel() == ProtectionLevel.DeviceOwner) {
+                            snackbarHostState.showSnackbar(logic.context.getString(R.string.setup_select_mode_parent_key_error_owner))
+                        } else {
+                            setupParentKeyMode(logic.database)
+                        }
                     } },
                     cancel = { updateState { it.copy(currentDialog = null) } }
                 ) else null,
