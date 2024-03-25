@@ -1,2 +1,3 @@
-- fix issue with the self limitation adding
+- improvements of the UI
+- add device authentication when signing in by mail
 - update contained components
