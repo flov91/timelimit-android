@@ -62,3 +62,4 @@ interface ServerApi {
 class MailServerBlacklistedException: RuntimeException()
 class MailAddressNotWhitelistedException: RuntimeException()
 class MailLoginBlockedForIntegrityReasonsException: RuntimeException()
+class MailServerTemporarilyBlacklistedException: RuntimeException()

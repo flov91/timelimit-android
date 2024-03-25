@@ -208,6 +208,10 @@
     </string>
     <string name="authenticate_error_integrity_title">Login blocked</string>
     <string name="authenticate_error_integrity_text">Due to an issue with your TimeLimit installation or your device, you can not sign in.</string>
+    <string name="authenticate_temporarily_blacklisted_mail_server_title">Issue with your mail provider</string>
+    <string name="authenticate_temporarily_blacklisted_mail_server_text">Right now, we have issues with the delivery
+        of mails to your mail provider. We know about this and are actively trying to fix this issue.
+    </string>
     <string name="authenticate_too_many_requests_text">There were much login attempts.
         Due to that, signing in is temporarily blocked.
         This blocking is disabled automatically.

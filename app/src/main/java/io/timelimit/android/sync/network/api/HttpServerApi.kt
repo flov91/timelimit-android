@@ -192,6 +192,11 @@ class HttpServerApi(private val endpointWithoutSlashAtEnd: String): ServerApi {
                                     throw MailLoginBlockedForIntegrityReasonsException()
                                 }
                             }
+                            "mailServerBlacklistedTemporarily" -> {
+                                if (reader.nextBoolean()) {
+                                    throw MailServerTemporarilyBlacklistedException()
+                                }
+                            }
                             else -> reader.skipValue()
                         }
                     }

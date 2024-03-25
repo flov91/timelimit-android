@@ -130,6 +130,7 @@ object MailAuthentication {
         object BlockedMailServer: ErrorDialog()
         object MailAddressNotAllowed: ErrorDialog()
         object BlockedForIntegrityReasons: ErrorDialog()
+        object TemporarilyBlockedMailServer: ErrorDialog()
         data class ExceptionDetails(val message: String): ErrorDialog()
     }
 
@@ -191,6 +192,8 @@ object MailAuthentication {
                 updateState { it.withError(error = ErrorDialog.MailAddressNotAllowed) }
             } catch (ex: MailLoginBlockedForIntegrityReasonsException) {
                 updateState { it.withError(error = ErrorDialog.BlockedForIntegrityReasons) }
+            } catch (ex: MailServerTemporarilyBlacklistedException) {
+                updateState { it.withError(error = ErrorDialog.TemporarilyBlockedMailServer) }
             } catch (ex: Exception) {
                 showGenericExceptionMessage(ex)
             }

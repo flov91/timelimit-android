@@ -166,6 +166,10 @@
     </string>
     <string name="authenticate_error_integrity_title">Anmeldung blockiert</string>
     <string name="authenticate_error_integrity_text">Wegen einem Problem mit Ihrem Gerät oder Ihrer TimeLimit-Installation ist keine Anmeldung möglich.</string>
+    <string name="authenticate_temporarily_blacklisted_mail_server_title">Problem mit dem E-Mail-Anbieter</string>
+    <string name="authenticate_temporarily_blacklisted_mail_server_text">Momentan haben wir Probleme bei der Zustellung
+        von E-Mails an den von Ihnen gewählten E-Mail-Anbieter. Das Problem ist bekannt und wird bereits bearbeitet.
+    </string>
     <string name="authenticate_too_many_requests_text">Es gab viele Anmeldeversuche, daher gibt es eine vorübergehende Anmeldesperre.
         Diese Sperre wird automatisch deaktiviert.
     </string>

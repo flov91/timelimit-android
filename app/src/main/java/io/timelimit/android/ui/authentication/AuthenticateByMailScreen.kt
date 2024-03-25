@@ -159,6 +159,11 @@ fun AuthenticateByMailError(error: MailAuthentication.ErrorDialog, close: () -> 
             stringResource(R.string.authenticate_error_integrity_text),
             close
         )
+        MailAuthentication.ErrorDialog.TemporarilyBlockedMailServer -> SimpleErrorDialog(
+            stringResource(R.string.authenticate_temporarily_blacklisted_mail_server_title),
+            stringResource(R.string.authenticate_temporarily_blacklisted_mail_server_text),
+            close
+        )
         is MailAuthentication.ErrorDialog.ExceptionDetails -> DiagnoseExceptionDialog(error.message, close)
     }
 }
