@@ -1,5 +1,5 @@
 /*
- * TimeLimit Copyright <C> 2019 - 2023 Jonas Lochmann
+ * TimeLimit Copyright <C> 2019 - 2024 Jonas Lochmann
  *
  * This program is free software: you can redistribute it and/or modify
  * it under the terms of the GNU General Public License as published by
@@ -152,6 +152,11 @@ fun AuthenticateByMailError(error: MailAuthentication.ErrorDialog, close: () -> 
         MailAuthentication.ErrorDialog.MailAddressNotAllowed -> SimpleErrorDialog(
             stringResource(R.string.authenticate_not_whitelisted_address_title),
             stringResource(R.string.authenticate_not_whitelisted_address_text),
+            close
+        )
+        MailAuthentication.ErrorDialog.BlockedForIntegrityReasons -> SimpleErrorDialog(
+            stringResource(R.string.authenticate_error_integrity_title),
+            stringResource(R.string.authenticate_error_integrity_text),
             close
         )
         is MailAuthentication.ErrorDialog.ExceptionDetails -> DiagnoseExceptionDialog(error.message, close)

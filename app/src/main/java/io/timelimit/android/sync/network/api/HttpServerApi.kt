@@ -1,5 +1,5 @@
 /*
- * TimeLimit Copyright <C> 2019 - 2023 Jonas Lochmann
+ * TimeLimit Copyright <C> 2019 - 2024 Jonas Lochmann
  *
  * This program is free software: you can redistribute it and/or modify
  * it under the terms of the GNU General Public License as published by
@@ -15,9 +15,14 @@
  */
 package io.timelimit.android.sync.network.api
 
+import android.os.Build.VERSION
+import android.os.Build.VERSION_CODES
+import android.security.keystore.KeyGenParameterSpec
+import android.security.keystore.KeyProperties
 import android.util.JsonReader
 import android.util.JsonWriter
 import android.util.Log
+import de.wivewa.android.network.X509ClientKeyManager
 import io.timelimit.android.BuildConfig
 import io.timelimit.android.async.Threads
 import io.timelimit.android.coroutines.executeAndWait
@@ -25,6 +30,7 @@ import io.timelimit.android.coroutines.waitForResponse
 import io.timelimit.android.sync.network.*
 import io.timelimit.android.util.okio.LengthSink
 import okhttp3.MediaType.Companion.toMediaTypeOrNull
+import okhttp3.OkHttpClient
 import okhttp3.Request
 import okhttp3.RequestBody
 import okhttp3.Response
@@ -34,6 +40,14 @@ import okio.GzipSink
 import okio.Sink
 import okio.buffer
 import java.io.OutputStreamWriter
+import java.security.KeyPairGenerator
+import java.security.KeyStore
+import java.security.KeyStore.PrivateKeyEntry
+import java.security.cert.X509Certificate
+import java.security.spec.ECGenParameterSpec
+import java.util.Date
+import java.util.UUID
+import javax.net.ssl.SSLContext
 
 class HttpServerApi(private val endpointWithoutSlashAtEnd: String): ServerApi {
     companion object {
@@ -125,9 +139,10 @@ class HttpServerApi(private val endpointWithoutSlashAtEnd: String): ServerApi {
         }
     }
 
-    override suspend fun sendMailLoginCode(mail: String, locale: String, deviceAuthToken: String?): String {
+    override suspend fun sendMailLoginCode(mail: String, locale: String, deviceAuthToken: String?): String = withDeviceVerification { client ->
         postJsonRequest(
-            "auth/send-mail-login-code-v2"
+            "auth/send-mail-login-code-v2",
+            client = client
         ) { writer ->
             writer.beginObject()
             writer.name(MAIL).value(mail)
@@ -145,7 +160,7 @@ class HttpServerApi(private val endpointWithoutSlashAtEnd: String): ServerApi {
                         Log.d(LOG_TAG, "sendMailLoginCode() try again without deviceAuthToken")
                     }
 
-                    return sendMailLoginCode(mail, locale, null)
+                    return@use sendMailLoginCode(mail, locale, null)
                 } else {
                     throw ex
                 }
@@ -153,7 +168,7 @@ class HttpServerApi(private val endpointWithoutSlashAtEnd: String): ServerApi {
 
             val body = it.body!!
 
-            return Threads.network.executeAndWait {
+            return@use Threads.network.executeAndWait {
                 var response: String? = null
 
                 JsonReader(body.charStream()).use { reader ->
@@ -170,6 +185,11 @@ class HttpServerApi(private val endpointWithoutSlashAtEnd: String): ServerApi {
                             "mailAddressNotWhitelisted" -> {
                                 if (reader.nextBoolean()) {
                                     throw MailAddressNotWhitelistedException()
+                                }
+                            }
+                            "blockedForIntegrityReasons" -> {
+                                if (reader.nextBoolean()) {
+                                    throw MailLoginBlockedForIntegrityReasonsException()
                                 }
                             }
                             else -> reader.skipValue()
@@ -627,10 +647,11 @@ class HttpServerApi(private val endpointWithoutSlashAtEnd: String): ServerApi {
 
     private suspend fun postJsonRequest(
         path: String,
+        client: OkHttpClient = httpClient,
         requestBody: (writer: JsonWriter) -> Unit
     ): Response {
         if (!sendContentLength) {
-            val response = postJsonRequest(path, requestBody, transmitContentLength = false)
+            val response = postJsonRequest(path, requestBody, transmitContentLength = false, client = client)
 
             if (response.code != 411) return response
 
@@ -639,22 +660,72 @@ class HttpServerApi(private val endpointWithoutSlashAtEnd: String): ServerApi {
             sendContentLength = true
         }
 
-        return postJsonRequest(path, requestBody, transmitContentLength = true)
+        return postJsonRequest(path, requestBody, transmitContentLength = true, client = client)
     }
 
     private suspend fun postJsonRequest(
         path: String,
         requestBody: (writer: JsonWriter) -> Unit,
-        transmitContentLength: Boolean
+        transmitContentLength: Boolean,
+        client: OkHttpClient = httpClient
     ): Response {
         val body = createJsonRequestBody(requestBody, transmitContentLength)
 
-        return httpClient.newCall(
+        return client.newCall(
             Request.Builder()
                 .url("$endpointWithoutSlashAtEnd/$path")
                 .post(body)
                 .header("Content-Encoding", "gzip")
                 .build()
         ).waitForResponse()
+    }
+
+    private suspend fun <T> withDeviceVerification(block: suspend (client: OkHttpClient) -> T): T {
+        if (VERSION.SDK_INT >= VERSION_CODES.N) {
+            val keyStoreName = "AndroidKeyStore"
+            val keyStore = KeyStore.getInstance(keyStoreName).also { it.load(null) }
+            val keyId = "temp-" + UUID.randomUUID().toString()
+            val now = getTimeInMillis()
+
+            KeyPairGenerator.getInstance(KeyProperties.KEY_ALGORITHM_EC, keyStoreName)
+                .also {
+                    it.initialize(
+                        KeyGenParameterSpec.Builder(
+                            keyId,
+                            KeyProperties.PURPOSE_SIGN
+                        )
+                            .setAlgorithmParameterSpec(
+                                ECGenParameterSpec("prime256v1")
+                            )
+                            .setDigests(
+                                KeyProperties.DIGEST_NONE,
+                                KeyProperties.DIGEST_SHA256,
+                                KeyProperties.DIGEST_SHA384,
+                                KeyProperties.DIGEST_SHA512
+                            )
+                            .setCertificateNotBefore(Date(now - 1000 * 60))
+                            .setCertificateNotAfter(Date(now + 1000 * 60))
+                            .setAttestationChallenge(byteArrayOf())
+                            .build()
+                    )
+                }.genKeyPair()
+
+            try {
+                val key = keyStore.getEntry(keyId, null) as PrivateKeyEntry
+                val keyManager = X509ClientKeyManager(key.privateKey, key.certificateChain.map { it as X509Certificate })
+
+                val socketFactory = SSLContext.getInstance("TLS").also {
+                    it.init(arrayOf(keyManager), null, null)
+                }.socketFactory
+
+                return block(
+                    httpClient.newBuilder()
+                        .sslSocketFactory(socketFactory, httpClient.x509TrustManager!!)
+                        .build()
+                )
+            } finally {
+                keyStore.deleteEntry(keyId)
+            }
+        } else return block(httpClient)
     }
 }

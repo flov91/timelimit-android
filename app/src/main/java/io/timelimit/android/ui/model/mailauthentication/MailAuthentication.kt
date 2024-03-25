@@ -1,5 +1,5 @@
 /*
- * TimeLimit Copyright <C> 2019 - 2023 Jonas Lochmann
+ * TimeLimit Copyright <C> 2019 - 2024 Jonas Lochmann
  *
  * This program is free software: you can redistribute it and/or modify
  * it under the terms of the GNU General Public License as published by
@@ -129,6 +129,7 @@ object MailAuthentication {
         object RateLimit: ErrorDialog()
         object BlockedMailServer: ErrorDialog()
         object MailAddressNotAllowed: ErrorDialog()
+        object BlockedForIntegrityReasons: ErrorDialog()
         data class ExceptionDetails(val message: String): ErrorDialog()
     }
 
@@ -188,6 +189,8 @@ object MailAuthentication {
                 updateState { it.withError(error = ErrorDialog.BlockedMailServer) }
             } catch (ex: MailAddressNotWhitelistedException) {
                 updateState { it.withError(error = ErrorDialog.MailAddressNotAllowed) }
+            } catch (ex: MailLoginBlockedForIntegrityReasonsException) {
+                updateState { it.withError(error = ErrorDialog.BlockedForIntegrityReasons) }
             } catch (ex: Exception) {
                 showGenericExceptionMessage(ex)
             }

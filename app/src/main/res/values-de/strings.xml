@@ -1,6 +1,6 @@
 <?xml version="1.0" encoding="utf-8"?>
 <!--
-  TimeLimit Copyright <C> 2019 - 2023 Jonas Lochmann
+  TimeLimit Copyright <C> 2019 - 2024 Jonas Lochmann
   This program is free software: you can redistribute it and/or modify
   it under the terms of the GNU General Public License as published by
   the Free Software Foundation version 3 of the License.
@@ -164,6 +164,8 @@
         serverseitig eine Whitelist mit E-Mail-Adressen festgelegt und die angegebene E-Mail-Adresse war nicht
         in dieser Whitelist
     </string>
+    <string name="authenticate_error_integrity_title">Anmeldung blockiert</string>
+    <string name="authenticate_error_integrity_text">Wegen einem Problem mit Ihrem Gerät oder Ihrer TimeLimit-Installation ist keine Anmeldung möglich.</string>
     <string name="authenticate_too_many_requests_text">Es gab viele Anmeldeversuche, daher gibt es eine vorübergehende Anmeldesperre.
         Diese Sperre wird automatisch deaktiviert.
     </string>
