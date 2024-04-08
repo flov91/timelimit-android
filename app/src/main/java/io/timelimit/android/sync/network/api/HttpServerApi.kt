@@ -139,7 +139,10 @@ class HttpServerApi(private val endpointWithoutSlashAtEnd: String): ServerApi {
         }
     }
 
-    override suspend fun sendMailLoginCode(mail: String, locale: String, deviceAuthToken: String?): String = withDeviceVerification { client ->
+    override suspend fun sendMailLoginCode(mail: String, locale: String, deviceAuthToken: String?): String =
+        sendMailLoginCode(mail, locale, deviceAuthToken, false)
+
+    private suspend fun sendMailLoginCode(mail: String, locale: String, deviceAuthToken: String?, skipDeviceVerification: Boolean): String = withDeviceVerification (enable = !skipDeviceVerification) { client ->
         postJsonRequest(
             "auth/send-mail-login-code-v2",
             client = client
@@ -153,14 +156,16 @@ class HttpServerApi(private val endpointWithoutSlashAtEnd: String): ServerApi {
             try {
                 it.assertSuccess()
             } catch (ex: BadRequestHttpError) {
-                if (deviceAuthToken != null) {
+                if (deviceAuthToken != null || !skipDeviceVerification) {
                     // retry without device auth token
 
                     if (BuildConfig.DEBUG) {
-                        Log.d(LOG_TAG, "sendMailLoginCode() try again without deviceAuthToken")
+                        Log.d(LOG_TAG, "sendMailLoginCode() try again without deviceAuthToken and device verification")
                     }
 
-                    return@use sendMailLoginCode(mail, locale, null)
+                    Threads.network.executeAndWait { it.close() }
+
+                    return@use sendMailLoginCode(mail, locale, null, true)
                 } else {
                     throw ex
                 }
@@ -685,8 +690,8 @@ class HttpServerApi(private val endpointWithoutSlashAtEnd: String): ServerApi {
         ).waitForResponse()
     }
 
-    private suspend fun <T> withDeviceVerification(block: suspend (client: OkHttpClient) -> T): T {
-        if (VERSION.SDK_INT >= VERSION_CODES.N) {
+    private suspend fun <T> withDeviceVerification(enable: Boolean = true, block: suspend (client: OkHttpClient) -> T): T {
+        if (VERSION.SDK_INT >= VERSION_CODES.N && enable) {
             val keyStoreName = "AndroidKeyStore"
             val keyStore = KeyStore.getInstance(keyStoreName).also { it.load(null) }
             val keyId = "temp-" + UUID.randomUUID().toString()
