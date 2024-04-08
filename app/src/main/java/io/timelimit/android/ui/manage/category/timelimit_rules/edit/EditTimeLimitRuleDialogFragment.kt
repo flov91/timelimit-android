@@ -1,5 +1,5 @@
 /*
- * TimeLimit Copyright <C> 2019 - 2022 Jonas Lochmann
+ * TimeLimit Copyright <C> 2019 - 2024 Jonas Lochmann
  *
  * This program is free software: you can redistribute it and/or modify
  * it under the terms of the GNU General Public License as published by
@@ -24,6 +24,7 @@ import android.widget.Toast
 import androidx.fragment.app.Fragment
 import androidx.fragment.app.FragmentManager
 import androidx.lifecycle.Observer
+import androidx.lifecycle.map
 import com.google.android.material.bottomsheet.BottomSheetBehavior
 import com.google.android.material.bottomsheet.BottomSheetDialogFragment
 import io.timelimit.android.R
@@ -36,17 +37,20 @@ import io.timelimit.android.extensions.MinuteOfDay
 import io.timelimit.android.extensions.getParcelableCompat
 import io.timelimit.android.extensions.showSafe
 import io.timelimit.android.logic.DefaultAppLogic
+import io.timelimit.android.logic.ServerApiLevelInfo
 import io.timelimit.android.sync.actions.CreateTimeLimitRuleAction
 import io.timelimit.android.sync.actions.DeleteTimeLimitRuleAction
 import io.timelimit.android.sync.actions.UpdateTimeLimitRuleAction
 import io.timelimit.android.ui.main.ActivityViewModel
 import io.timelimit.android.ui.main.getActivityViewModel
+import io.timelimit.android.ui.util.DateUtil
 import io.timelimit.android.ui.view.SelectDayViewHandlers
 import io.timelimit.android.ui.view.SelectTimeSpanViewListener
 import io.timelimit.android.util.TimeTextUtil
-import java.nio.ByteBuffer
+import org.threeten.bp.Instant
+import org.threeten.bp.LocalDate
+import org.threeten.bp.ZoneId
 import java.util.*
-
 
 class EditTimeLimitRuleDialogFragment : BottomSheetDialogFragment() {
     companion object {
@@ -59,6 +63,7 @@ class EditTimeLimitRuleDialogFragment : BottomSheetDialogFragment() {
         private const val REQUEST_END_TIME_OF_DAY = "editRule:endTimeOfDay"
         private const val REQUEST_EDIT_SESSION_LENGTH = "editRule:sessionLength"
         private const val REQUEST_EDIT_SESSION_PAUSE = "editRule:sessionPause"
+        private const val REQUEST_EDIT_EXPIRE_DATE = "editRule:expire:data"
 
         fun newInstance(existingRule: TimeLimitRule, selfLimitMode: Boolean, listener: Fragment) = EditTimeLimitRuleDialogFragment()
                 .apply {
@@ -85,6 +90,7 @@ class EditTimeLimitRuleDialogFragment : BottomSheetDialogFragment() {
     private var savedNewRule: TimeLimitRule? = null
     private var selfLimitMode: Boolean = false
     private lateinit var newRule: TimeLimitRule
+    private lateinit var categoryId: String
     private lateinit var view: FragmentEditTimeLimitRuleDialogBinding
 
     private val auth: ActivityViewModel by lazy { getActivityViewModel(requireActivity()) }
@@ -95,6 +101,7 @@ class EditTimeLimitRuleDialogFragment : BottomSheetDialogFragment() {
         selfLimitMode = requireArguments().getBoolean(SELF_LIMIT_MODE)
         existingRule = savedInstanceState?.getParcelableCompat(PARAM_EXISTING_RULE)
                 ?: arguments?.getParcelableCompat(PARAM_EXISTING_RULE)
+        categoryId = existingRule?.categoryId ?: requireArguments().getString(PARAM_CATEGORY_ID)!!
     }
 
     private fun bindRule() {
@@ -127,9 +134,17 @@ class EditTimeLimitRuleDialogFragment : BottomSheetDialogFragment() {
 
         view.blockCurrentSelfLimitationParams =
             selfLimitMode && existingRule != null && !newRule.isAtLeastAsStrictAs(existingRule)
+
+        newRule.expiresAt.also { expiresAt ->
+            if (expiresAt == null) view.expireEnabled = false
+            else {
+                view.expireEnabled = true
+                view.expireDateText = DateUtil.formatAbsoluteDate(requireContext(), expiresAt)
+            }
+        }
     }
 
-    override fun onCreateView(inflater: LayoutInflater, container: ViewGroup?, savedInstanceState: Bundle?): View? {
+    override fun onCreateView(inflater: LayoutInflater, container: ViewGroup?, savedInstanceState: Bundle?): View {
         val listener = targetFragment as EditTimeLimitRuleDialogFragmentListener
         val database = DefaultAppLogic.with(requireContext()).database
 
@@ -145,16 +160,17 @@ class EditTimeLimitRuleDialogFragment : BottomSheetDialogFragment() {
             view.isNewRule = true
 
             newRule = TimeLimitRule(
-                    id = IdGenerator.generateId(),
-                    categoryId = requireArguments().getString(PARAM_CATEGORY_ID)!!,
-                    applyToExtraTimeUsage = false,
-                    dayMask = 0,
-                    maximumTimeInMillis = 1000 * 60 * 60,
-                    startMinuteOfDay = TimeLimitRule.MIN_START_MINUTE,
-                    endMinuteOfDay = TimeLimitRule.MAX_END_MINUTE,
-                    sessionPauseMilliseconds = 0,
-                    sessionDurationMilliseconds = 0,
-                    perDay = true
+                id = IdGenerator.generateId(),
+                categoryId = categoryId,
+                applyToExtraTimeUsage = false,
+                dayMask = 0,
+                maximumTimeInMillis = 1000 * 60 * 60,
+                startMinuteOfDay = TimeLimitRule.MIN_START_MINUTE,
+                endMinuteOfDay = TimeLimitRule.MAX_END_MINUTE,
+                sessionPauseMilliseconds = 0,
+                sessionDurationMilliseconds = 0,
+                perDay = true,
+                expiresAt = null
             )
         } else {
             view.isNewRule = false
@@ -254,6 +270,26 @@ class EditTimeLimitRuleDialogFragment : BottomSheetDialogFragment() {
                 ).show(childFragmentManager)
             }
 
+            override fun updateExpireEnabled(enable: Boolean) {
+                newRule = newRule.copy(
+                    expiresAt = if (enable) LocalDate.now().plusDays(7).atStartOfDay(ZoneId.systemDefault()).toInstant().toEpochMilli()
+                    else null
+                )
+
+                bindRule()
+            }
+
+            override fun updateExpireDate() {
+                val expiresAt = Instant.ofEpochMilli(newRule.expiresAt ?: 0).atZone(ZoneId.systemDefault())
+
+                DatePickerDialogFragment.newInstance(
+                    REQUEST_EDIT_EXPIRE_DATE,
+                    expiresAt.dayOfMonth,
+                    expiresAt.monthValue,
+                    expiresAt.year
+                ).show(childFragmentManager)
+            }
+
             override fun onSaveRule() {
                 view.timeSpan.clearNumberPickerFocus()
 
@@ -268,7 +304,8 @@ class EditTimeLimitRuleDialogFragment : BottomSheetDialogFragment() {
                             end = newRule.endMinuteOfDay,
                             sessionDurationMilliseconds = newRule.sessionDurationMilliseconds,
                             sessionPauseMilliseconds = newRule.sessionPauseMilliseconds,
-                            perDay = newRule.perDay
+                            perDay = newRule.perDay,
+                            expiresAt = newRule.expiresAt
                         )
 
                         if (!auth.tryDispatchParentAction(updateAction, allowAsChild = selfLimitMode)) {
@@ -330,6 +367,12 @@ class EditTimeLimitRuleDialogFragment : BottomSheetDialogFragment() {
         database.config().getEnableAlternativeDurationSelectionAsync().observe(viewLifecycleOwner, Observer {
             view.timeSpan.enablePickerMode(it)
         })
+
+        auth.logic.serverApiLevelLogic.infoLive
+            .map { it.hasLevelOrIsOffline(ServerApiLevelInfo.EXPIRE_RULES) }
+            .observe(viewLifecycleOwner) {
+                view.supportsExpiringRules = it
+            }
 
         if (existingRule != null) {
             database.timeLimitRules()
@@ -397,6 +440,15 @@ class EditTimeLimitRuleDialogFragment : BottomSheetDialogFragment() {
 
             bindRule()
         }
+
+        childFragmentManager.setFragmentResultListener(REQUEST_EDIT_EXPIRE_DATE, viewLifecycleOwner) { _, bundle ->
+            val result = DatePickerDialogFragment.Result.fromBundle(bundle)
+            val timeInMillis = result.localDate.atStartOfDay(ZoneId.systemDefault()).toInstant().toEpochMilli()
+
+            newRule = newRule.copy(expiresAt = timeInMillis)
+
+            bindRule()
+        }
     }
 
     override fun onCreateDialog(savedInstanceState: Bundle?): Dialog {
@@ -441,6 +493,8 @@ interface Handlers {
     fun updateSessionDurationLimit(enable: Boolean)
     fun updateSessionLength()
     fun updateSessionBreak()
+    fun updateExpireEnabled(enable: Boolean)
+    fun updateExpireDate()
     fun onSaveRule()
     fun onDeleteRule()
 }

@@ -1,5 +1,5 @@
 /*
- * TimeLimit Copyright <C> 2019 - 2023 Jonas Lochmann
+ * TimeLimit Copyright <C> 2019 - 2024 Jonas Lochmann
  *
  * This program is free software: you can redistribute it and/or modify
  * it under the terms of the GNU General Public License as published by
@@ -133,7 +133,7 @@ object ManageCategoryBlockedTimes {
             val targetRules = data.toRules(categoryId)
             val currentBlockedTimes = logic.database.category().getCategoryByIdFlow(categoryId).first()?.blockedMinutesInWeek ?: return
             val currentRules = logic.database.timeLimitRules().getTimeLimitRulesByCategoryCoroutine(categoryId)
-                .filter { it.likeBlockedTimeArea }
+                .filter { it.likeBlockedTimeArea && it.expiresAt == null }
 
             val rulesToDelete = mutableListOf<TimeLimitRule>()
             val currentRulesToEditEventually = mutableMapOf<BlockedTimesData.Range, TimeLimitRule>()
@@ -185,7 +185,8 @@ object ManageCategoryBlockedTimes {
                 rule.endMinuteOfDay,
                 rule.sessionDurationMilliseconds,
                 rule.sessionPauseMilliseconds,
-                rule.perDay
+                rule.perDay,
+                rule.expiresAt
             ))
             for (rule in rulesToDelete) apply(DeleteTimeLimitRuleAction(rule.id))
 

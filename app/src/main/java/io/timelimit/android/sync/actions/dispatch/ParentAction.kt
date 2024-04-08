@@ -1,5 +1,5 @@
 /*
- * TimeLimit Copyright <C> 2019 - 2022 Jonas Lochmann
+ * TimeLimit Copyright <C> 2019 - 2024 Jonas Lochmann
  *
  * This program is free software: you can redistribute it and/or modify
  * it under the terms of the GNU General Public License as published by
@@ -322,7 +322,8 @@ object LocalDatabaseParentActionDispatcher {
                         endMinuteOfDay = action.end,
                         sessionDurationMilliseconds = action.sessionDurationMilliseconds,
                         sessionPauseMilliseconds = action.sessionPauseMilliseconds,
-                        perDay = action.perDay
+                        perDay = action.perDay,
+                        expiresAt = action.expiresAt
                     )
 
                     if (fromChildSelfLimitAddChildUserId != null) {

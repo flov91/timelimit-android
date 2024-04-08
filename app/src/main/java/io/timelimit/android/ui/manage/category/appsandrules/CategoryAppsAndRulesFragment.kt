@@ -136,7 +136,8 @@ abstract class CategoryAppsAndRulesFragment: Fragment(), Handlers, EditTimeLimit
                             end = oldRule.endMinuteOfDay,
                             sessionDurationMilliseconds = oldRule.sessionDurationMilliseconds,
                             sessionPauseMilliseconds = oldRule.sessionPauseMilliseconds,
-                            perDay = oldRule.perDay
+                            perDay = oldRule.perDay,
+                            expiresAt = oldRule.expiresAt
                         )
                     )
                 }

@@ -1,5 +1,5 @@
 /*
- * TimeLimit Copyright <C> 2019 - 2022 Jonas Lochmann
+ * TimeLimit Copyright <C> 2019 - 2024 Jonas Lochmann
  *
  * This program is free software: you can redistribute it and/or modify
  * it under the terms of the GNU General Public License as published by
@@ -56,7 +56,9 @@ data class TimeLimitRule(
         @ColumnInfo(name = "session_pause_milliseconds")
         val sessionPauseMilliseconds: Int,
         @ColumnInfo(name = "per_day")
-        val perDay: Boolean
+        val perDay: Boolean,
+        @ColumnInfo(name = "expires_at")
+        val expiresAt: Long?
 ): Parcelable, JsonSerializable {
     companion object {
         private const val RULE_ID = "ruleId"
@@ -69,6 +71,7 @@ data class TimeLimitRule(
         private const val SESSION_DURATION_MILLISECONDS = "dur"
         private const val SESSION_PAUSE_MILLISECONDS = "pause"
         private const val PER_DAY = "perDay"
+        private const val EXPIRES_AT = "e"
 
         const val MIN_START_MINUTE = MinuteOfDay.MIN
         const val MAX_END_MINUTE = MinuteOfDay.MAX
@@ -84,6 +87,7 @@ data class TimeLimitRule(
             var sessionDurationMilliseconds = 0
             var sessionPauseMilliseconds = 0
             var perDay = false
+            var expiresAt: Long? = null
 
             reader.beginObject()
 
@@ -99,6 +103,7 @@ data class TimeLimitRule(
                     SESSION_DURATION_MILLISECONDS -> sessionDurationMilliseconds = reader.nextInt()
                     SESSION_PAUSE_MILLISECONDS -> sessionPauseMilliseconds = reader.nextInt()
                     PER_DAY -> perDay = reader.nextBoolean()
+                    EXPIRES_AT -> expiresAt = reader.nextLong()
                     else -> reader.skipValue()
                 }
             }
@@ -106,16 +111,17 @@ data class TimeLimitRule(
             reader.endObject()
 
             return TimeLimitRule(
-                    id = id!!,
-                    categoryId = categoryId!!,
-                    applyToExtraTimeUsage = applyToExtraTimeUsage!!,
-                    dayMask = dayMask!!,
-                    maximumTimeInMillis = maximumTimeInMillis!!,
-                    startMinuteOfDay = startMinuteOfDay,
-                    endMinuteOfDay = endMinuteOfDay,
-                    sessionDurationMilliseconds = sessionDurationMilliseconds,
-                    sessionPauseMilliseconds = sessionPauseMilliseconds,
-                    perDay = perDay
+                id = id!!,
+                categoryId = categoryId!!,
+                applyToExtraTimeUsage = applyToExtraTimeUsage!!,
+                dayMask = dayMask!!,
+                maximumTimeInMillis = maximumTimeInMillis!!,
+                startMinuteOfDay = startMinuteOfDay,
+                endMinuteOfDay = endMinuteOfDay,
+                sessionDurationMilliseconds = sessionDurationMilliseconds,
+                sessionPauseMilliseconds = sessionPauseMilliseconds,
+                perDay = perDay,
+                expiresAt = expiresAt
             )
         }
     }
@@ -137,6 +143,10 @@ data class TimeLimitRule(
         }
 
         if (sessionDurationMilliseconds < 0 || sessionPauseMilliseconds < 0) {
+            throw IllegalArgumentException()
+        }
+
+        if (expiresAt != null && expiresAt <= 0) {
             throw IllegalArgumentException()
         }
     }
@@ -170,6 +180,7 @@ data class TimeLimitRule(
         }
 
         if (perDay) writer.name(PER_DAY).value(true)
+        if (expiresAt != null) writer.name(EXPIRES_AT).value(expiresAt)
 
         writer.endObject()
     }
@@ -185,19 +196,6 @@ data class TimeLimitRule(
                         this.sessionDurationMilliseconds <= other.sessionDurationMilliseconds &&
                                 this.sessionPauseMilliseconds >= other.sessionPauseMilliseconds
                         )) &&
-                (!this.perDay || other.perDay || other.dayMask.countOneBits() <= 1)
+                (!this.perDay || other.perDay || other.dayMask.countOneBits() <= 1) &&
+                (this.expiresAt == null || (other.expiresAt != null && this.expiresAt >= other.expiresAt))
 }
-
-fun List<TimeLimitRule>.getSlotSwitchMinutes(): Set<Int> {
-    val result = mutableSetOf<Int>()
-
-    result.add(MinuteOfDay.MIN)
-
-    forEach { rule -> result.add(rule.startMinuteOfDay); result.add(rule.endMinuteOfDay) }
-
-    return result
-}
-
-fun getCurrentTimeSlotStartMinute(slots: Set<Int>, minuteOfDay: LiveData<Int>): LiveData<Int> = minuteOfDay.map { minuteOfDay ->
-    slots.find { it >= minuteOfDay } ?: 0
-}.ignoreUnchanged()

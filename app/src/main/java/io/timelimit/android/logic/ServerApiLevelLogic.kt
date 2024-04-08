@@ -1,5 +1,5 @@
 /*
- * TimeLimit Copyright <C> 2019 - 2023 Jonas Lochmann
+ * TimeLimit Copyright <C> 2019 - 2024 Jonas Lochmann
  *
  * This program is free software: you can redistribute it and/or modify
  * it under the terms of the GNU General Public License as published by
@@ -49,6 +49,10 @@ class ServerApiLevelLogic(logic: AppLogic) {
 }
 
 sealed class ServerApiLevelInfo {
+    companion object {
+        const val EXPIRE_RULES = 8
+    }
+
     abstract fun hasLevelOrIsOffline(level: Int): Boolean
 
     data class Online(val serverLevel: Int): ServerApiLevelInfo() {

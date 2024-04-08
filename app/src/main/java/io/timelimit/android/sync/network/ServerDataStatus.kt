@@ -1,5 +1,5 @@
 /*
- * TimeLimit Copyright <C> 2019 - 2022 Jonas Lochmann
+ * TimeLimit Copyright <C> 2019 - 2024 Jonas Lochmann
  *
  * This program is free software: you can redistribute it and/or modify
  * it under the terms of the GNU General Public License as published by
@@ -27,6 +27,7 @@ import io.timelimit.android.extensions.parseBase64
 import io.timelimit.android.integration.platform.*
 import io.timelimit.android.util.parseJsonArray
 import io.timelimit.android.util.parseJsonStringArray
+import java.io.IOException
 import java.util.*
 import kotlin.collections.ArrayList
 
@@ -889,15 +890,16 @@ data class ServerUpdatedTimeLimitRules(
 }
 
 data class ServerTimeLimitRule(
-        val id: String,
-        val applyToExtraTimeUsage: Boolean,
-        val dayMask: Byte,
-        val maximumTimeInMillis: Int,
-        val startMinuteOfDay: Int,
-        val endMinuteOfDay: Int,
-        val sessionDurationMilliseconds: Int,
-        val sessionPauseMilliseconds: Int,
-        val perDay: Boolean
+    val id: String,
+    val applyToExtraTimeUsage: Boolean,
+    val dayMask: Byte,
+    val maximumTimeInMillis: Int,
+    val startMinuteOfDay: Int,
+    val endMinuteOfDay: Int,
+    val sessionDurationMilliseconds: Int,
+    val sessionPauseMilliseconds: Int,
+    val perDay: Boolean,
+    val expiresAt: Long?
 ) {
     companion object {
         private const val ID = "id"
@@ -909,6 +911,7 @@ data class ServerTimeLimitRule(
         private const val SESSION_DURATION_MILLISECONDS = "session"
         private const val SESSION_PAUSE_MILLISECONDS = "pause"
         private const val PER_DAY = "perDay"
+        private const val EXPIRES_AT = "e"
 
         fun parse(reader: JsonReader): ServerTimeLimitRule {
             var id: String? = null
@@ -920,6 +923,7 @@ data class ServerTimeLimitRule(
             var sessionDurationMilliseconds: Int = 0
             var sessionPauseMilliseconds: Int = 0
             var perDay = false
+            var expiresAt: Long? = null
 
             reader.beginObject()
             while (reader.hasNext()) {
@@ -933,21 +937,27 @@ data class ServerTimeLimitRule(
                     SESSION_DURATION_MILLISECONDS -> sessionDurationMilliseconds = reader.nextInt()
                     SESSION_PAUSE_MILLISECONDS -> sessionPauseMilliseconds = reader.nextInt()
                     PER_DAY -> perDay = reader.nextBoolean()
+                    EXPIRES_AT -> expiresAt = when (reader.peek()) {
+                        JsonToken.NUMBER -> reader.nextLong()
+                        JsonToken.NULL -> reader.nextNull().let { null }
+                        else -> throw IOException("invalid expires at data type")
+                    }
                     else -> reader.skipValue()
                 }
             }
             reader.endObject()
 
             return ServerTimeLimitRule(
-                    id = id!!,
-                    applyToExtraTimeUsage = applyToExtraTimeUsage!!,
-                    dayMask = dayMask!!,
-                    maximumTimeInMillis = maximumTimeInMillis!!,
-                    startMinuteOfDay = startMinuteOfDay,
-                    endMinuteOfDay = endMinuteOfDay,
-                    sessionDurationMilliseconds = sessionDurationMilliseconds,
-                    sessionPauseMilliseconds = sessionPauseMilliseconds,
-                    perDay = perDay
+                id = id!!,
+                applyToExtraTimeUsage = applyToExtraTimeUsage!!,
+                dayMask = dayMask!!,
+                maximumTimeInMillis = maximumTimeInMillis!!,
+                startMinuteOfDay = startMinuteOfDay,
+                endMinuteOfDay = endMinuteOfDay,
+                sessionDurationMilliseconds = sessionDurationMilliseconds,
+                sessionPauseMilliseconds = sessionPauseMilliseconds,
+                perDay = perDay,
+                expiresAt = expiresAt
             )
         }
 
@@ -965,16 +975,17 @@ data class ServerTimeLimitRule(
     }
 
     fun toRealRule(categoryId: String) = TimeLimitRule(
-            id = id,
-            applyToExtraTimeUsage = applyToExtraTimeUsage,
-            dayMask = dayMask,
-            maximumTimeInMillis = maximumTimeInMillis,
-            categoryId = categoryId,
-            startMinuteOfDay = startMinuteOfDay,
-            endMinuteOfDay = endMinuteOfDay,
-            sessionDurationMilliseconds = sessionDurationMilliseconds,
-            sessionPauseMilliseconds = sessionPauseMilliseconds,
-            perDay = perDay
+        id = id,
+        applyToExtraTimeUsage = applyToExtraTimeUsage,
+        dayMask = dayMask,
+        maximumTimeInMillis = maximumTimeInMillis,
+        categoryId = categoryId,
+        startMinuteOfDay = startMinuteOfDay,
+        endMinuteOfDay = endMinuteOfDay,
+        sessionDurationMilliseconds = sessionDurationMilliseconds,
+        sessionPauseMilliseconds = sessionPauseMilliseconds,
+        perDay = perDay,
+        expiresAt = expiresAt
     )
 }
 

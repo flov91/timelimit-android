@@ -1,5 +1,5 @@
 /*
- * TimeLimit Copyright <C> 2019 - 2023 Jonas Lochmann
+ * TimeLimit Copyright <C> 2019 - 2024 Jonas Lochmann
  *
  * This program is free software: you can redistribute it and/or modify
  * it under the terms of the GNU General Public License as published by
@@ -1674,7 +1674,7 @@ data class CreateTimeLimitRuleAction(val rule: TimeLimitRule): ParentAction() {
 data class UpdateTimeLimitRuleAction(
         val ruleId: String, val dayMask: Byte, val maximumTimeInMillis: Int, val applyToExtraTimeUsage: Boolean,
         val start: Int, val end: Int, val sessionDurationMilliseconds: Int, val sessionPauseMilliseconds: Int,
-        val perDay: Boolean
+        val perDay: Boolean, val expiresAt: Long?
 ): ParentAction() {
     companion object {
         const val TYPE_VALUE = "UPDATE_TIMELIMIT_RULE"
@@ -1687,6 +1687,7 @@ data class UpdateTimeLimitRuleAction(
         private const val SESSION_DURATION_MILLISECONDS = "dur"
         private const val SESSION_PAUSE_MILLISECONDS = "pause"
         private const val PER_DAY = "perDay"
+        private const val EXPIRES_AT = "e"
     }
 
     init {
@@ -1705,6 +1706,10 @@ data class UpdateTimeLimitRuleAction(
         }
 
         if (sessionDurationMilliseconds < 0 || sessionPauseMilliseconds < 0) {
+            throw IllegalArgumentException()
+        }
+
+        if (expiresAt != null && expiresAt <= 0) {
             throw IllegalArgumentException()
         }
     }
@@ -1726,6 +1731,7 @@ data class UpdateTimeLimitRuleAction(
         }
 
         if (perDay) writer.name(PER_DAY).value(true)
+        if (expiresAt != null) writer.name(EXPIRES_AT).value(expiresAt)
 
         writer.endObject()
     }

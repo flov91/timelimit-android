@@ -1,5 +1,5 @@
 /*
- * TimeLimit Copyright <C> 2019 - 2021 Jonas Lochmann
+ * TimeLimit Copyright <C> 2019 - 2024 Jonas Lochmann
  *
  * This program is free software: you can redistribute it and/or modify
  * it under the terms of the GNU General Public License as published by
@@ -117,13 +117,16 @@ data class CategoryItselfHandling (
                 } else false
             }
 
+            val nonExpiredRules = categoryRelatedData.rules.filter { it.expiresAt == null || it.expiresAt > timeInMillis }
+            val dependsOnMaxTimeByExpiringRules = nonExpiredRules.map { it.expiresAt }.filterNotNull().minOrNull() ?: Long.MAX_VALUE
+
             val allRelatedRules = if (areLimitsTemporarilyDisabled)
                 emptyList()
             else
                 RemainingTime.getRulesRelatedToDay(
                         dayOfWeek = dayOfWeek,
                         minuteOfDay = minuteInWeek % MinuteOfDay.LENGTH,
-                        rules = categoryRelatedData.rules
+                        rules = nonExpiredRules
                 )
 
             val regularRelatedRules = allRelatedRules.filterNot { it.likeBlockedTimeArea }
@@ -165,10 +168,12 @@ data class CategoryItselfHandling (
                     durationsOfCategory = categoryRelatedData.durations
             )
 
+            // if a rule expired, then it still needs some network time
             val missingNetworkTimeForRules = categoryRelatedData.rules.isNotEmpty()
+
             val okByTimeLimitRules = regularRelatedRules.isEmpty() || (remainingTime != null && remainingTime.hasRemainingTime)
             val dependsOnMaxTimeByMinuteOfDay = (allRelatedRules.minByOrNull { it.endMinuteOfDay }?.endMinuteOfDay ?: Int.MAX_VALUE).coerceAtMost(
-                    categoryRelatedData.rules
+                    nonExpiredRules
                             .filter {
                                 // related to today
                                 it.dayMask.toInt() and (1 shl dayOfWeek) != 0 &&
@@ -209,6 +214,7 @@ data class CategoryItselfHandling (
                     .coerceAtMost(dependsOnMaxTimeByTemporarilyDisabledLimits)
                     .coerceAtMost(dependsOnMaxTimeByRules)
                     .coerceAtMost(dependsOnMaxTimeBySessionDurationLimitItems)
+                    .coerceAtMost(dependsOnMaxTimeByExpiringRules)
                     .coerceAtLeast(timeInMillis + 100)  // prevent loops in case of calculation bugs
             val missingNetworkTime = !shouldTrustTimeTemporarily &&
                     (missingNetworkTimeForDisableTempBlocking || missingNetworkTimeForBlockedTimeAreas || missingNetworkTimeForRules)

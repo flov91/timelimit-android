@@ -1,5 +1,5 @@
 /*
- * TimeLimit Copyright <C> 2019 - 2023 Jonas Lochmann
+ * TimeLimit Copyright <C> 2019 - 2024 Jonas Lochmann
  *
  * This program is free software: you can redistribute it and/or modify
  * it under the terms of the GNU General Public License as published by
@@ -61,8 +61,9 @@ import java.util.concurrent.TimeUnit
     UserU2FKey::class,
     WidgetCategory::class,
     WidgetConfig::class
-], version = 47, autoMigrations = [
-    AutoMigration(from = 46, to = 47)
+], version = 48, autoMigrations = [
+    AutoMigration(from = 46, to = 47),
+    AutoMigration(from = 47, to = 48)
 ])
 abstract class RoomDatabase: RoomDatabase(), io.timelimit.android.data.Database {
     companion object {

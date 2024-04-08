@@ -1,5 +1,5 @@
 /*
- * TimeLimit Copyright <C> 2019 - 2023 Jonas Lochmann
+ * TimeLimit Copyright <C> 2019 - 2024 Jonas Lochmann
  *
  * This program is free software: you can redistribute it and/or modify
  * it under the terms of the GNU General Public License as published by
@@ -30,6 +30,7 @@ class BlockedTimesData (val ranges: RangeList) {
 
             for (rule in rules) {
                 if (!rule.likeBlockedTimeArea) continue
+                if (rule.expiresAt != null) continue
 
                 for (day in 0 until 7) {
                     if (1 shl day and rule.dayMask.toInt() == 0) continue
@@ -172,16 +173,6 @@ class BlockedTimesData (val ranges: RangeList) {
 
             return RangeList(result)
         }
-
-        fun toBitmask(): ImmutableBitmask {
-            val result = BitSet()
-
-            for (range in ranges) {
-                result.set(range.first, range.last + 1)
-            }
-
-            return ImmutableBitmask(result)
-        }
     }
 
     fun withUpdatedRange(range: Range, value: Boolean) = BlockedTimesData(
@@ -226,7 +217,8 @@ class BlockedTimesData (val ranges: RangeList) {
                     endMinuteOfDay = range.last,
                     sessionDurationMilliseconds = 0,
                     sessionPauseMilliseconds = 0,
-                    perDay = false
+                    perDay = false,
+                    expiresAt = null
                 )
 
                 result[range] = rule.copy(dayMask = rule.dayMask or (1 shl day).toByte())
