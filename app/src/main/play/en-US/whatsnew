@@ -1,3 +1,2 @@
-- improvements of the UI
-- add device authentication when signing in by mail
-- update contained components
+- add support for time limit rules that expire
+- prepare for technical adjustments at Let's Encrypt

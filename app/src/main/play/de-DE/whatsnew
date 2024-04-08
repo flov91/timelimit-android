@@ -1,3 +1,2 @@
-- Detailverbesserungen der Oberfläche
-- Geräteauthentifizierung beim Anmelden mittels E-Mail-Adresse hinzugefügt
-- enthaltene Komponenten aktualisiert
+- Zeitbegrenzungsregeln mit Ablaufzeitpunkt
+- Vorbereitung für technische Änderungen seitens Let's Encrypt
