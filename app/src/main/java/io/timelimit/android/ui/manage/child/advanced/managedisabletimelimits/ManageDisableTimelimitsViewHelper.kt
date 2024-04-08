@@ -1,5 +1,5 @@
 /*
- * TimeLimit Copyright <C> 2019 - 2020 Jonas Lochmann
+ * TimeLimit Copyright <C> 2019 - 2024 Jonas Lochmann
  *
  * This program is free software: you can redistribute it and/or modify
  * it under the terms of the GNU General Public License as published by
@@ -29,8 +29,8 @@ import io.timelimit.android.ui.help.HelpDialogFragment
 import io.timelimit.android.ui.main.getActivityViewModel
 import io.timelimit.android.ui.payment.RequiresPurchaseDialogFragment
 import io.timelimit.android.ui.view.ManageDisableTimelimitsViewHandlers
-import org.threeten.bp.LocalDate
-import org.threeten.bp.ZoneId
+import java.time.LocalDate
+import java.time.ZoneId
 import java.util.*
 
 object ManageDisableTimelimitsViewHelper {

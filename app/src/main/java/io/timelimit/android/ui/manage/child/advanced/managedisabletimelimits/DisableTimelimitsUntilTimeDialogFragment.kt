@@ -1,5 +1,5 @@
 /*
- * TimeLimit Copyright <C> 2019 Jonas Lochmann
+ * TimeLimit Copyright <C> 2019 - 2024 Jonas Lochmann
  *
  * This program is free software: you can redistribute it and/or modify
  * it under the terms of the GNU General Public License as published by
@@ -35,9 +35,9 @@ import io.timelimit.android.logic.RealTime
 import io.timelimit.android.sync.actions.SetUserDisableLimitsUntilAction
 import io.timelimit.android.ui.main.ActivityViewModel
 import io.timelimit.android.ui.main.getActivityViewModel
-import org.threeten.bp.Instant
-import org.threeten.bp.LocalDateTime
-import org.threeten.bp.ZoneId
+import java.time.Instant
+import java.time.LocalDateTime
+import java.time.ZoneId
 
 class DisableTimelimitsUntilTimeDialogFragment: DialogFragment() {
     companion object {

@@ -22,7 +22,7 @@ import androidx.fragment.app.DialogFragment
 import androidx.fragment.app.FragmentManager
 import androidx.fragment.app.setFragmentResult
 import io.timelimit.android.extensions.showSafe
-import org.threeten.bp.LocalDate
+import java.time.LocalDate
 
 class DatePickerDialogFragment: DialogFragment() {
     companion object {

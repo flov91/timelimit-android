@@ -1,5 +1,5 @@
 /*
- * TimeLimit Copyright <C> 2019 - 2023 Jonas Lochmann
+ * TimeLimit Copyright <C> 2019 - 2024 Jonas Lochmann
  *
  * This program is free software: you can redistribute it and/or modify
  * it under the terms of the GNU General Public License as published by
@@ -17,16 +17,9 @@ package io.timelimit.android
 
 import android.app.Application
 import android.view.View
-import com.jakewharton.threetenabp.AndroidThreeTen
 
 class Application : Application() {
     // two legacy screens use small id numbers as they want; by running generateViewId() often enough,
     // all ids that are harcoded this way are not returned from generateViewId
     init { (0..1024).forEach { _ -> View.generateViewId() } }
-
-    override fun onCreate() {
-        super.onCreate()
-
-        AndroidThreeTen.init(this)
-    }
 }

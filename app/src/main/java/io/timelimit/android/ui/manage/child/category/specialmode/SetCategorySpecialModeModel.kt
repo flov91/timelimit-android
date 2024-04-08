@@ -1,5 +1,5 @@
 /*
- * TimeLimit Copyright <C> 2019 - 2023 Jonas Lochmann
+ * TimeLimit Copyright <C> 2019 - 2024 Jonas Lochmann
  *
  * This program is free software: you can redistribute it and/or modify
  * it under the terms of the GNU General Public License as published by
@@ -26,7 +26,7 @@ import io.timelimit.android.logic.DefaultAppLogic
 import io.timelimit.android.sync.actions.UpdateCategoryDisableLimitsAction
 import io.timelimit.android.sync.actions.UpdateCategoryTemporarilyBlockedAction
 import io.timelimit.android.ui.main.ActivityViewModel
-import org.threeten.bp.LocalDate
+import java.time.LocalDate
 
 class SetCategorySpecialModeModel(application: Application): AndroidViewModel(application) {
     private val logic = DefaultAppLogic.with(application)

@@ -1,5 +1,5 @@
 /*
- * TimeLimit Copyright <C> 2019 - 2023 Jonas Lochmann
+ * TimeLimit Copyright <C> 2019 - 2024 Jonas Lochmann
  *
  * This program is free software: you can redistribute it and/or modify
  * it under the terms of the GNU General Public License as published by
@@ -48,8 +48,8 @@ import io.timelimit.android.R
 import io.timelimit.android.extensions.MinuteOfDay
 import io.timelimit.android.ui.model.managechild.ManageChildUsageHistory
 import io.timelimit.android.util.TimeTextUtil
-import org.threeten.bp.LocalDate
-import org.threeten.bp.ZoneOffset
+import java.time.LocalDate
+import java.time.ZoneOffset
 import java.util.Date
 import java.util.TimeZone
 

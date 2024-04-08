@@ -47,9 +47,9 @@ import io.timelimit.android.ui.util.DateUtil
 import io.timelimit.android.ui.view.SelectDayViewHandlers
 import io.timelimit.android.ui.view.SelectTimeSpanViewListener
 import io.timelimit.android.util.TimeTextUtil
-import org.threeten.bp.Instant
-import org.threeten.bp.LocalDate
-import org.threeten.bp.ZoneId
+import java.time.Instant
+import java.time.LocalDate
+import java.time.ZoneId
 import java.util.*
 
 class EditTimeLimitRuleDialogFragment : BottomSheetDialogFragment() {

@@ -1,5 +1,5 @@
 /*
- * TimeLimit Copyright <C> 2019 - 2020 Jonas Lochmann
+ * TimeLimit Copyright <C> 2019 - 2024 Jonas Lochmann
  *
  * This program is free software: you can redistribute it and/or modify
  * it under the terms of the GNU General Public License as published by
@@ -15,8 +15,8 @@
  */
 package io.timelimit.android.date
 
-import org.threeten.bp.DayOfWeek
-import org.threeten.bp.LocalDate
+import java.time.DayOfWeek
+import java.time.LocalDate
 import java.util.*
 
 data class DateInTimezone(val dayOfWeek: Int, val dayOfEpoch: Int, val localDate: LocalDate) {

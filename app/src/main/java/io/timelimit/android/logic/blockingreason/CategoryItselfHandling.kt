@@ -29,7 +29,7 @@ import io.timelimit.android.logic.RemainingSessionDuration
 import io.timelimit.android.logic.RemainingTime
 import io.timelimit.android.sync.actions.AddUsedTimeActionItemAdditionalCountingSlot
 import io.timelimit.android.sync.actions.AddUsedTimeActionItemSessionDurationLimitSlot
-import org.threeten.bp.ZoneId
+import java.time.ZoneId
 import java.util.*
 
 data class CategoryItselfHandling (
