@@ -81,8 +81,8 @@ class DatePickerDialogFragment: DialogFragment() {
         val requestKey = requireArguments().getString(REQUEST_KEY)!!
 
         return DatePickerDialog(requireContext(), theme, { _, year, month, day ->
-            setFragmentResult(requestKey, Result(year, month, day).bundle)
-        }, startYear, startMonthOfYear, startDayOfMonth)
+            setFragmentResult(requestKey, Result(year, month + 1, day).bundle)
+        }, startYear, startMonthOfYear - 1, startDayOfMonth)
     }
 
     fun show(fragmentManager: FragmentManager) = showSafe(fragmentManager, DIALOG_TAG)
