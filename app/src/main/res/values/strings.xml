@@ -1256,6 +1256,9 @@
     <string name="notification_channel_new_device_title">New Device</string>
     <string name="notification_channel_new_device_description">Shows a notification if the connected mode is used and a new device was linked</string>
 
+    <string name="notification_channel_extra_time_started_title">Extra time starts</string>
+    <string name="notification_channel_extra_time_started_description">Informs when the regular time contingent was consumed and the extra time starts</string>
+
     <string name="notification_filter_not_blocked_title">TimeLimit has blocked a notification</string>
     <string name="notification_filter_blocking_failed_title">TimeLimit could not block a notification</string>
 
@@ -1270,6 +1273,8 @@
     <string name="notification_background_sync_text">a background synchronisation is in progress</string>
 
     <string name="notification_new_device_title">Device added</string>
+
+    <string name="notification_extra_time_started">Extra time starts</string>
 
     <string name="obsolete_message">You are using TimeLimit at a obsolete Android version.
         Although this can work, it is not recommend.

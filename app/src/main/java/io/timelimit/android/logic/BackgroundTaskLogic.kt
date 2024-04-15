@@ -1,5 +1,5 @@
 /*
- * TimeLimit Copyright <C> 2019 - 2023 Jonas Lochmann
+ * TimeLimit Copyright <C> 2019 - 2024 Jonas Lochmann
  *
  * This program is free software: you can redistribute it and/or modify
  * it under the terms of the GNU General Public License as published by
@@ -436,6 +436,9 @@ class BackgroundTaskLogic(val appLogic: AppLogic) {
                         val oldRemainingTime = nowRemaining.includingExtraTime - timeToSubtractForCategory
                         val newRemainingTime = oldRemainingTime - timeToSubtract
 
+                        val oldRemainingNonExtraTime = nowRemaining.default - timeToSubtractForCategory
+                        val newRemainingNonExtraTime = oldRemainingNonExtraTime - timeToSubtract
+
                         val commitedSessionDuration = handling.remainingSessionDuration
                         val oldSessionDuration = handling.remainingSessionDuration?.let { it - timeToSubtractForCategory }
 
@@ -474,6 +477,10 @@ class BackgroundTaskLogic(val appLogic: AppLogic) {
                                 notificationTitleStringResource = R.string.time_warning_not_title,
                                 roundedNewTimeInMilliseconds = ((newRemainingTime / (1000 * 60)) + 1) * 1000 * 60
                             )
+                        }
+
+                        if (oldRemainingNonExtraTime > 0 && newRemainingNonExtraTime <= 0) {
+                            appLogic.platformIntegration.showExtraTimeStartedNotification(categoryId, category.title)
                         }
 
                         if (oldSessionDuration != null) {

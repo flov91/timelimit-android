@@ -441,6 +441,26 @@ class AndroidIntegration(context: Context): PlatformIntegration(maximumProtectio
         )
     }
 
+    override fun showExtraTimeStartedNotification(categoryId: String, categoryTitle: String) {
+        NotificationChannels.createNotificationChannels(notificationManager, context)
+
+        notificationManager.notify(
+            categoryId,
+            NotificationIds.EXTRA_TIME_STARTED,
+            NotificationCompat.Builder(context, NotificationChannels.EXTRA_TIME_STARTED)
+                .setSmallIcon(R.drawable.ic_stat_timelapse)
+                .setContentTitle(context.getString(R.string.notification_extra_time_started))
+                .setContentText(categoryTitle)
+                .setWhen(System.currentTimeMillis())
+                .setShowWhen(true)
+                .setLocalOnly(true)
+                .setAutoCancel(false)
+                .setOngoing(false)
+                .setPriority(NotificationCompat.PRIORITY_HIGH)
+                .build()
+        )
+    }
+
     override fun disableDeviceAdmin() {
         if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.LOLLIPOP) {
             if (policyManager.isDeviceOwnerApp(context.packageName)) {

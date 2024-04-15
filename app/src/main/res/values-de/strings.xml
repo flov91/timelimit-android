@@ -1207,6 +1207,9 @@
     <string name="notification_channel_new_device_title">neue Geräte</string>
     <string name="notification_channel_new_device_description">Zeigt eine Benachrichtigung an, wenn TimeLimit mit Vernetzung verwendet wird und ein neues Gerät verknüpft wurde</string>
 
+    <string name="notification_channel_extra_time_started_title">Extrazeit beginnt</string>
+    <string name="notification_channel_extra_time_started_description">Informiert, wenn des reguläre Zeitkontingent verbraucht ist und nun Extrazeit verwendet wird</string>
+
     <string name="notification_filter_not_blocked_title">TimeLimit hat eine Benachrichtigung blockiert</string>
     <string name="notification_filter_blocking_failed_title">TimeLimit konnte eine Benachrichtigung nicht blockieren</string>
 
@@ -1221,6 +1224,8 @@
     <string name="notification_background_sync_text">eine Synchronisation läuft</string>
 
     <string name="notification_new_device_title">Gerät hinzugefügt</string>
+
+    <string name="notification_extra_time_started">Extrazeit beginnt</string>
 
     <string name="obsolete_message">Sie verwenden TimeLimit auf einer älteren Android-Version.
         Das kann funktionieren, aber es wird nicht empfohlen.
