@@ -1,5 +1,5 @@
 /*
- * TimeLimit Copyright <C> 2019 - 2023 Jonas Lochmann
+ * TimeLimit Copyright <C> 2019 - 2024 Jonas Lochmann
  *
  * This program is free software: you can redistribute it and/or modify
  * it under the terms of the GNU General Public License as published by
@@ -15,6 +15,7 @@
  */
 package io.timelimit.android.integration.platform.android
 
+import android.Manifest
 import android.app.admin.DeviceAdminReceiver
 import android.app.admin.DevicePolicyManager
 import android.content.ComponentName
@@ -123,5 +124,15 @@ class AndroidDeviceOwnerApi(
 
         devicePolicyManager.setDelegatedScopes(componentName, packageName, emptyList())
         devicePolicyManager.transferOwnership(componentName, targetComponentName, null)
+    }
+
+    override fun grantLocationAccess(): Boolean {
+        if (VERSION.SDK_INT < VERSION_CODES.LOLLIPOP) return false
+        if (!devicePolicyManager.isDeviceOwnerApp(componentName.packageName)) return false
+
+        return devicePolicyManager.setPermissionGrantState(
+            componentName, componentName.packageName, Manifest.permission.ACCESS_FINE_LOCATION,
+            DevicePolicyManager.PERMISSION_GRANT_STATE_GRANTED
+        )
     }
 }

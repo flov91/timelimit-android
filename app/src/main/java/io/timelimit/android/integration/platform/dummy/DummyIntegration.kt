@@ -207,5 +207,7 @@ class DummyIntegration(
         override fun setOrganizationName(name: String) = throw SecurityException()
 
         override fun transferOwnership(packageName: String, dryRun: Boolean) = throw IllegalStateException("unsupported operation")
+
+        override fun grantLocationAccess(): Boolean = false
     }
 }

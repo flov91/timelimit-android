@@ -1,5 +1,5 @@
 /*
- * TimeLimit Copyright <C> 2019 - 2023 Jonas Lochmann
+ * TimeLimit Copyright <C> 2019 - 2024 Jonas Lochmann
  *
  * This program is free software: you can redistribute it and/or modify
  * it under the terms of the GNU General Public License as published by
@@ -25,4 +25,7 @@ interface DeviceOwnerApi {
     fun setOrganizationName(name: String)
 
     fun transferOwnership(packageName: String, dryRun: Boolean = false)
+
+    // returns true on success; never throws
+    fun grantLocationAccess(): Boolean
 }

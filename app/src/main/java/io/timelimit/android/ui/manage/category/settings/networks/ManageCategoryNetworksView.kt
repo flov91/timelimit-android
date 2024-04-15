@@ -1,5 +1,5 @@
 /*
- * TimeLimit Copyright <C> 2019 - 2023 Jonas Lochmann
+ * TimeLimit Copyright <C> 2019 - 2024 Jonas Lochmann
  *
  * This program is free software: you can redistribute it and/or modify
  * it under the terms of the GNU General Public License as published by
@@ -117,7 +117,7 @@ object ManageCategoryNetworksView {
         }
 
         view.grantPermissionButton.setOnClickListener {
-            RequestWifiPermission.doRequest(fragment, permissionRequestCode)
+            RequestWifiPermission.doRequest(fragment, permissionRequestCode, auth.logic.platformIntegration)
         }
 
         isFullVersionLive.observe(lifecycleOwner, Observer { isFullVersion ->
