@@ -71,6 +71,7 @@ class AndroidDeviceOwnerApi(
     override val delegations: List<DeviceOwnerApi.DelegationScope> = delegationList.map { it.second }
 
     override fun setDelegations(packageName: String, scopes: List<DeviceOwnerApi.DelegationScope>) {
+        if (BuildConfig.storeCompilant) throw IllegalStateException()
         if (VERSION.SDK_INT <= VERSION_CODES.O) throw IllegalStateException()
 
         val resolvedScopes = scopes.map { scope ->
@@ -89,6 +90,7 @@ class AndroidDeviceOwnerApi(
     }
 
     override fun getDelegations(): Map<String, List<DeviceOwnerApi.DelegationScope>> {
+        if (BuildConfig.storeCompilant) return emptyMap()
         if (VERSION.SDK_INT <= VERSION_CODES.O) throw IllegalStateException()
 
         return delegationList.map { (scope, delegation) ->
@@ -109,6 +111,7 @@ class AndroidDeviceOwnerApi(
     }
 
     override fun transferOwnership(packageName: String, dryRun: Boolean) {
+        if (BuildConfig.storeCompilant) throw IllegalStateException()
         if (VERSION.SDK_INT < VERSION_CODES.P) throw IllegalStateException()
         if (!devicePolicyManager.isDeviceOwnerApp(componentName.packageName)) throw SecurityException()
 
@@ -127,6 +130,7 @@ class AndroidDeviceOwnerApi(
     }
 
     override fun grantLocationAccess(): Boolean {
+        if (BuildConfig.storeCompilant) return false
         if (VERSION.SDK_INT < VERSION_CODES.LOLLIPOP) return false
         if (!devicePolicyManager.isDeviceOwnerApp(componentName.packageName)) return false
 
