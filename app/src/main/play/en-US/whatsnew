@@ -1,2 +1,1 @@
-- add support for time limit rules that expire
-- prepare for technical adjustments at Let's Encrypt
+- fix issue in the time limit rule editor
