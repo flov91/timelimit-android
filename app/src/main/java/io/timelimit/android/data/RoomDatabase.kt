@@ -139,6 +139,10 @@ abstract class RoomDatabase: RoomDatabase(), io.timelimit.android.data.Database 
         }
     }
 
+    @Deprecated(
+        "endTransaction() is deprecated",
+        replaceWith = ReplaceWith("runInTransaction(Runnable)")
+    )
     @SuppressLint("RestrictedApi")
     override fun endTransaction() {
         openHelper.writableDatabase.endTransaction()

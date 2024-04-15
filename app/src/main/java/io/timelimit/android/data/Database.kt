@@ -1,5 +1,5 @@
 /*
- * TimeLimit Copyright <C> 2019 - 2023 Jonas Lochmann
+ * TimeLimit Copyright <C> 2019 - 2024 Jonas Lochmann
  *
  * This program is free software: you can redistribute it and/or modify
  * it under the terms of the GNU General Public License as published by
@@ -50,7 +50,7 @@ interface Database {
     fun widgetCategory(): WidgetCategoryDao
     fun widgetConfig(): WidgetConfigDao
 
-    fun <T> runInTransaction(block: Callable<T>): T
+    fun <T> runInTransaction(body: Callable<T>): T
     fun <T> runInUnobservedTransaction(block: () -> T): T
     fun registerWeakObserver(tables: Array<Table>, observer: WeakReference<Observer>)
     fun registerTransactionCommitListener(listener: () -> Unit)
