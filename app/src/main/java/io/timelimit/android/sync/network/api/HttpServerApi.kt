@@ -43,6 +43,7 @@ import java.io.OutputStreamWriter
 import java.security.KeyPairGenerator
 import java.security.KeyStore
 import java.security.KeyStore.PrivateKeyEntry
+import java.security.ProviderException
 import java.security.cert.X509Certificate
 import java.security.spec.ECGenParameterSpec
 import java.util.Date
@@ -697,28 +698,34 @@ class HttpServerApi(private val endpointWithoutSlashAtEnd: String): ServerApi {
             val keyId = "temp-" + UUID.randomUUID().toString()
             val now = getTimeInMillis()
 
-            KeyPairGenerator.getInstance(KeyProperties.KEY_ALGORITHM_EC, keyStoreName)
-                .also {
-                    it.initialize(
-                        KeyGenParameterSpec.Builder(
-                            keyId,
-                            KeyProperties.PURPOSE_SIGN
+            try {
+                KeyPairGenerator.getInstance(KeyProperties.KEY_ALGORITHM_EC, keyStoreName)
+                    .also {
+                        it.initialize(
+                            KeyGenParameterSpec.Builder(
+                                keyId,
+                                KeyProperties.PURPOSE_SIGN
+                            )
+                                .setAlgorithmParameterSpec(
+                                    ECGenParameterSpec("prime256v1")
+                                )
+                                .setDigests(
+                                    KeyProperties.DIGEST_NONE,
+                                    KeyProperties.DIGEST_SHA256,
+                                    KeyProperties.DIGEST_SHA384,
+                                    KeyProperties.DIGEST_SHA512
+                                )
+                                .setCertificateNotBefore(Date(now - 1000 * 60))
+                                .setCertificateNotAfter(Date(now + 1000 * 60))
+                                .setAttestationChallenge(byteArrayOf())
+                                .build()
                         )
-                            .setAlgorithmParameterSpec(
-                                ECGenParameterSpec("prime256v1")
-                            )
-                            .setDigests(
-                                KeyProperties.DIGEST_NONE,
-                                KeyProperties.DIGEST_SHA256,
-                                KeyProperties.DIGEST_SHA384,
-                                KeyProperties.DIGEST_SHA512
-                            )
-                            .setCertificateNotBefore(Date(now - 1000 * 60))
-                            .setCertificateNotAfter(Date(now + 1000 * 60))
-                            .setAttestationChallenge(byteArrayOf())
-                            .build()
-                    )
-                }.genKeyPair()
+                    }.genKeyPair()
+            } catch (ex: ProviderException) {
+                // java.security.ProviderException: Failed to generate attestation certificate chain
+
+                return block(httpClient)
+            }
 
             try {
                 val key = keyStore.getEntry(keyId, null) as PrivateKeyEntry
