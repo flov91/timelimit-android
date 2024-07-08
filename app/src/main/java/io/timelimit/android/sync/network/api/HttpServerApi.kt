@@ -146,7 +146,11 @@ class HttpServerApi(private val endpointWithoutSlashAtEnd: String): ServerApi {
     private suspend fun sendMailLoginCode(mail: String, locale: String, deviceAuthToken: String?, skipDeviceVerification: Boolean): String = withDeviceVerification (enable = !skipDeviceVerification) { client ->
         postJsonRequest(
             "auth/send-mail-login-code-v2",
-            client = client
+            client = client,
+            transformRequest = { it
+                .header("X-Client-Package", BuildConfig.APPLICATION_ID)
+                .header("X-Client-Version", BuildConfig.VERSION_NAME)
+            }
         ) { writer ->
             writer.beginObject()
             writer.name(MAIL).value(mail)
@@ -659,10 +663,17 @@ class HttpServerApi(private val endpointWithoutSlashAtEnd: String): ServerApi {
     private suspend fun postJsonRequest(
         path: String,
         client: OkHttpClient = httpClient,
-        requestBody: (writer: JsonWriter) -> Unit
+        transformRequest: (Request.Builder) -> Request.Builder = { it },
+        requestBody: (writer: JsonWriter) -> Unit,
     ): Response {
         if (!sendContentLength) {
-            val response = postJsonRequest(path, requestBody, transmitContentLength = false, client = client)
+            val response = postJsonRequest(
+                path,
+                requestBody,
+                transmitContentLength = false,
+                client = client,
+                transformRequest = transformRequest
+            )
 
             if (response.code != 411) return response
 
@@ -671,14 +682,21 @@ class HttpServerApi(private val endpointWithoutSlashAtEnd: String): ServerApi {
             sendContentLength = true
         }
 
-        return postJsonRequest(path, requestBody, transmitContentLength = true, client = client)
+        return postJsonRequest(
+            path,
+            requestBody,
+            transmitContentLength = true,
+            client = client,
+            transformRequest = transformRequest
+        )
     }
 
     private suspend fun postJsonRequest(
         path: String,
         requestBody: (writer: JsonWriter) -> Unit,
         transmitContentLength: Boolean,
-        client: OkHttpClient = httpClient
+        client: OkHttpClient = httpClient,
+        transformRequest: (Request.Builder) -> Request.Builder = { it }
     ): Response {
         val body = createJsonRequestBody(requestBody, transmitContentLength)
 
@@ -687,6 +705,7 @@ class HttpServerApi(private val endpointWithoutSlashAtEnd: String): ServerApi {
                 .url("$endpointWithoutSlashAtEnd/$path")
                 .post(body)
                 .header("Content-Encoding", "gzip")
+                .let { transformRequest(it) }
                 .build()
         ).waitForResponse()
     }
