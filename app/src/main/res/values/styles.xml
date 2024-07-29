@@ -32,6 +32,10 @@
         <item name="colorAccent">@color/white</item>
     </style>
 
+    <style name="AppTheme.Translucent" parent="AppTheme">
+        <item name="android:windowIsFloating">true</item>
+    </style>
+
     <!-- from https://stackoverflow.com/a/46286184 -->
     <style name="BottomSheetDialog" parent="Theme.MaterialComponents.DayNight.BottomSheetDialog">
         <item name="colorPrimary">@color/colorPrimary</item>

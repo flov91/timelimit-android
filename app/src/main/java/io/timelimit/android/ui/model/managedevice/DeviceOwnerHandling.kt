@@ -1,5 +1,5 @@
 /*
- * TimeLimit Copyright <C> 2019 - 2023 Jonas Lochmann
+ * TimeLimit Copyright <C> 2019 - 2024 Jonas Lochmann
  *
  * This program is free software: you can redistribute it and/or modify
  * it under the terms of the GNU General Public License as published by
@@ -181,7 +181,7 @@ object DeviceOwnerHandling {
                     )
 
                     if (result == SnackbarResult.ActionPerformed) updateState {
-                        it.copy(dialog = OwnerState.ErrorDialog(ExceptionUtil.format(ex)))
+                        it.copy(dialog = OwnerState.ErrorDialog(ExceptionUtil.formatInterpreted(logic.context, ex)))
                     }
                 }
             }

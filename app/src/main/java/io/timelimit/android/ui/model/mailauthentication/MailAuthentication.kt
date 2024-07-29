@@ -160,7 +160,7 @@ object MailAuthentication {
                 )
 
                 if (result == SnackbarResult.ActionPerformed) {
-                    val message = ExceptionUtil.format(ex)
+                    val message = ExceptionUtil.formatInterpreted(logic.context, ex)
 
                     updateState { it.withError(error = ErrorDialog.ExceptionDetails(message)) }
                 }

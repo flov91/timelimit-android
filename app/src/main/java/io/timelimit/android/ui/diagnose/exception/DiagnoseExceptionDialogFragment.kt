@@ -1,5 +1,5 @@
 /*
- * TimeLimit Copyright <C> 2019 - 2023 Jonas Lochmann
+ * TimeLimit Copyright <C> 2019 - 2024 Jonas Lochmann
  *
  * This program is free software: you can redistribute it and/or modify
  * it under the terms of the GNU General Public License as published by
@@ -37,7 +37,7 @@ class DiagnoseExceptionDialogFragment: DialogFragment() {
     }
 
     override fun onCreateDialog(savedInstanceState: Bundle?): Dialog {
-        val message = ExceptionUtil.format(requireArguments().getSerializable(EXCEPTION) as Exception)
+        val message = ExceptionUtil.formatInterpreted(requireContext(), requireArguments().getSerializable(EXCEPTION) as Exception)
 
         return AlertDialog.Builder(requireContext(), theme)
             .setMessage(message)

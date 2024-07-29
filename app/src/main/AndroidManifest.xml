@@ -1,6 +1,6 @@
 <?xml version="1.0" encoding="utf-8"?>
 <!--
-  TimeLimit Copyright <C> 2019 - 2023 Jonas Lochmann
+  TimeLimit Copyright <C> 2019 - 2024 Jonas Lochmann
   This program is free software: you can redistribute it and/or modify
   it under the terms of the GNU General Public License as published by
   the Free Software Foundation version 3 of the License.
@@ -123,6 +123,14 @@
                 <action android:name="android.appwidget.action.APPWIDGET_CONFIGURE"/>
             </intent-filter>
         </activity>
+
+        <activity
+            android:name=".ui.diagnose.exception.DiagnoseExceptionActivity"
+            android:theme="@style/AppTheme.Translucent"
+            android:exported="false"
+            android:excludeFromRecents="true"
+            android:taskAffinity=":exception"
+            android:launchMode="singleTop" />
 
         <!-- system integration -->
 
