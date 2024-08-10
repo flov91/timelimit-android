@@ -21,7 +21,7 @@
     <string name="generic_reject">Rejeter</string>
     <string name="generic_menu">Menu</string>
     <string name="generic_back">Retour</string>
-    <string name="generic_runtime_permission_rejected">Permission refusée ; Vous pouvez gérer les permissions dans les paramètres système</string>
+    <string name="generic_runtime_permission_rejected">Permission refusée. Vous pouvez gérer les permissions dans les paramètres système</string>
     <string name="generic_go">Go</string>
     <string name="generic_swipe_to_dismiss">Glissez sur un côté pour retirer ce message</string>
     <string name="about_full_version_expired">Vous n\'avez pas acheté la version premium ou elle a expiré.</string>
@@ -39,13 +39,13 @@
     <string name="about_full_version">Version premium</string>
     <string name="about_full_version_until">Vous avez la version premium depuis %s.</string>
     <string name="about_full_version_always">Le serveur que vous utilisez ne limite pas l\'accès aux fonctionnalités de la version premium.</string>
-    <string name="about_full_version_tap_hint">Touchez ici pour acheter ou étendre la version premium.</string>
-    <string name="about_full_version_not_in_local_mode">La version premium n\'est pas disponible en mode local. Vous pouvez acheter une licence \"stay awesome\".</string>
-    <string name="about_sal_tap_hint">Touchez ici pour acheter une licence \"stay awesome\".</string>
+    <string name="about_full_version_tap_hint">Touchez ici pour acheter ou prolonger la version premium.</string>
+    <string name="about_full_version_not_in_local_mode">La version premium n\'est pas disponible en mode local. Vous pouvez acheter une licence « stay awesome ».</string>
+    <string name="about_sal_tap_hint">Touchez ici pour acheter une licence « stay awesome ».</string>
     <string name="about_contained_software_title">Logiciels embarqués</string>
-    <string name="about_diagnose_title">Diagnostic d\'erreur</string>
+    <string name="about_diagnose_title">Diagnostic d’erreur</string>
     <string name="about_diagnose_text">Touchez ici pour accéder aux détails permettant de diagnostiquer les erreurs</string>
-    <string name="about_developer_key_title">Signature de la clef PGP du développeur</string>
+    <string name="about_developer_key_title">Empreinte de la clef PGP du développeur</string>
     <string name="add_user_authentication_required_text">Seuls les parents peuvent ajouter des utilisateurs</string>
     <string name="add_user_authentication_required_btn">Authentification</string>
     <string name="annoy_info">Il y a eu une manipulation de TimeLimit. À cause de cela, cet appareil est maintenant verrouillé.</string>
@@ -78,4 +78,5 @@
     <string name="add_used_time_description">Cela permet d\'ajouter le temps utiliser / marquer le temps comme utilisé dans le cas où il est utilisé en dehors de TimeLimit, e. g. quand vous voulez ajouter l\'utilisation du telecran au temps utilisé</string>
     <string name="annoy_unlock_dialog_text">Après déverrouillage, corrigez la cause du blocage sinon l\'appareil sera à nouveau bloqué.</string>
     <string name="authenticate_by_mail_other_text">Timelimit vous enverra un message avec un code à renseigner ici pour vous authentifier.</string>
+    <string name="add_device_info">Entrez ou scannez le code sur l’appareil que vous souhaitez ajouter. Vous ne pouvez le faire QUE durant la configuration initiale de TimeLimit en choisissant de lier l\'appareil avec un code, sinon vous devez réinstaller TimeLimit. Ce code n\'est utilisable qu\'une fois.</string>
 </resources>
