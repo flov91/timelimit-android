@@ -79,4 +79,14 @@
     <string name="annoy_unlock_dialog_text">Après déverrouillage, corrigez la cause du blocage sinon l\'appareil sera à nouveau bloqué.</string>
     <string name="authenticate_by_mail_other_text">Timelimit vous enverra un message avec un code à renseigner ici pour vous authentifier.</string>
     <string name="add_device_info">Entrez ou scannez le code sur l’appareil que vous souhaitez ajouter. Vous ne pouvez le faire QUE durant la configuration initiale de TimeLimit en choisissant de lier l\'appareil avec un code, sinon vous devez réinstaller TimeLimit. Ce code n\'est utilisable qu\'une fois.</string>
+    <plurals name="util_time_seconds">
+        <item quantity="one">%d seconde</item>
+        <item quantity="many">%d secondes</item>
+        <item quantity="other">%d secondes</item>
+    </plurals>
+    <plurals name="util_time_minutes">
+        <item quantity="one">%d minute</item>
+        <item quantity="many">%d minutes</item>
+        <item quantity="other">%d minutes</item>
+    </plurals>
 </resources>
