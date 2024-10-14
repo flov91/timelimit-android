@@ -1,5 +1,5 @@
 /*
- * TimeLimit Copyright <C> 2019 - 2022 Jonas Lochmann
+ * TimeLimit Copyright <C> 2019 - 2024 Jonas Lochmann
  *
  * This program is free software: you can redistribute it and/or modify
  * it under the terms of the GNU General Public License as published by
@@ -184,7 +184,7 @@ class LollipopForegroundAppHelper(context: Context) : UsageStatsForegroundAppHel
     }
 
     private fun doesActivityExistAsAlias(app: ForegroundApp) = try {
-        packageManager.getPackageInfo(app.packageName, PackageManager.GET_ACTIVITIES).activities.find {
+        packageManager.getPackageInfo(app.packageName, PackageManager.GET_ACTIVITIES).activities?.find {
             it.enabled && it.targetActivity == app.activityName
         } != null
     } catch (ex: PackageManager.NameNotFoundException) {

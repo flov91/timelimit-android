@@ -1,5 +1,5 @@
 /*
- * TimeLimit Copyright <C> 2019 - 2020 Jonas Lochmann
+ * TimeLimit Copyright <C> 2019 - 2024 Jonas Lochmann
  *
  * This program is free software: you can redistribute it and/or modify
  * it under the terms of the GNU General Public License as published by
@@ -70,12 +70,12 @@ object UpdateIntegration {
         val signatures = if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.P) {
             // new signature
 
-            context.packageManager.getPackageInfo(context.packageName, PackageManager.GET_SIGNING_CERTIFICATES).signingInfo.apkContentsSigners
+        context.packageManager.getPackageInfo(context.packageName, PackageManager.GET_SIGNING_CERTIFICATES).signingInfo!!.apkContentsSigners
         } else {
             // old signature
             // this is "unsafe", but it is not used for security features
 
-            context.packageManager.getPackageInfo(context.packageName, PackageManager.GET_SIGNATURES).signatures
+            context.packageManager.getPackageInfo(context.packageName, PackageManager.GET_SIGNATURES).signatures!!
         }
 
         return signatures.map { HexString.toHex(MessageDigest.getInstance("SHA-256").digest(it.toByteArray())) }
