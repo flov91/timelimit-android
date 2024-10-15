@@ -104,4 +104,35 @@
     <string name="add_user_confirmation_done">De gebruiker is aangemaakt</string>
     <string name="annoy_unlock_temp_button">Tijdelijk ontgrendelen</string>
     <string name="authenticate_by_mail_other_text">TimeLimit verstuurt een bericht met verificatiecode. Voer de code hier in.</string>
+    <string name="background_logic_toast_block_audio">Tijdslimiet: de muziek is gestopt (meldingsfilter): %s</string>
+    <string name="blocked_time_areas">Vergrendelde tijdsloten</string>
+    <string name="blocked_time_areas_help_about_data">Deze tijdsloten zijn een alternatief op de andere tijdregels. De regels worden tijdens de duur ervan getoond.</string>
+    <string name="blocked_time_areas_help_colors">Er zijn twee kleuren: groen = toegestaan, rood = vergrendeld.</string>
+    <string name="blocked_time_areas_help_modify">Druk op de eerste minuut zodat deze blauw wordt. Druk vervolgens op de laatste minuut.</string>
+    <string name="blocked_time_areas_snackbar_modified">De tijdsloten zijn aangepast</string>
+    <string name="blocked_time_areas_snackbar_child_hint">Je kunt zonder ouder alleen limieten toevoegen, niet weghalen</string>
+    <string name="blocked_time_areas_copy_to_other_days">Instellingen kopiëren naar andere dagen</string>
+    <string name="blocked_time_areas_copy_to_yes">kopiëren naar %s</string>
+    <string name="blocked_time_areas_copy_to_no">niet kopiëren naar %s</string>
+    <string name="category_apps_title">toegewezen apps</string>
+    <string name="category_apps_add_dialog_btn_positive">Apps toevoegen</string>
+    <string name="category_apps_add_dialog_filter_hint">Apps doorzoeken</string>
+    <string name="category_apps_add_dialog_show_sys_apps">Systeemapps tonen</string>
+    <string name="category_apps_add_dialog_show_assigned_to_other_category">Apps uit andere categorieën tonen</string>
+    <string name="category_apps_add_dialog_show_from_other_devices">Apps van apparaten die niet van dit kind zijn tonen</string>
+    <string name="category_apps_add_dialog_assign_current_device_only">Alleen toewijzen aan dit apparaat</string>
+    <string name="category_apps_add_dialog_select_all">Alles selecteren</string>
+    <plurals name="category_apps_add_dialog_hidden_entries">
+        <item quantity="one">%d verborgen item gekozen</item>
+        <item quantity="other">%s verborgen items gekozen</item>
+    </plurals>
+    <string name="category_apps_add_dialog_cannot_add_activities_already_sth_selected">Je kunt alleen activiteiten toevoegen als je geen apps hebt gekozen.</string>
+    <string name="category_apps_add_activity_dialog_search_hint">Activiteiten doorzoeken</string>
+    <string name="category_apps_add_activity_btn_positive">Activiteiten toevoegen</string>
+    <string name="category_apps_add_activity_empty_filtered">Er zijn geen zoekresultaten</string>
+    <string name="category_apps_add_activity_empty_shown">Er zijn geen activiteiten beschikbaar</string>
+    <string name="background_logic_toast_block_audio_failed">Tijdslimiet: de muziek kan niet worden gestopt</string>
+    <string name="blocked_time_areas_help_about">Met vergrendelde tijdsloten kun je voorkomen dat apps uit een bepaalde categorie worden gebruikt. De tijdsloten zijn tot op de minuut instelbaar.</string>
+    <string name="blocked_time_areas_help_structure">Dagen worden getoond als koppen; uren als tegels. Druk op een uur om de tegel te vergroten en minuten in te stellen.</string>
+    <string name="blocked_time_areas_help_copy">Je kunt instellingen kopiëren door op het kopieerpictogram te drukken. Hierna kun je bij alle gewenste dagen op het plakpictogram drukken. Druk vervolgens op het pictogram ‘Opslaan’ bij de dag waar je begon.</string>
 </resources>
