@@ -1,2 +1,47 @@
 <?xml version="1.0" encoding="utf-8"?>
-<resources></resources>
+<resources>
+    <string name="about_full_version_not_in_local_mode">高级版本在本地模式下不可用。您可以购买 Stay Awesome 许可证。</string>
+    <string name="generic_retry">重试</string>
+    <string name="generic_show_more">显示更多</string>
+    <string name="generic_swipe_to_dismiss">向侧面滑动以移除此消息</string>
+    <string name="about_diagnose_title">错误诊断</string>
+    <string name="add_device_info">在要添加的设备上输入或扫描代码。您只能在 TimeLimit 设置期间输入/扫描代码，并且只有当您选择使用代码关联设备时才能输入/扫描代码。您稍后不能使用此代码——在这种情况下，您必须在其他设备上重新安装 TimeLimit。</string>
+    <string name="generic_ok">确定</string>
+    <string name="generic_cancel">取消</string>
+    <string name="generic_help">帮助</string>
+    <string name="generic_undo">撤销</string>
+    <string name="generic_save">保存</string>
+    <string name="generic_set">设置</string>
+    <string name="generic_create">创建</string>
+    <string name="generic_delete">删除</string>
+    <string name="generic_go">前往</string>
+    <string name="generic_manage_card">管理</string>
+    <string name="generic_enable">启用</string>
+    <string name="generic_no">否</string>
+    <string name="generic_yes">是</string>
+    <string name="generic_skip">跳过</string>
+    <string name="generic_show_details">显示详情</string>
+    <string name="generic_accept">同意</string>
+    <string name="generic_reject">拒绝</string>
+    <string name="generic_menu">菜单</string>
+    <string name="generic_back">返回</string>
+    <string name="generic_runtime_permission_rejected">权限已拒绝，您可以在系统设置中管理权限</string>
+    <string name="about_version">版本 %s</string>
+    <string name="about_contact_title">支持</string>
+    <string name="about_contact_mail">https://timelimit.io/en/#support
+\nhttps://timelimit.io/en/configsuggestions/</string>
+    <string name="about_full_version">高级版本</string>
+    <string name="about_full_version_expired">您未购买高级版本或高级版本已过期。</string>
+    <string name="about_full_version_until">您在 %s 之前已获得高级版本。</string>
+    <string name="about_full_version_always">您使用的服务器不会限制对高级版本功能的访问。</string>
+    <string name="about_full_version_tap_hint">点击此处购买或扩展高级版本。</string>
+    <string name="about_sal_tap_hint">点击此处购买 Stay Awesome 许可证。</string>
+    <string name="about_contained_software_title">包含的软件</string>
+    <string name="about_diagnose_text">点击此处访问有助于诊断错误的详细信息</string>
+    <string name="about_developer_key_title">开发人员 PGP 密钥指纹</string>
+    <string name="about_source_title">源代码</string>
+    <string name="add_device">添加设备</string>
+    <string name="add_device_success">已添加设备 %s</string>
+    <string name="add_used_time_title">添加使用时长</string>
+    <string name="add_used_time_title_with_category_title">添加 %s 的使用时长</string>
+</resources>
