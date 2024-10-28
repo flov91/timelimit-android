@@ -23,16 +23,30 @@ import android.os.Build
 import android.os.Bundle
 import androidx.activity.OnBackPressedCallback
 import androidx.activity.SystemBarStyle
+import androidx.activity.compose.setContent
 import androidx.activity.enableEdgeToEdge
 import androidx.activity.viewModels
 import androidx.appcompat.app.AppCompatActivity
-import androidx.core.view.ViewCompat
-import androidx.core.view.WindowInsetsCompat
-import androidx.core.view.updatePadding
-import androidx.lifecycle.MutableLiveData
-import androidx.viewpager.widget.ViewPager
+import androidx.compose.foundation.layout.Column
+import androidx.compose.foundation.layout.fillMaxSize
+import androidx.compose.foundation.layout.padding
+import androidx.compose.foundation.pager.HorizontalPager
+import androidx.compose.foundation.pager.rememberPagerState
+import androidx.compose.material.Tab
+import androidx.compose.material.TabRow
+import androidx.compose.material.TabRowDefaults
+import androidx.compose.material.TabRowDefaults.tabIndicatorOffset
+import androidx.compose.material.Text
+import androidx.compose.runtime.collectAsState
+import androidx.compose.runtime.getValue
+import androidx.compose.ui.Modifier
+import androidx.compose.ui.res.stringResource
+import androidx.compose.ui.unit.dp
+import androidx.fragment.compose.AndroidFragment
+import androidx.lifecycle.asFlow
+import androidx.lifecycle.map
 import io.timelimit.android.R
-import io.timelimit.android.databinding.LockActivityBinding
+import io.timelimit.android.data.model.UserType
 import io.timelimit.android.extensions.showSafe
 import io.timelimit.android.logic.BlockingReason
 import io.timelimit.android.logic.DefaultAppLogic
@@ -40,11 +54,12 @@ import io.timelimit.android.sync.network.UpdatePrimaryDeviceRequestType
 import io.timelimit.android.u2f.U2fManager
 import io.timelimit.android.u2f.protocol.U2FDevice
 import io.timelimit.android.ui.IsAppInForeground
+import io.timelimit.android.ui.ScreenScaffold
+import io.timelimit.android.ui.Theme
 import io.timelimit.android.ui.login.AuthTokenLoginProcessor
 import io.timelimit.android.ui.login.NewLoginFragment
 import io.timelimit.android.ui.main.ActivityViewModel
 import io.timelimit.android.ui.main.ActivityViewModelHolder
-import io.timelimit.android.ui.main.AuthenticationFab
 import io.timelimit.android.ui.manage.child.primarydevice.UpdatePrimaryDeviceDialogFragment
 import io.timelimit.android.ui.util.SyncStatusModel
 
@@ -91,8 +106,6 @@ class LockActivity : AppCompatActivity(), ActivityViewModelHolder, U2fManager.De
             null
     }
 
-    private val showAuth = MutableLiveData<Boolean>().apply { value = false }
-
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
 
@@ -107,19 +120,98 @@ class LockActivity : AppCompatActivity(), ActivityViewModelHolder, U2fManager.De
             )
         )
 
+        supportActionBar!!.hide()
+
         U2fManager.setupActivity(this)
 
-        val adapter = LockActivityAdapter(supportFragmentManager, this)
+        val subtitleLive = syncModel.statusText.asFlow()
+        val showTasksLive = model.content.map {
+            val isTimeOver = it is LockscreenContent.Blocked.BlockedCategory && it.blockingHandling.activityBlockingReason == BlockingReason.TimeOver
 
-        val binding = LockActivityBinding.inflate(layoutInflater)
-        setContentView(binding.root)
+            isTimeOver
+        }.asFlow()
 
-        ViewCompat.setOnApplyWindowInsetsListener(binding.root) { view, windowInsets ->
-            val insets = windowInsets.getInsets(WindowInsetsCompat.Type.systemBars())
+        setContent {
+            val subtitle by subtitleLive.collectAsState(null)
+            val showTasks by showTasksLive.collectAsState(false)
+            val pager = rememberPagerState(initialPage = 0, pageCount = {
+                if (showTasks) 3
+                else 2
+            })
+            val isAuthenticated by getActivityViewModel().authenticatedUser
+                .map { it?.second?.type == UserType.Parent }
+                .asFlow().collectAsState(initial = false)
 
-            view.updatePadding(insets.left, insets.top, insets.right, insets.bottom)
+            Theme {
+                ScreenScaffold(
+                    screen = null,
+                    title = getString(R.string.app_name),
+                    subtitle = subtitle,
+                    backStack = emptyList(),
+                    snackbarHostState = null,
+                    content = { padding ->
+                        Column (Modifier.fillMaxSize().padding(padding)) {
+                            TabRow(
+                                pager.currentPage,
+                                indicator = { tabPositions ->
+                                    // workaround for bug
+                                    TabRowDefaults.Indicator(
+                                        Modifier.tabIndicatorOffset(tabPositions[
+                                                pager.currentPage.coerceAtMost(tabPositions.size - 1)
+                                        ])
+                                    )
+                                }
+                            ) {
+                                Tab(
+                                    selected = pager.currentPage == 0,
+                                    onClick = { pager.requestScrollToPage(0) }
+                                ) {
+                                    Text(
+                                        stringResource(R.string.lock_tab_reason),
+                                        Modifier.padding(16.dp)
+                                    )
+                                }
 
-            WindowInsetsCompat.CONSUMED
+                                Tab(
+                                    selected = pager.currentPage == 1,
+                                    onClick = { pager.requestScrollToPage(1) }
+                                ) {
+                                    Text(
+                                        stringResource(R.string.lock_tab_action),
+                                        Modifier.padding(16.dp)
+                                    )
+                                }
+
+                                if (showTasks) Tab(
+                                    selected = pager.currentPage == 2,
+                                    onClick = { pager.requestScrollToPage(2) }
+                                ) {
+                                    Text(
+                                        stringResource(R.string.lock_tab_task),
+                                        Modifier.padding(16.dp)
+                                    )
+                                }
+                            }
+
+                            HorizontalPager(
+                                pager,
+                                Modifier.weight(1.0F, fill = true),
+                                pageContent = { index ->
+                                    when (index) {
+                                        0 -> AndroidFragment<LockReasonFragment>(Modifier.fillMaxSize())
+                                        1 -> AndroidFragment<LockActionFragment>(Modifier.fillMaxSize())
+                                        2 -> AndroidFragment<LockTaskFragment>(Modifier.fillMaxSize())
+                                    }
+                                }
+                            )
+                        }
+                    },
+                    executeCommand = {},
+                    showAuthenticationDialog =
+                    if (pager.currentPage == 1 && !isAuthenticated) ({ showAuthenticationScreen() })
+                    else null
+                )
+            }
         }
 
         syncModel.statusText.observe(this) { supportActionBar?.subtitle = it }
@@ -127,8 +219,6 @@ class LockActivity : AppCompatActivity(), ActivityViewModelHolder, U2fManager.De
         currentInstances.add(this)
 
         model.init(blockedPackageName, blockedActivityName)
-
-        binding.pager.adapter = adapter
 
         model.content.observe(this) {
             if (isResumed && it is LockscreenContent.Blocked.BlockedCategory && it.reason == BlockingReason.RequiresCurrentDevice && !model.didOpenSetCurrentDeviceScreen) {
@@ -140,30 +230,12 @@ class LockActivity : AppCompatActivity(), ActivityViewModelHolder, U2fManager.De
             }
         }
 
-        AuthenticationFab.manageAuthenticationFab(
-                fab = binding.fab,
-                shouldHighlight = activityModel.shouldHighlightAuthenticationButton,
-                authenticatedUser = activityModel.authenticatedUser,
-                activity = this,
-                doesSupportAuth = showAuth
-        )
+        activityModel.shouldHighlightAuthenticationButton.observe(this) {
+            if (it) {
+                activityModel.shouldHighlightAuthenticationButton.postValue(false)
 
-        binding.fab.setOnClickListener { showAuthenticationScreen() }
-
-        binding.pager.addOnPageChangeListener(object: ViewPager.SimpleOnPageChangeListener() {
-            override fun onPageSelected(position: Int) {
-                super.onPageSelected(position)
-
-                showAuth.value = position == 1
+                showAuthenticationScreen()
             }
-        })
-
-        binding.tabs.setupWithViewPager(binding.pager)
-
-        model.content.observe(this) {
-            val isTimeOver = it is LockscreenContent.Blocked.BlockedCategory && it.blockingHandling.activityBlockingReason == BlockingReason.TimeOver
-
-            adapter.showTasksFragment = isTimeOver
         }
 
         onBackPressedDispatcher.addCallback(object: OnBackPressedCallback(true) {

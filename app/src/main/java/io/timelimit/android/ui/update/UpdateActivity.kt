@@ -17,16 +17,20 @@ package io.timelimit.android.ui.update
 
 import android.content.res.Configuration
 import android.os.Bundle
+import android.view.LayoutInflater
 import androidx.activity.SystemBarStyle
+import androidx.activity.compose.setContent
 import androidx.activity.enableEdgeToEdge
 import androidx.appcompat.app.AppCompatActivity
-import androidx.core.view.ViewCompat
-import androidx.core.view.WindowInsetsCompat
-import androidx.core.view.updatePadding
-import androidx.databinding.DataBindingUtil
+import androidx.compose.foundation.layout.fillMaxSize
+import androidx.compose.foundation.layout.padding
+import androidx.compose.ui.Modifier
+import androidx.compose.ui.viewinterop.AndroidView
 import io.timelimit.android.R
 import io.timelimit.android.databinding.UpdateActivityBinding
 import io.timelimit.android.logic.DefaultAppLogic
+import io.timelimit.android.ui.ScreenScaffold
+import io.timelimit.android.ui.Theme
 
 class UpdateActivity: AppCompatActivity() {
     override fun onCreate(savedInstanceState: Bundle?) {
@@ -43,21 +47,37 @@ class UpdateActivity: AppCompatActivity() {
             )
         )
 
-        val binding = DataBindingUtil.setContentView<UpdateActivityBinding>(this, R.layout.update_activity)
+        supportActionBar!!.hide()
 
-        ViewCompat.setOnApplyWindowInsetsListener(binding.root) { view, windowInsets ->
-            val insets = windowInsets.getInsets(WindowInsetsCompat.Type.systemBars())
+        setContent {
+            Theme {
+                ScreenScaffold(
+                    screen = null,
+                    title = getString(R.string.app_name),
+                    subtitle = null,
+                    backStack = emptyList(),
+                    snackbarHostState = null,
+                    content = { padding ->
+                        AndroidView(
+                            factory = {
+                                val binding = UpdateActivityBinding.inflate(LayoutInflater.from(it))
 
-            view.updatePadding(insets.left, insets.top, insets.right, insets.bottom)
+                                UpdateView.bind(
+                                    view = binding.update,
+                                    lifecycleOwner = this,
+                                    fragmentManager = supportFragmentManager,
+                                    appLogic = DefaultAppLogic.with(this)
+                                )
 
-            WindowInsetsCompat.CONSUMED
+                                binding.root
+                            },
+                            modifier = Modifier.fillMaxSize().padding(padding)
+                        )
+                    },
+                    executeCommand = {},
+                    showAuthenticationDialog = null
+                )
+            }
         }
-
-        UpdateView.bind(
-                view = binding.update,
-                lifecycleOwner = this,
-                fragmentManager = supportFragmentManager,
-                appLogic = DefaultAppLogic.with(this)
-        )
     }
 }

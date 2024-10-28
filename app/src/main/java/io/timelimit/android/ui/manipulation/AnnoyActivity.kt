@@ -22,14 +22,17 @@ import android.content.res.Configuration
 import android.os.Build
 import android.os.Bundle
 import android.util.Log
+import android.view.LayoutInflater
 import androidx.activity.OnBackPressedCallback
 import androidx.activity.SystemBarStyle
+import androidx.activity.compose.setContent
 import androidx.activity.enableEdgeToEdge
 import androidx.activity.viewModels
 import androidx.appcompat.app.AppCompatActivity
-import androidx.core.view.ViewCompat
-import androidx.core.view.WindowInsetsCompat
-import androidx.core.view.updatePadding
+import androidx.compose.foundation.layout.fillMaxSize
+import androidx.compose.foundation.layout.padding
+import androidx.compose.ui.Modifier
+import androidx.compose.ui.viewinterop.AndroidView
 import androidx.lifecycle.map
 import io.timelimit.android.BuildConfig
 import io.timelimit.android.R
@@ -40,6 +43,8 @@ import io.timelimit.android.integration.platform.android.AndroidIntegrationApps
 import io.timelimit.android.logic.DefaultAppLogic
 import io.timelimit.android.u2f.U2fManager
 import io.timelimit.android.u2f.protocol.U2FDevice
+import io.timelimit.android.ui.ScreenScaffold
+import io.timelimit.android.ui.Theme
 import io.timelimit.android.ui.backdoor.BackdoorDialogFragment
 import io.timelimit.android.ui.login.AuthTokenLoginProcessor
 import io.timelimit.android.ui.login.NewLoginFragment
@@ -71,6 +76,8 @@ class AnnoyActivity : AppCompatActivity(), ActivityViewModelHolder, U2fManager.D
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
 
+        val logic = DefaultAppLogic.with(this)
+
         val isNightMode =
             (resources.configuration.uiMode and Configuration.UI_MODE_NIGHT_MASK) ==
                     Configuration.UI_MODE_NIGHT_YES
@@ -82,20 +89,62 @@ class AnnoyActivity : AppCompatActivity(), ActivityViewModelHolder, U2fManager.D
             )
         )
 
-        U2fManager.setupActivity(this)
+        supportActionBar!!.hide()
 
-        val logic = DefaultAppLogic.with(this)
+        setContent {
+            Theme {
+                ScreenScaffold(
+                    screen = null,
+                    title = getString(R.string.app_name),
+                    subtitle = null,
+                    backStack = emptyList(),
+                    snackbarHostState = null,
+                    content = { padding ->
+                        AndroidView(
+                            factory = {
+                                val binding = AnnoyActivityBinding.inflate(LayoutInflater.from(it))
 
-        val binding = AnnoyActivityBinding.inflate(layoutInflater)
-        setContentView(binding.root)
+                                logic.annoyLogic.nextManualUnblockCountdown.observe(this) { countdown ->
+                                    binding.canRequestUnlock = countdown == 0L
+                                    binding.countdownText = getString(R.string.annoy_timer, TimeTextUtil.seconds((countdown / 1000).toInt(), this@AnnoyActivity))
+                                }
 
-        ViewCompat.setOnApplyWindowInsetsListener(binding.root) { view, windowInsets ->
-            val insets = windowInsets.getInsets(WindowInsetsCompat.Type.systemBars())
+                                logic.deviceEntry.map {
+                                    val reasonItems = (it?.let { ManipulationWarnings.getFromDevice(it) } ?: ManipulationWarnings.empty)
+                                        .current
+                                        .map { getString(it.labelResourceId) }
 
-            view.updatePadding(insets.left, insets.top, insets.right, insets.bottom)
+                                    if (reasonItems.isEmpty()) {
+                                        null
+                                    } else {
+                                        getString(R.string.annoy_reason, reasonItems.joinToString(separator = ", "))
+                                    }
+                                }.observe(this) { binding.reasonText = it }
 
-            WindowInsetsCompat.CONSUMED
+                                binding.unlockTemporarilyButton.setOnClickListener {
+                                    AnnoyUnlockDialogFragment.newInstance(AnnoyUnlockDialogFragment.UnlockDuration.Short)
+                                        .show(supportFragmentManager)
+                                }
+
+                                binding.parentUnlockButton.setOnClickListener {
+                                    AnnoyUnlockDialogFragment.newInstance(AnnoyUnlockDialogFragment.UnlockDuration.Long)
+                                        .show(supportFragmentManager)
+                                }
+
+                                binding.useBackdoorButton.setOnClickListener { BackdoorDialogFragment().show(supportFragmentManager) }
+
+                                binding.root
+                            },
+                            modifier = Modifier.fillMaxSize().padding(padding)
+                        )
+                    },
+                    executeCommand = {},
+                    showAuthenticationDialog = null
+                )
+            }
         }
+
+        U2fManager.setupActivity(this)
 
         if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.LOLLIPOP) {
             val systemImageApps = packageManager.getInstalledApplications(0)
@@ -116,35 +165,6 @@ class AnnoyActivity : AppCompatActivity(), ActivityViewModelHolder, U2fManager.D
         logic.annoyLogic.shouldAnnoyRightNow.observe(this) { shouldRun ->
             if (!shouldRun) shutdown()
         }
-
-        logic.annoyLogic.nextManualUnblockCountdown.observe(this) { countdown ->
-            binding.canRequestUnlock = countdown == 0L
-            binding.countdownText = getString(R.string.annoy_timer, TimeTextUtil.seconds((countdown / 1000).toInt(), this@AnnoyActivity))
-        }
-
-        logic.deviceEntry.map {
-            val reasonItems = (it?.let { ManipulationWarnings.getFromDevice(it) } ?: ManipulationWarnings.empty)
-                .current
-                .map { getString(it.labelResourceId) }
-
-            if (reasonItems.isEmpty()) {
-                null
-            } else {
-                getString(R.string.annoy_reason, reasonItems.joinToString(separator = ", "))
-            }
-        }.observe(this) { binding.reasonText = it }
-
-        binding.unlockTemporarilyButton.setOnClickListener {
-            AnnoyUnlockDialogFragment.newInstance(AnnoyUnlockDialogFragment.UnlockDuration.Short)
-                .show(supportFragmentManager)
-        }
-
-        binding.parentUnlockButton.setOnClickListener {
-            AnnoyUnlockDialogFragment.newInstance(AnnoyUnlockDialogFragment.UnlockDuration.Long)
-                .show(supportFragmentManager)
-        }
-
-        binding.useBackdoorButton.setOnClickListener { BackdoorDialogFragment().show(supportFragmentManager) }
 
         model.authenticatedUser.observe(this) { user ->
             if (user?.second?.type == UserType.Parent) {
