@@ -144,8 +144,6 @@ class MainActivity : AppCompatActivity(), ActivityViewModelHolder, U2fManager.De
             )
         )
 
-        supportActionBar!!.hide()
-
         U2fManager.setupActivity(this)
 
         NotificationChannels.createNotificationChannels(getSystemService(Context.NOTIFICATION_SERVICE) as NotificationManager, this)

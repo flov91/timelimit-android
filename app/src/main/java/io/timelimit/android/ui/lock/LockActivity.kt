@@ -120,8 +120,6 @@ class LockActivity : AppCompatActivity(), ActivityViewModelHolder, U2fManager.De
             )
         )
 
-        supportActionBar!!.hide()
-
         U2fManager.setupActivity(this)
 
         val subtitleLive = syncModel.statusText.asFlow()
@@ -213,8 +211,6 @@ class LockActivity : AppCompatActivity(), ActivityViewModelHolder, U2fManager.De
                 )
             }
         }
-
-        syncModel.statusText.observe(this) { supportActionBar?.subtitle = it }
 
         currentInstances.add(this)
 

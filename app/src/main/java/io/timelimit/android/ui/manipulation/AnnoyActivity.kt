@@ -89,8 +89,6 @@ class AnnoyActivity : AppCompatActivity(), ActivityViewModelHolder, U2fManager.D
             )
         )
 
-        supportActionBar!!.hide()
-
         setContent {
             Theme {
                 ScreenScaffold(

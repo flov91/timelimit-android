@@ -47,8 +47,6 @@ class UpdateActivity: AppCompatActivity() {
             )
         )
 
-        supportActionBar!!.hide()
-
         setContent {
             Theme {
                 ScreenScaffold(
