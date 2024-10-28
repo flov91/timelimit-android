@@ -51,6 +51,7 @@ fun ScreenScaffold(
     backStack: List<BackStackItem>,
     snackbarHostState: SnackbarHostState?,
     content: @Composable (PaddingValues) -> Unit,
+    extraBars: (@Composable () -> Unit)? = null,
     executeCommand: (UpdateStateCommand) -> Unit,
     showAuthenticationDialog: (() -> Unit)?
 ) {
@@ -58,69 +59,73 @@ fun ScreenScaffold(
 
     Scaffold(
         topBar = {
-            TopAppBar(
-                title = {
-                    Column {
-                        Text(
-                            title,
-                            maxLines = 1,
-                            overflow = TextOverflow.Ellipsis
-                        )
-
-                        if (subtitle != null) {
+            Column {
+                TopAppBar(
+                    title = {
+                        Column {
                             Text(
-                                subtitle,
-                                style = MaterialTheme.typography.subtitle1,
+                                title,
                                 maxLines = 1,
                                 overflow = TextOverflow.Ellipsis
                             )
-                        }
-                    }
-                },
-                navigationIcon = if (screen?.state?.previous != null) ({
-                    IconButton(onClick = { executeCommand(UpdateStateCommand.BackToPreviousScreen) }) {
-                        Icon(Icons.Default.ArrowBack, stringResource(R.string.generic_back))
-                    }
-                }) else null,
-                actions = {
-                    for (icon in screen?.toolbarIcons ?: emptyList()) {
-                        IconButton(
-                            onClick = {
-                                if (icon.action != null) executeCommand(icon.action)
 
-                                icon.handler()
+                            if (subtitle != null) {
+                                Text(
+                                    subtitle,
+                                    style = MaterialTheme.typography.subtitle1,
+                                    maxLines = 1,
+                                    overflow = TextOverflow.Ellipsis
+                                )
                             }
-                        ) {
-                            Icon(icon.icon, stringResource(icon.labelResource))
                         }
-                    }
+                    },
+                    navigationIcon = if (screen?.state?.previous != null) ({
+                        IconButton(onClick = { executeCommand(UpdateStateCommand.BackToPreviousScreen) }) {
+                            Icon(Icons.Default.ArrowBack, stringResource(R.string.generic_back))
+                        }
+                    }) else null,
+                    actions = {
+                        for (icon in screen?.toolbarIcons ?: emptyList()) {
+                            IconButton(
+                                onClick = {
+                                    if (icon.action != null) executeCommand(icon.action)
 
-                    if (screen?.toolbarOptions?.isEmpty() == false) {
-                        IconButton(onClick = { expandDropdown = true }) {
-                            Icon(Icons.Default.MoreVert, stringResource(R.string.generic_menu))
+                                    icon.handler()
+                                }
+                            ) {
+                                Icon(icon.icon, stringResource(icon.labelResource))
+                            }
                         }
 
-                        DropdownMenu(
-                            expanded = expandDropdown,
-                            onDismissRequest = { expandDropdown = false }
-                        ) {
-                            for (option in screen.toolbarOptions) {
-                                DropdownMenuItem(onClick = {
-                                    if (option.action != null) executeCommand(option.action)
+                        if (screen?.toolbarOptions?.isEmpty() == false) {
+                            IconButton(onClick = { expandDropdown = true }) {
+                                Icon(Icons.Default.MoreVert, stringResource(R.string.generic_menu))
+                            }
 
-                                    option.handler()
+                            DropdownMenu(
+                                expanded = expandDropdown,
+                                onDismissRequest = { expandDropdown = false }
+                            ) {
+                                for (option in screen.toolbarOptions) {
+                                    DropdownMenuItem(onClick = {
+                                        if (option.action != null) executeCommand(option.action)
 
-                                    expandDropdown = false
-                                }) {
-                                    Text(stringResource(option.labelResource))
+                                        option.handler()
+
+                                        expandDropdown = false
+                                    }) {
+                                        Text(stringResource(option.labelResource))
+                                    }
                                 }
                             }
                         }
-                    }
-                },
-                modifier = Modifier,
-                windowInsets = WindowInsets.statusBarsIgnoringVisibility
-            )
+                    },
+                    modifier = Modifier,
+                    windowInsets = WindowInsets.statusBarsIgnoringVisibility
+                )
+
+                extraBars?.invoke()
+            }
         },
         bottomBar = {
             val backStackColors = ButtonDefaults.textButtonColors(

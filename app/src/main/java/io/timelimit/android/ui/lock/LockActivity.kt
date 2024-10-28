@@ -147,62 +147,61 @@ class LockActivity : AppCompatActivity(), ActivityViewModelHolder, U2fManager.De
                     subtitle = subtitle,
                     backStack = emptyList(),
                     snackbarHostState = null,
-                    content = { padding ->
-                        Column (Modifier.fillMaxSize().padding(padding)) {
-                            TabRow(
-                                pager.currentPage,
-                                indicator = { tabPositions ->
-                                    // workaround for bug
-                                    TabRowDefaults.Indicator(
-                                        Modifier.tabIndicatorOffset(tabPositions[
-                                                pager.currentPage.coerceAtMost(tabPositions.size - 1)
-                                        ])
-                                    )
-                                }
+                    extraBars = {
+                        TabRow(
+                            pager.currentPage,
+                            indicator = { tabPositions ->
+                                // workaround for bug
+                                TabRowDefaults.Indicator(
+                                    Modifier.tabIndicatorOffset(tabPositions[
+                                        pager.currentPage.coerceAtMost(tabPositions.size - 1)
+                                    ])
+                                )
+                            }
+                        ) {
+                            Tab(
+                                selected = pager.currentPage == 0,
+                                onClick = { pager.requestScrollToPage(0) }
                             ) {
-                                Tab(
-                                    selected = pager.currentPage == 0,
-                                    onClick = { pager.requestScrollToPage(0) }
-                                ) {
-                                    Text(
-                                        stringResource(R.string.lock_tab_reason),
-                                        Modifier.padding(16.dp)
-                                    )
-                                }
-
-                                Tab(
-                                    selected = pager.currentPage == 1,
-                                    onClick = { pager.requestScrollToPage(1) }
-                                ) {
-                                    Text(
-                                        stringResource(R.string.lock_tab_action),
-                                        Modifier.padding(16.dp)
-                                    )
-                                }
-
-                                if (showTasks) Tab(
-                                    selected = pager.currentPage == 2,
-                                    onClick = { pager.requestScrollToPage(2) }
-                                ) {
-                                    Text(
-                                        stringResource(R.string.lock_tab_task),
-                                        Modifier.padding(16.dp)
-                                    )
-                                }
+                                Text(
+                                    stringResource(R.string.lock_tab_reason),
+                                    Modifier.padding(16.dp)
+                                )
                             }
 
-                            HorizontalPager(
-                                pager,
-                                Modifier.weight(1.0F, fill = true),
-                                pageContent = { index ->
-                                    when (index) {
-                                        0 -> AndroidFragment<LockReasonFragment>(Modifier.fillMaxSize())
-                                        1 -> AndroidFragment<LockActionFragment>(Modifier.fillMaxSize())
-                                        2 -> AndroidFragment<LockTaskFragment>(Modifier.fillMaxSize())
-                                    }
-                                }
-                            )
+                            Tab(
+                                selected = pager.currentPage == 1,
+                                onClick = { pager.requestScrollToPage(1) }
+                            ) {
+                                Text(
+                                    stringResource(R.string.lock_tab_action),
+                                    Modifier.padding(16.dp)
+                                )
+                            }
+
+                            if (showTasks) Tab(
+                                selected = pager.currentPage == 2,
+                                onClick = { pager.requestScrollToPage(2) }
+                            ) {
+                                Text(
+                                    stringResource(R.string.lock_tab_task),
+                                    Modifier.padding(16.dp)
+                                )
+                            }
                         }
+                    },
+                    content = { padding ->
+                        HorizontalPager(
+                            pager,
+                            Modifier.fillMaxSize().padding(padding),
+                            pageContent = { index ->
+                                when (index) {
+                                    0 -> AndroidFragment<LockReasonFragment>(Modifier.fillMaxSize())
+                                    1 -> AndroidFragment<LockActionFragment>(Modifier.fillMaxSize())
+                                    2 -> AndroidFragment<LockTaskFragment>(Modifier.fillMaxSize())
+                                }
+                            }
+                        )
                     },
                     executeCommand = {},
                     showAuthenticationDialog =
