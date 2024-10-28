@@ -31,6 +31,7 @@ import io.timelimit.android.logic.RemainingTime
 import io.timelimit.android.ui.manage.category.timelimit_rules.TimeLimitRulesHandlers
 import io.timelimit.android.ui.util.DateUtil
 import io.timelimit.android.util.DayNameUtil
+import io.timelimit.android.util.Option
 import io.timelimit.android.util.TimeTextUtil
 import kotlin.properties.Delegates
 
@@ -159,12 +160,24 @@ class AppAndRuleAdapter: RecyclerView.Adapter<AppAndRuleAdapter.Holder>() {
                 val binding = holder.itemView.tag as FragmentCategoryTimeLimitRuleItemBinding
                 val context = binding.root.context
                 val usedTime = date?.let { date ->
-                    RemainingTime.getUsedTime(
-                        usedTimes = usedTimes,
-                        rule = rule,
-                        firstDayOfWeekAsEpochDay = date.firstDayOfWeekAsEpochDay,
-                        dayOfWeekForDailyRule = if (rule.perDay) date.dayOfWeek else null
-                    ).toInt()
+                    val dayOfWeekForDailyRule: Option<Int?>? =
+                        if (rule.perDay) {
+                            (0 until 7)
+                                .map { (7 + date.dayOfWeek - it) % 7 } // make the current day the last one
+                                .firstOrNull { rule.dayMask.toInt() and (1 shl it) != 0 }
+                                ?.let { Option.Some(it) } // skip calculation if no day matches
+                        } else Option.Some(null) // use the value null
+
+                    dayOfWeekForDailyRule?.let {
+                        RemainingTime.getUsedTime(
+                            usedTimes = usedTimes,
+                            rule = rule,
+                            firstDayOfWeekAsEpochDay = date.firstDayOfWeekAsEpochDay,
+                            dayOfWeekForDailyRule =
+                                if (it is Option.Some) it.value
+                                else null
+                        ).toInt()
+                    }
                 } ?: 0
 
                 binding.maxTimeString = rule.maximumTimeInMillis.let { time ->
