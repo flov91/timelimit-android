@@ -19,6 +19,7 @@ import androidx.lifecycle.LiveData
 import androidx.room.Dao
 import androidx.room.Insert
 import androidx.room.Query
+import androidx.room.RoomWarnings
 import io.timelimit.android.data.model.UsedTimeItem
 import io.timelimit.android.data.model.UsedTimeListItem
 import io.timelimit.android.livedata.ignoreUnchanged
@@ -68,11 +69,13 @@ abstract class UsedTimeDao {
 
     // breaking it into multiple lines causes issues during compilation ...
     // this warns about an unused column, but this column is used in the ORDER BY
+    @SuppressWarnings(RoomWarnings.CURSOR_MISMATCH)
     @Query("SELECT 2 AS type, start_time_of_day AS startMinuteOfDay, end_time_of_day AS endMinuteOfDay, used_time AS duration, day_of_epoch AS day, NULL AS lastUsage, NULL AS maxSessionDuration, NULL AS pauseDuration, category.id AS categoryId, category.title AS categoryTitle FROM used_time JOIN category ON (used_time.category_id = category.id) WHERE category.id = :categoryId UNION ALL SELECT 1 AS type, start_minute_of_day AS startMinuteOfDay, end_minute_of_day AS endMinuteOfDay, last_session_duration AS duration, NULL AS day, last_usage AS lastUsage, max_session_duration AS maxSessionDuration, session_pause_duration AS pauseDuration, category.id AS categoryId, category.title AS categoryTitle FROM session_duration JOIN category ON (session_duration.category_id = category.id) WHERE category.id = :categoryId ORDER BY type, day DESC, lastUsage DESC, startMinuteOfDay, endMinuteOfDay, categoryId")
     abstract fun getUsedTimeListItemsByCategoryId(categoryId: String): Flow<List<UsedTimeListItem>>
 
     // breaking it into multiple lines causes issues during compilation ...
     // this warns about an unused column, but this column is used in the ORDER BY
+    @SuppressWarnings(RoomWarnings.CURSOR_MISMATCH)
     @Query("SELECT 2 AS type, start_time_of_day AS startMinuteOfDay, end_time_of_day AS endMinuteOfDay, used_time AS duration, day_of_epoch AS day, NULL AS lastUsage, NULL AS maxSessionDuration, NULL AS pauseDuration, category.id AS categoryId, category.title AS categoryTitle FROM used_time JOIN category ON (used_time.category_id = category.id) WHERE category.child_id = :userId UNION ALL SELECT 1 AS type, start_minute_of_day AS startMinuteOfDay, end_minute_of_day AS endMinuteOfDay, last_session_duration AS duration, NULL AS day, last_usage AS lastUsage, max_session_duration AS maxSessionDuration, session_pause_duration AS pauseDuration, category.id AS categoryId, category.title AS categoryTitle FROM session_duration JOIN category ON (session_duration.category_id = category.id) WHERE category.child_id = :userId ORDER BY type, day DESC, lastUsage DESC, startMinuteOfDay, endMinuteOfDay, categoryId")
     abstract fun getUsedTimeListItemsByUserId(userId: String): Flow<List<UsedTimeListItem>>
 }
