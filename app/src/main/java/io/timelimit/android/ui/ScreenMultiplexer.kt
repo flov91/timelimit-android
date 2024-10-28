@@ -1,5 +1,5 @@
 /*
- * TimeLimit Copyright <C> 2019 - 2023 Jonas Lochmann
+ * TimeLimit Copyright <C> 2019 - 2024 Jonas Lochmann
  *
  * This program is free software: you can redistribute it and/or modify
  * it under the terms of the GNU General Public License as published by
@@ -15,6 +15,8 @@
  */
 package io.timelimit.android.ui
 
+import androidx.compose.foundation.layout.PaddingValues
+import androidx.compose.foundation.layout.padding
 import androidx.compose.runtime.Composable
 import androidx.compose.ui.Modifier
 import androidx.fragment.app.FragmentManager
@@ -42,27 +44,28 @@ fun ScreenMultiplexer(
     screen: Screen?,
     fragmentManager: FragmentManager,
     fragmentIds: MutableSet<Int>,
-    modifier: Modifier = Modifier
+    modifier: Modifier = Modifier,
+    paddingValues: PaddingValues
 ) {
     when (screen) {
         null -> {/* nothing to do */ }
-        is Screen.FragmentScreen -> FragmentScreen(screen, fragmentManager, fragmentIds, modifier = modifier)
-        is Screen.OverviewScreen -> OverviewScreen(screen.content, modifier = modifier)
-        is Screen.ManageDeviceUserScreen -> ManageDeviceUserScreen(screen.items, screen.actions, screen.overlay, modifier)
-        is Screen.DeviceOwnerScreen -> DeviceOwnerScreen(screen.content, modifier = modifier)
-        is Screen.SetupDevicePermissionsScreen -> SetupDevicePermissionsScreen(screen, modifier)
-        is Screen.ManageDevicePermissions -> ManageDevicePermissionScreen(screen.content, modifier)
-        is Screen.SetupConnectModePrivacyScreen -> SetupConnectedModePrivacyScreen(screen.customServerDomain, screen.accept, modifier)
-        is Screen.SetupSelectConnectedModeScreen -> SelectConnectedModeScreen(mailLogin = screen.mailLogin, codeLogin = screen.codeLogin, modifier = modifier)
-        is Screen.SetupSelectModeScreen -> SelectModeScreen(selectLocal = screen.selectLocal, selectConnected = screen.selectConnected, selectUninstall = screen.selectUninstall, modifier = modifier)
-        is Screen.DeleteRegistration -> DeleteRegistrationScreen(screen.content, modifier)
-        is Screen.ManageBlockedTimes -> BlockedTimesScreen(screen.content, screen.intro, modifier)
-        is Screen.ChildUsageHistory -> UsageHistoryScreen(screen.content, modifier)
-        is Screen.SetupParentMailAuthentication -> AuthenticateByMailScreen(screen.content, modifier)
-        is Screen.SignupBlocked -> SignupBlockedScreen(modifier)
-        is Screen.SignInWrongMailAddress -> SignInWrongMailAddress(modifier)
-        is Screen.ConfirmNewParentAccount -> ConfirmNewParentAccount(confirm = screen.confirm, reject = screen.reject, modifier = modifier)
-        is Screen.ParentBaseConfiguration -> ParentBaseConfiguration(content = screen.content, modifier = modifier)
-        is Screen.ParentSetupConsent -> ParentSetupConsent(content = screen.content, errorDialog = screen.errorDialog, modifier = modifier)
+        is Screen.FragmentScreen -> FragmentScreen(screen, fragmentManager, fragmentIds, modifier = modifier.padding(paddingValues))
+        is Screen.OverviewScreen -> OverviewScreen(screen.content, modifier = modifier, paddingValues = paddingValues)
+        is Screen.ManageDeviceUserScreen -> ManageDeviceUserScreen(screen.items, screen.actions, screen.overlay, modifier.padding(paddingValues))
+        is Screen.DeviceOwnerScreen -> DeviceOwnerScreen(screen.content, modifier = modifier.padding(paddingValues))
+        is Screen.SetupDevicePermissionsScreen -> SetupDevicePermissionsScreen(screen, modifier.padding(paddingValues))
+        is Screen.ManageDevicePermissions -> ManageDevicePermissionScreen(screen.content, modifier.padding(paddingValues))
+        is Screen.SetupConnectModePrivacyScreen -> SetupConnectedModePrivacyScreen(screen.customServerDomain, screen.accept, modifier.padding(paddingValues))
+        is Screen.SetupSelectConnectedModeScreen -> SelectConnectedModeScreen(mailLogin = screen.mailLogin, codeLogin = screen.codeLogin, modifier = modifier.padding(paddingValues))
+        is Screen.SetupSelectModeScreen -> SelectModeScreen(selectLocal = screen.selectLocal, selectConnected = screen.selectConnected, selectUninstall = screen.selectUninstall, modifier = modifier.padding(paddingValues))
+        is Screen.DeleteRegistration -> DeleteRegistrationScreen(screen.content, modifier.padding(paddingValues))
+        is Screen.ManageBlockedTimes -> BlockedTimesScreen(screen.content, screen.intro, modifier.padding(paddingValues))
+        is Screen.ChildUsageHistory -> UsageHistoryScreen(screen.content, modifier.padding(paddingValues))
+        is Screen.SetupParentMailAuthentication -> AuthenticateByMailScreen(screen.content, modifier.padding(paddingValues))
+        is Screen.SignupBlocked -> SignupBlockedScreen(modifier.padding(paddingValues))
+        is Screen.SignInWrongMailAddress -> SignInWrongMailAddress(modifier.padding(paddingValues))
+        is Screen.ConfirmNewParentAccount -> ConfirmNewParentAccount(confirm = screen.confirm, reject = screen.reject, modifier = modifier.padding(paddingValues))
+        is Screen.ParentBaseConfiguration -> ParentBaseConfiguration(content = screen.content, modifier = modifier.padding(paddingValues))
+        is Screen.ParentSetupConsent -> ParentSetupConsent(content = screen.content, errorDialog = screen.errorDialog, modifier = modifier.padding(paddingValues))
     }
 }

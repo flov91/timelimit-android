@@ -1,5 +1,5 @@
 /*
- * TimeLimit Copyright <C> 2019 - 2022 Jonas Lochmann
+ * TimeLimit Copyright <C> 2019 - 2024 Jonas Lochmann
  *
  * This program is free software: you can redistribute it and/or modify
  * it under the terms of the GNU General Public License as published by
@@ -18,11 +18,17 @@ package io.timelimit.android.ui.lock
 import android.app.ActivityManager
 import android.content.Context
 import android.content.Intent
+import android.content.res.Configuration
 import android.os.Build
 import android.os.Bundle
 import androidx.activity.OnBackPressedCallback
+import androidx.activity.SystemBarStyle
+import androidx.activity.enableEdgeToEdge
 import androidx.activity.viewModels
 import androidx.appcompat.app.AppCompatActivity
+import androidx.core.view.ViewCompat
+import androidx.core.view.WindowInsetsCompat
+import androidx.core.view.updatePadding
 import androidx.lifecycle.MutableLiveData
 import androidx.viewpager.widget.ViewPager
 import io.timelimit.android.R
@@ -90,12 +96,31 @@ class LockActivity : AppCompatActivity(), ActivityViewModelHolder, U2fManager.De
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
 
+        val isNightMode =
+            (resources.configuration.uiMode and Configuration.UI_MODE_NIGHT_MASK) ==
+                    Configuration.UI_MODE_NIGHT_YES
+
+        enableEdgeToEdge(
+            statusBarStyle = SystemBarStyle.dark(
+                if (isNightMode) android.graphics.Color.TRANSPARENT
+                else resources.getColor(R.color.colorPrimaryDark)
+            )
+        )
+
         U2fManager.setupActivity(this)
 
         val adapter = LockActivityAdapter(supportFragmentManager, this)
 
         val binding = LockActivityBinding.inflate(layoutInflater)
         setContentView(binding.root)
+
+        ViewCompat.setOnApplyWindowInsetsListener(binding.root) { view, windowInsets ->
+            val insets = windowInsets.getInsets(WindowInsetsCompat.Type.systemBars())
+
+            view.updatePadding(insets.left, insets.top, insets.right, insets.bottom)
+
+            WindowInsetsCompat.CONSUMED
+        }
 
         syncModel.statusText.observe(this) { supportActionBar?.subtitle = it }
 

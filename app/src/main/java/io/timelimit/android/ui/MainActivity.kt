@@ -19,23 +19,24 @@ import android.Manifest
 import android.app.NotificationManager
 import android.content.Context
 import android.content.Intent
+import android.content.res.Configuration
 import android.net.Uri
 import android.os.Build
 import android.os.Bundle
 import android.os.SystemClock
 import android.provider.Settings
 import android.util.Log
+import androidx.activity.SystemBarStyle
 import androidx.activity.compose.BackHandler
 import androidx.activity.compose.setContent
+import androidx.activity.enableEdgeToEdge
 import androidx.activity.result.contract.ActivityResultContracts
 import androidx.activity.viewModels
 import androidx.appcompat.app.AppCompatActivity
 import androidx.compose.animation.AnimatedContent
-import androidx.compose.animation.ExperimentalAnimationApi
 import androidx.compose.animation.core.updateTransition
 import androidx.compose.foundation.background
 import androidx.compose.foundation.layout.fillMaxSize
-import androidx.compose.foundation.layout.padding
 import androidx.compose.runtime.collectAsState
 import androidx.compose.runtime.getValue
 import androidx.compose.ui.Modifier
@@ -129,9 +130,19 @@ class MainActivity : AppCompatActivity(), ActivityViewModelHolder, U2fManager.De
         if (granted) mainModel.reportPermissionsChanged()
     }
 
-    @OptIn(ExperimentalAnimationApi::class)
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
+
+        val isNightMode =
+            (resources.configuration.uiMode and Configuration.UI_MODE_NIGHT_MASK) ==
+                    Configuration.UI_MODE_NIGHT_YES
+
+        enableEdgeToEdge(
+            statusBarStyle = SystemBarStyle.dark(
+                if (isNightMode) android.graphics.Color.TRANSPARENT
+                else resources.getColor(R.color.colorPrimaryDark)
+            )
+        )
 
         supportActionBar!!.hide()
 
@@ -314,9 +325,8 @@ class MainActivity : AppCompatActivity(), ActivityViewModelHolder, U2fManager.De
                                 screen = screen,
                                 fragmentManager = supportFragmentManager,
                                 fragmentIds = mainModel.fragmentIds,
-                                modifier = Modifier
-                                    .fillMaxSize()
-                                    .padding(paddingValues)
+                                modifier = Modifier.fillMaxSize(),
+                                paddingValues = paddingValues
                             )
                         },
                         showAuthenticationDialog = showAuthenticationDialog,

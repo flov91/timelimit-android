@@ -1,5 +1,5 @@
 /*
- * TimeLimit Copyright <C> 2019 - 2023 Jonas Lochmann
+ * TimeLimit Copyright <C> 2019 - 2024 Jonas Lochmann
  *
  * This program is free software: you can redistribute it and/or modify
  * it under the terms of the GNU General Public License as published by
@@ -17,8 +17,13 @@ package io.timelimit.android.ui
 
 import androidx.compose.foundation.horizontalScroll
 import androidx.compose.foundation.layout.Column
+import androidx.compose.foundation.layout.ExperimentalLayoutApi
 import androidx.compose.foundation.layout.PaddingValues
 import androidx.compose.foundation.layout.Row
+import androidx.compose.foundation.layout.WindowInsets
+import androidx.compose.foundation.layout.navigationBarsIgnoringVisibility
+import androidx.compose.foundation.layout.statusBarsIgnoringVisibility
+import androidx.compose.foundation.layout.systemBarsIgnoringVisibility
 import androidx.compose.foundation.rememberScrollState
 import androidx.compose.material.*
 import androidx.compose.material.icons.Icons
@@ -37,6 +42,7 @@ import io.timelimit.android.ui.model.Screen
 import io.timelimit.android.ui.model.Title
 import io.timelimit.android.ui.model.UpdateStateCommand
 
+@OptIn(ExperimentalLayoutApi::class)
 @Composable
 fun ScreenScaffold(
     screen: Screen?,
@@ -111,7 +117,9 @@ fun ScreenScaffold(
                             }
                         }
                     }
-                }
+                },
+                modifier = Modifier,
+                windowInsets = WindowInsets.statusBarsIgnoringVisibility
             )
         },
         bottomBar = {
@@ -159,7 +167,8 @@ fun ScreenScaffold(
                             Text(title)
                         }
                     }
-                }
+                },
+                windowInsets = WindowInsets.navigationBarsIgnoringVisibility
             )
         },
         floatingActionButton = {
@@ -170,6 +179,7 @@ fun ScreenScaffold(
             }
         },
         snackbarHost = { SnackbarHost(snackbarHostState ?: it) },
-        content = content
+        content = content,
+        contentWindowInsets = WindowInsets.systemBarsIgnoringVisibility
     )
 }
