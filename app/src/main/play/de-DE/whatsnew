@@ -1,2 +1,3 @@
-- verbesserter Umgang mit Fehlern im Hintergrund
+- Anpassungen für Android 15
+- falsch angezeigte Nutzungsdauer bei Regeln die je Tag gelten an Tagen, an denen diese nicht gelten, behoben
 - enthaltene Komponenten aktualisiert

@@ -1,2 +1,3 @@
-- improved handling of errors in the background
+- adjustments for Android 15
+- fix incorrect used time at rules that apply per day at days where they do not apply
 - update contained software
