@@ -1,5 +1,5 @@
 /*
- * TimeLimit Copyright <C> 2019 - 2022 Jonas Lochmann
+ * TimeLimit Copyright <C> 2019 - 2024 Jonas Lochmann
  *
  * This program is free software: you can redistribute it and/or modify
  * it under the terms of the GNU General Public License as published by
@@ -16,14 +16,21 @@
 package io.timelimit.android.ui.manage.category.apps.add
 
 import android.app.Dialog
+import android.os.Build.VERSION
+import android.os.Build.VERSION_CODES
 import android.os.Bundle
 import android.view.LayoutInflater
 import android.view.View
 import android.view.ViewGroup
+import android.view.ViewGroup.MarginLayoutParams
 import android.widget.TextView
 import android.widget.Toast
 import androidx.appcompat.app.AlertDialog
 import androidx.coordinatorlayout.widget.CoordinatorLayout
+import androidx.core.view.ViewCompat
+import androidx.core.view.WindowInsetsCompat
+import androidx.core.view.WindowInsetsControllerCompat
+import androidx.core.view.updateLayoutParams
 import androidx.fragment.app.DialogFragment
 import androidx.fragment.app.FragmentManager
 import androidx.fragment.app.viewModels
@@ -220,9 +227,29 @@ class AddCategoryAppsFragment : DialogFragment() {
             }
         }
 
+        ViewCompat.setOnApplyWindowInsetsListener(binding.root) { v, windowInsets ->
+            val insets = windowInsets.getInsets(WindowInsetsCompat.Type.systemBars())
+
+            v.updateLayoutParams<MarginLayoutParams> {
+                topMargin = insets.top
+                bottomMargin = insets.bottom
+                leftMargin = insets.left
+                rightMargin = insets.right
+            }
+
+            WindowInsetsCompat.CONSUMED
+        }
+
         return AlertDialog.Builder(requireContext(), R.style.AppTheme)
-                .setView(binding.root)
-                .create()
+            .setView(binding.root)
+            .create()
+            .also { dialog ->
+                if (VERSION.SDK_INT >= VERSION_CODES.VANILLA_ICE_CREAM) dialog.setOnShowListener {
+                    WindowInsetsControllerCompat(dialog.window!!, binding.root).run {
+                        isAppearanceLightStatusBars = true
+                    }
+                }
+            }
     }
 
     fun show(manager: FragmentManager) {
