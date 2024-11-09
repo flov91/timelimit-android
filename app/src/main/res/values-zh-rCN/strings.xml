@@ -142,7 +142,7 @@
     <string name="category_notifications_filter_checkbox">阻止全部通知</string>
     <string name="category_time_limit_rules_per_day">每日</string>
     <string name="category_time_limit_rules_per_week">每周</string>
-    <string name="category_settings_parent_category_title">家长类别</string>
+    <string name="category_settings_parent_category_title">父类别</string>
     <string name="category_settings_battery_limit_title">电池限制</string>
     <string name="category_time_limit_rule_dialog_new">创建规则</string>
     <string name="category_time_limit_rules_apply_to_part_day_1">应用从</string>
@@ -364,8 +364,8 @@
     <string name="category_notification_filter_summary_has_permission">当类别被阻止时，通知会被阻止</string>
     <string name="category_notification_filter_summary_enabled_with_delay">通知始终被阻止，但延迟了 %s</string>
     <string name="category_settings_delete_dialog">是否要删除类别 %s？</string>
-    <string name="category_settings_parent_category_button">选择家长类别</string>
-    <string name="category_settings_parent_category_none">无家长类别</string>
+    <string name="category_settings_parent_category_button">选择父类别</string>
+    <string name="category_settings_parent_category_none">无父类别</string>
     <string name="category_time_limit_rules">时限规则</string>
     <string name="category_time_limit_rules_enable_session_limit">限制会话时长</string>
     <string name="category_time_limit_rules_session_limit_duration">最长会话时长</string>
@@ -721,7 +721,7 @@
     <string name="manage_parent_u2f_remove_key_text">您想移除此密钥吗？</string>
     <string name="category_apps_add_activity_empty_filtered">没有与此搜索词匹配的活动</string>
     <string name="category_apps_add_activity_empty_shown">现在没有可以分配的活动</string>
-    <string name="category_settings_parent_category_assigned_to">此类别现在是 %s 的儿童类别。</string>
+    <string name="category_settings_parent_category_assigned_to">此类别现在是 %s 的子类别。</string>
     <string name="category_settings_battery_limit_charging">充电时，电池必须至少有 %d%</string>
     <string name="category_settings_battery_limit_mobile">放电时，电池必须至少有 %d%</string>
     <string name="category_time_limit_rules_invalid_range">开始时间必须早于结束时间</string>
@@ -857,8 +857,12 @@
     <string name="category_notification_filter_text">当在设备条目中启用通知访问时，将在锁定时段和时间结束时阻止通知。您可以在此处启用阻止来自某个类别的应用的全部通知。这也会阻止（背景）音乐播放。此功能要求启用通知访问。否则，它不起作用。</string>
     <string name="category_notification_filter_delay_intro">可以延迟阻止通知。这仅适用于类别本身未被阻止的情况。如果类别本身被阻止，则忽略延迟。</string>
     <string name="category_settings_extra_time_info">额外时间允许（如果不受规则限制）比平时更长时间地使用该类别。如果规定的时间已用完，则使用它，否则不会过期。</string>
-    <string name="category_settings_parent_category_intro">当某个类别的家长类别被阻止（例如时间已到），则儿童类别也会被阻止。使用儿童类别时，已用时间也会添加到家长类别中。</string>
+    <string name="category_settings_parent_category_intro">当某个类别的父类别被阻止（例如时间已到），则子类别也会被阻止。使用子类别时，已用时间也会添加到父类别中。</string>
     <string name="category_time_limit_rules_about">您可以在此处配置时限规则。每条规则描述一个限制。没有规则的时间不受限制。</string>
     <string name="category_time_limit_rules_time_area">只应用从 %s 到 %s</string>
     <string name="category_time_limit_rules_warning_day_part">此规则仅在指定时段内限制使用时长。如果没有其他时间或锁定时段的规则，在此时段外就不受限制。</string>
+    <string name="child_self_limit_add_help">这主要用于自我限制。允许用户在不以家长身份登录的情况下添加某些限制：\n- 添加时限规则\n- 延长锁定时段\n- 添加已用时间\n- 创建类别\n- 为类别启用通知筛选器\n- 只要类别在类别层次结构中向下移动，即可设置父类别\n- 如果应用被移动到其当前类别的子类别，或者它们不属于任何类别并且目标类别是未分配应用类别的子类别，则将应用添加到类别中\n- 暂时阻止类别/延长类别的暂时阻止\n- 禁用对类别的限制的暂时禁用</string>
+    <string name="custom_server_select_dialog_warning">如果您不认识或不信任自定义服务器的运营者，则切勿使用自定义服务器。如果您使用连接模式，服务器的运营者可以远程查看和编辑您的配置。从 Android 9 开始，您必须使用 HTTPS URL。</string>
+    <string name="device_background_sync_text">TimeLimit 可以在不使用时同步。这允许它显示有关更新或操纵的通知。</string>
+    <string name="diagnose_exf_title">实验性标志</string>
 </resources>
