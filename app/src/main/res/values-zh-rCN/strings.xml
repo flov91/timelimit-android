@@ -865,4 +865,6 @@
     <string name="custom_server_select_dialog_warning">如果您不认识或不信任自定义服务器的运营者，则切勿使用自定义服务器。如果您使用连接模式，服务器的运营者可以远程查看和编辑您的配置。从 Android 9 开始，您必须使用 HTTPS URL。</string>
     <string name="device_background_sync_text">TimeLimit 可以在不使用时同步。这允许它显示有关更新或操纵的通知。</string>
     <string name="diagnose_exf_title">实验性标志</string>
+    <string name="diagnose_exf_chs">TimeLimit 作为启动器</string>
+    <string name="dont_ask_password_on_device_text_enabled">设备上启用了密码提示。您可以在登录设备时禁用它。</string>
 </resources>
