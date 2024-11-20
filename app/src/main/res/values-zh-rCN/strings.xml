@@ -206,7 +206,7 @@
     <string name="lock_grant_permission_title">授予权限</string>
     <string name="lock_reason_short_no_category">无类别</string>
     <string name="lock_reason_short_time_over">时间已到</string>
-    <string name="lock_reason_short_forbidden_network">禁止网络</string>
+    <string name="lock_reason_short_forbidden_network">禁止的网络</string>
     <string name="lock_overlay_text">锁定 %s</string>
     <string name="main_tab_overview">概述</string>
     <string name="main_tab_uninstall">卸载</string>
@@ -774,7 +774,7 @@
     <string name="limit_user_viewing_checkbox">只允许家长和用户自己查看其详情</string>
     <string name="homescreen_selection_intro">TimeLimit 本身并不是完整的主屏幕，因此您可以选择要显示的内容</string>
     <string name="homescreen_selection_change_info">您可以通过反复点击主页按钮随时打开此菜单</string>
-    <string name="lock_add_to_category_text">如果您知道此应用并希望允许它，请使用此选项</string>
+    <string name="lock_add_to_category_text">如果您知道此应用并想要允许它，请使用此选项</string>
     <string name="lock_reason_forbidden_network">当前网络中可能无法使用此 %s。</string>
     <string name="lock_task_confirm_dialog_from_manage_screen">家长必须先登录才能修改任务。</string>
     <string name="lock_disable_limits_temporarily_text">暂时禁用类别限制以允许使用此应用程序</string>
@@ -867,4 +867,23 @@
     <string name="diagnose_exf_title">实验性标志</string>
     <string name="diagnose_exf_chs">TimeLimit 作为启动器</string>
     <string name="dont_ask_password_on_device_text_enabled">设备上启用了密码提示。您可以在登录设备时禁用它。</string>
+    <string name="inform_about_device_owner_text">从 Android 5 开始，设备管理员只检测操作。建议使用 ADB 授予设备所有者权限。</string>
+    <string name="limit_user_viewing_help">这可以防止其他儿童用户查看此儿童用户的配置和已用时间。这不是安全功能，可以很容易地绕过，例如使用旧的 TimeLimit 版本。</string>
+    <string name="lock_header_what">什么被锁定了？</string>
+    <string name="lock_header_why">为什么被锁定了？</string>
+    <string name="lock_allow_temporarily_text">允许使用 %1$s。当在通知区域中选择了相应选项或关闭屏幕时，将会锁定 %1$s。</string>
+    <string name="lock_disable_time_verification_text">如果网络时间不可用，则使用此设备的时钟。如果此设备经常没有互联网连接，则使用此选项。</string>
+    <string name="lock_reason_no_category">此应用尚未分配给任何类别。这意味着没有限制设置。在这种情况下，最简单的解决方案就是阻止该应用。</string>
+    <string name="lock_reason_time_over_etra_time_can_be_used_later">此 %s 是已达到时间限制的类别的一部分。仍有额外时间，但已达到额外时间的使用限制。</string>
+    <string name="lock_reason_missing_network_time">要决定是否允许 %s，需要当前时间。网络时间验证已启用，但失败了。</string>
+    <string name="lock_reason_requires_current_device">为了防止在不同设备上多次使用时间限制，必须有一个当前设备可以使用受限的应用。此设备现在未被选为当前设备。</string>
+    <string name="lock_reason_battery_limit">此 %s 是电池限制的类别的一部分，并且已达到此电池限制。要解锁它，请给电池充电。</string>
+    <string name="lock_reason_session_duration">此 %s 是会话时长限制的类别的一部分，并且已达到此限制。休息时间过后将解锁它。</string>
+    <string name="lock_reason_missing_required_network">此 %s 仅在某些网络中允许，但找不到与此类网络的连接。</string>
+    <string name="lock_reason_missing_network_check_permission">此 %s 在某些网络中不允许，但未授予检查网络的权限。</string>
+    <string name="lock_reason_short_blocked_time_area">锁定时段</string>
+    <string name="lock_overlay_warning">无法打开锁屏。您可以尝试使用主页或概览按钮离开此屏幕。</string>
+    <string name="lock_task_introduction">完成任务可获得额外时间。家长用户必须添加任务，并且必须在授予额外时间之前确认任务已完成。</string>
+    <string name="lock_task_confirm_dialog">完成这项任务了吗？只有在家长确认后才会授予时间。</string>
+    <string name="lock_task_review_pending_dialog">值得注意的是，这项任务已完成。唯一缺少的是家长在 TimeLimit 的启动屏幕上确认这一点。</string>
 </resources>
