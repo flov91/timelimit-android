@@ -135,4 +135,10 @@
     <string name="blocked_time_areas_help_about">Met vergrendelde tijdsloten kun je voorkomen dat apps uit een bepaalde categorie worden gebruikt. De tijdsloten zijn tot op de minuut instelbaar.</string>
     <string name="blocked_time_areas_help_structure">Dagen worden getoond als koppen; uren als tegels. Druk op een uur om de tegel te vergroten en minuten in te stellen.</string>
     <string name="blocked_time_areas_help_copy">Je kunt instellingen kopiëren door op het kopieerpictogram te drukken. Hierna kun je bij alle gewenste dagen op het plakpictogram drukken. Druk vervolgens op het pictogram ‘Opslaan’ bij de dag waar je begon.</string>
+    <string name="add_device_info">Scan of voer de code in die op het toe te voegen apparaat wordt getoond. Let op: je kunt dit alléén doen tijdens het instellen van de app. Als je de code op een later moment wilt gebruiken, dien je de app opnieuw te installeren op het apparaat in kwestie.</string>
+    <string name="add_used_time_description">Hierdoor is het mogelijk om tijdstippen toe te voegen als deze buiten de app zijn gebruikt, bijvoorbeeld schermgebruik</string>
+    <string name="add_user_child_password_info">Als je een wachtwoord instelt voor het kind, krijgt xij een eigen gebruikersaccount met wachtwoord.</string>
+    <string name="authenticate_by_mail_hint_general">Als je de app in 2019 of eerder hebt geregistreerd met je Google-account, gebruik dan het gekoppelde Gmail-adres, zodat het koppelen van apparaten en in-appaankopen naar behoren werken.</string>
+    <string name="backdoor_intro_text">Deze functie is bedoeld voor een bekende bug waardoor je wordt uitgelogd, niet voor vergeten of onjuist ingevoerde wachtwoorden.</string>
+    <string name="backdoor_instruction_1">Verstuur het volgende bericht, voorzien van de ontgrendelreden, naar ons ondersteuningsteam om een code te verkrijgen:</string>
 </resources>
