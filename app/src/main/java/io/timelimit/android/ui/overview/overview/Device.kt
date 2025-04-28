@@ -1,5 +1,5 @@
 /*
- * TimeLimit Copyright <C> 2019 - 2023 Jonas Lochmann
+ * TimeLimit Copyright <C> 2019 - 2025 Jonas Lochmann
  *
  * This program is free software: you can redistribute it and/or modify
  * it under the terms of the GNU General Public License as published by
@@ -35,7 +35,7 @@ import io.timelimit.android.ui.model.main.OverviewHandling
 @OptIn(ExperimentalFoundationApi::class)
 fun LazyListScope.deviceItems(screen: OverviewHandling.OverviewScreen) {
     item (key = Pair("devices", "header")) {
-        ListCommon.SectionHeader(stringResource(R.string.overview_header_devices), Modifier.animateItemPlacement())
+        ListCommon.SectionHeader(stringResource(R.string.overview_header_devices), Modifier.animateItem())
     }
 
     items(screen.devices.list, key = { Pair("device", it.device.id) }) {
@@ -48,7 +48,7 @@ fun LazyListScope.deviceItems(screen: OverviewHandling.OverviewScreen) {
                 icon = Icons.Default.Add,
                 label = stringResource(R.string.add_device),
                 action = screen.actions.addDevice,
-                modifier = Modifier.animateItemPlacement()
+                modifier = Modifier.animateItem()
             )
         }
     }
@@ -56,7 +56,7 @@ fun LazyListScope.deviceItems(screen: OverviewHandling.OverviewScreen) {
     if (screen.devices.canShowMore != null) {
         item (key = Pair("devices", "more")) {
             ListCommon.ShowMoreItem(
-                modifier = Modifier.animateItemPlacement(),
+                modifier = Modifier.animateItem(),
                 action = { screen.actions.showMoreDevices(screen.devices.canShowMore) }
             )
         }
@@ -71,7 +71,7 @@ fun LazyItemScope.DeviceItem(
 ) {
     ListCardCommon.Card(
         Modifier
-            .animateItemPlacement()
+            .animateItem()
             .padding(horizontal = 8.dp)
             .clickable(onClick = { openAction(item) })
     ) {

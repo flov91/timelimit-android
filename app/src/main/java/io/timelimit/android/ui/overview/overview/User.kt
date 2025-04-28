@@ -1,5 +1,5 @@
 /*
- * TimeLimit Copyright <C> 2019 - 2023 Jonas Lochmann
+ * TimeLimit Copyright <C> 2019 - 2025 Jonas Lochmann
  *
  * This program is free software: you can redistribute it and/or modify
  * it under the terms of the GNU General Public License as published by
@@ -35,7 +35,7 @@ import io.timelimit.android.ui.model.main.OverviewHandling
 @OptIn(ExperimentalFoundationApi::class)
 fun LazyListScope.userItems(screen: OverviewHandling.OverviewScreen) {
     item (key = Pair("users", "header")) {
-        ListCommon.SectionHeader(stringResource(R.string.overview_header_users), Modifier.animateItemPlacement())
+        ListCommon.SectionHeader(stringResource(R.string.overview_header_users), Modifier.animateItem())
     }
 
     items(screen.users.list, key = { Pair("user", it.id) }) { UserItem(it, screen.actions) }
@@ -45,13 +45,13 @@ fun LazyListScope.userItems(screen: OverviewHandling.OverviewScreen) {
             icon = Icons.Default.Add,
             label = stringResource(R.string.add_user_title),
             action = screen.actions.addUser,
-            modifier = Modifier.animateItemPlacement()
+            modifier = Modifier.animateItem()
         )
     }
 
     if (screen.users.canShowMore) item (key = Pair("users", "more")) {
         ListCommon.ShowMoreItem (
-            modifier = Modifier.animateItemPlacement(),
+            modifier = Modifier.animateItem(),
             action = screen.actions.showMoreUsers
         )
     }
@@ -65,7 +65,7 @@ fun LazyItemScope.UserItem(
 ) {
     ListCardCommon.Card(
         Modifier
-            .animateItemPlacement()
+            .animateItem()
             .padding(horizontal = 8.dp)
             .clickable(onClick = { actions.openUser(user) })
     ) {
