@@ -1,5 +1,5 @@
 /*
- * TimeLimit Copyright <C> 2019 - 2022 Jonas Lochmann
+ * TimeLimit Copyright <C> 2019 - 2025 Jonas Lochmann
  *
  * This program is free software: you can redistribute it and/or modify
  * it under the terms of the GNU General Public License as published by
@@ -64,10 +64,10 @@ object U2FResponse {
 
                 val flags = rawResponse.payload[0]
 
-                val counter = rawResponse.payload[4].toUInt() or
-                        rawResponse.payload[3].toUInt().shl(8) or
-                        rawResponse.payload[2].toUInt().shl(16) or
-                        rawResponse.payload[1].toUInt().shl(24)
+                val counter = rawResponse.payload[4].toUByte().toUInt() or
+                        rawResponse.payload[3].toUByte().toUInt().shl(8) or
+                        rawResponse.payload[2].toUByte().toUInt().shl(16) or
+                        rawResponse.payload[1].toUByte().toUInt().shl(24)
 
                 val signature = rawResponse.payload.sliceArray(5 until rawResponse.payload.size)
 
