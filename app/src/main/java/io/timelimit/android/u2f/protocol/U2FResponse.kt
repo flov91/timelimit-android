@@ -64,10 +64,10 @@ object U2FResponse {
 
                 val flags = rawResponse.payload[0]
 
-                val counter = rawResponse.payload[4].toUInt() or
-                        rawResponse.payload[3].toUInt().shl(8) or
-                        rawResponse.payload[2].toUInt().shl(16) or
-                        rawResponse.payload[1].toUInt().shl(24)
+                val counter = rawResponse.payload[4].toUInt().and(0xFFu) or
+                        rawResponse.payload[3].toUInt().and(0xFFu).shl(8) or
+                        rawResponse.payload[2].toUInt().and(0xFFu).shl(16) or
+                        rawResponse.payload[1].toUInt().and(0xFFu).shl(24)
 
                 val signature = rawResponse.payload.sliceArray(5 until rawResponse.payload.size)
 
