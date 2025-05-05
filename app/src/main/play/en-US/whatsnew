@@ -1,3 +1,2 @@
-- adjustments for Android 15
-- fix incorrect used time at rules that apply per day at days where they do not apply
+- fix issues during hardware token signature verification
 - update contained software

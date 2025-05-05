@@ -1,3 +1,2 @@
-- Anpassungen für Android 15
-- falsch angezeigte Nutzungsdauer bei Regeln die je Tag gelten an Tagen, an denen diese nicht gelten, behoben
+- Probleme bei der Signaturprüfung bei der Verwendung von Hardwaretoken behoben
 - enthaltene Komponenten aktualisiert
