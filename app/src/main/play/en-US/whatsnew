@@ -1,2 +1,2 @@
-- fix issues during hardware token signature verification
+- fix crashes in specific scenarios
 - update contained software
