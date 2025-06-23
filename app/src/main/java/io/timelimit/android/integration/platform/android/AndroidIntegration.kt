@@ -519,16 +519,24 @@ class AndroidIntegration(context: Context): PlatformIntegration(maximumProtectio
                     context.packageName,
                     Manifest.permission.ACCESS_FINE_LOCATION,
                 ).let {
-                    if (it == DevicePolicyManager.PERMISSION_GRANT_STATE_DEFAULT) {
-                        policyManager.setPermissionGrantState(
-                            deviceAdmin,
-                            context.packageName,
-                            Manifest.permission.ACCESS_FINE_LOCATION,
-                            if (ContextCompat.checkSelfPermission(context, Manifest.permission.ACCESS_FINE_LOCATION) == PackageManager.PERMISSION_GRANTED)
-                                DevicePolicyManager.PERMISSION_GRANT_STATE_GRANTED
-                            else
-                                DevicePolicyManager.PERMISSION_GRANT_STATE_DENIED
-                        )
+                    try {
+                        if (it == DevicePolicyManager.PERMISSION_GRANT_STATE_DEFAULT) {
+                            policyManager.setPermissionGrantState(
+                                deviceAdmin,
+                                context.packageName,
+                                Manifest.permission.ACCESS_FINE_LOCATION,
+                                if (ContextCompat.checkSelfPermission(
+                                        context,
+                                        Manifest.permission.ACCESS_FINE_LOCATION
+                                    ) == PackageManager.PERMISSION_GRANTED
+                                )
+                                    DevicePolicyManager.PERMISSION_GRANT_STATE_GRANTED
+                                else
+                                    DevicePolicyManager.PERMISSION_GRANT_STATE_DENIED
+                            )
+                        }
+                    } catch (ex: SecurityException) {
+                        // ignore
                     }
                 }
 

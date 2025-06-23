@@ -134,9 +134,19 @@ class AndroidDeviceOwnerApi(
         if (VERSION.SDK_INT < VERSION_CODES.LOLLIPOP) return false
         if (!devicePolicyManager.isDeviceOwnerApp(componentName.packageName)) return false
 
-        return devicePolicyManager.setPermissionGrantState(
-            componentName, componentName.packageName, Manifest.permission.ACCESS_FINE_LOCATION,
-            DevicePolicyManager.PERMISSION_GRANT_STATE_GRANTED
-        )
+        try {
+            return devicePolicyManager.setPermissionGrantState(
+                componentName, componentName.packageName, Manifest.permission.ACCESS_FINE_LOCATION,
+                DevicePolicyManager.PERMISSION_GRANT_STATE_GRANTED
+            )
+        } catch (ex: SecurityException) {
+            // set to default so that granting this manually is possible
+            devicePolicyManager.setPermissionGrantState(
+                componentName, componentName.packageName, Manifest.permission.ACCESS_FINE_LOCATION,
+                DevicePolicyManager.PERMISSION_GRANT_STATE_DEFAULT
+            )
+
+            return false
+        }
     }
 }
