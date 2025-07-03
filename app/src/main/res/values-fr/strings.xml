@@ -22,7 +22,7 @@
     <string name="generic_menu">Menu</string>
     <string name="generic_back">Retour</string>
     <string name="generic_runtime_permission_rejected">Permission refusée. Vous pouvez gérer les permissions dans les paramètres système</string>
-    <string name="generic_go">Go</string>
+    <string name="generic_go">Valider</string>
     <string name="generic_swipe_to_dismiss">Glissez sur un côté pour retirer ce message</string>
     <string name="about_full_version_expired">Vous n\'avez pas acheté la version premium ou elle a expiré.</string>
     <string name="about_source_title">Code source</string>
@@ -40,8 +40,8 @@
     <string name="about_full_version_until">Vous avez la version premium depuis %s.</string>
     <string name="about_full_version_always">Le serveur que vous utilisez ne limite pas l\'accès aux fonctionnalités de la version premium.</string>
     <string name="about_full_version_tap_hint">Touchez ici pour acheter ou prolonger la version premium.</string>
-    <string name="about_full_version_not_in_local_mode">La version premium n\'est pas disponible en mode local. Vous pouvez acheter une licence « stay awesome ».</string>
-    <string name="about_sal_tap_hint">Touchez ici pour acheter une licence « stay awesome ».</string>
+    <string name="about_full_version_not_in_local_mode">La version premium n\'est pas disponible en mode local. Vous pouvez acheter une licence permanente géniale.</string>
+    <string name="about_sal_tap_hint">Touchez ici pour acheter une licence permanente géniale.</string>
     <string name="about_contained_software_title">Logiciels embarqués</string>
     <string name="about_diagnose_title">Diagnostic d’erreur</string>
     <string name="about_diagnose_text">Touchez ici pour accéder aux détails permettant de diagnostiquer les erreurs</string>
@@ -225,4 +225,5 @@
     <string name="category_time_limit_rules_snackbar_updated">La règle a été modifiée</string>
     <string name="category_time_limit_rules_snackbar_deleted">La règle a été supprimée</string>
     <string name="category_time_limit_rules_warning_day_part">Cette règle va limiter la durée d’utilisation uniquement pendant l’intervalle spécifié. Sans règle pour les autres horaires ou les créneaux horaires bloqués, il n’y aura aucune limite en dehors de cet intervalle.</string>
+    <string name="error_general">L\'opération a échoué</string>
 </resources>
