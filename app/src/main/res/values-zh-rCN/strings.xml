@@ -899,7 +899,7 @@
     <string name="manage_device_introduction_text">这是管理设备的屏幕。\n您可以在此处分配用户、管理权限和配置网络时间验证的使用。\n限制是针对用户的，而不是针对设备的。返回概览以配置用户。</string>
     <string name="manage_device_reboot_manipulation_text">如果 TimeLimit 在重启后启动速度不够快，那么您可以将其视为操纵。这会将每次设备（重新）启动视为操纵。</string>
     <string name="manage_device_troubleshooting_title">为什么此设备不受限制？</string>
-    <string name="manage_device_troubleshooting_text_battery_optimization">您已将儿童用户分配到此设备。如果它仍然不起作用，那么您可以在 <a href="https://timelimit.io/en/#limits-dont-work">https://timelimit.io/en/#limits-dont-work</a> 上找到有关其他可能原因的详情。 \u0020</string>
+    <string name="manage_device_troubleshooting_text_battery_optimization">您已将儿童用户分配到此设备。如果它仍然不起作用，那么您可以在 <a href="https://timelimit.io/en/#limits-dont-work">https://timelimit.io/en/#limits-dont-work</a> 上找到有关其他可能原因的详情。</string>
     <string name="manage_device_network_time_verification_description">TimeLimit 可以使用互联网来防止通过修改系统时钟进行操纵。为此，需要向 TimeLimit 服务器发送请求。</string>
     <string name="manage_device_permissions_usagestats_text">TimeLimit 使用权限来访问使用情况统计信息。这仅用于检测当前使用的应用。</string>
     <string name="manage_device_permission_notification_access_text">TimeLimit 使用通知访问权限来阻止被阻止应用的通知。不会保存通知及其内容。此外，这还用于检测和阻止背景音乐播放。</string>
@@ -967,7 +967,7 @@
     <string name="setup_select_mode_child_text">此设备已链接到另一台设备。您可以选择是否要限制此设备。TimeLimit 的所有设置都可以从任何已关联的设备更改。您可以使用在安装了 TimeLimit 的另一台设备上生成的代码登录。</string>
     <string name="setup_select_mode_parent_key_text">TimeLimit 不会限制此设备。此设备将成为使用本地模式的其他设备上解锁 TimeLimit 设置的可能密钥之一（始终存在解锁设置的密码）。</string>
     <string name="setup_select_mode_uninstall_text">不是安装选项。TimeLimit 会撤销所有阻止卸载的权限（如果有）并开始自我删除。</string>
-    <string name="terms_default_server"> \u0020要在默认服务器上使用 TimeLimit，您必须接受使用条款和隐私条款。您可以在 <a href="https://legal.timelimit.io/en/terms/">https://legal.timelimit.io/en/terms/</a> 和 <a href="https://legal.timelimit.io/en/privacy/">https://legal.timelimit.io/en/privacy/</a> 找到最新版本 \u0020</string>
+    <string name="terms_default_server">要在默认服务器上使用 TimeLimit，您必须接受使用条款和隐私条款。您可以在 <a href="https://legal.timelimit.io/en/terms/">https://legal.timelimit.io/en/terms/</a> 和 <a href="https://legal.timelimit.io/en/privacy/">https://legal.timelimit.io/en/privacy/</a> 找到最新版本</string>
     <string name="uninstall_gplay_text">Google Play 上的应用必须可由用户卸载。因此，TimeLimit 无需密码即可卸载。此外，最好让儿童自愿接受时间限制。</string>
     <string name="uninstall_reset_text">TimeLimit 的所有设置将从此设备中删除。此后，您可以重新配置 TimeLimit 或将其卸载。</string>
     <string name="update_primary_device_toast_assigned_to_other_device">用户已在设备 %s 上登录。请确保已连接到其他设备，并且其他设备已打开。</string>
