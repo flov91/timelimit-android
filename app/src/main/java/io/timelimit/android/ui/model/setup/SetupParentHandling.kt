@@ -1,5 +1,5 @@
 /*
- * TimeLimit Copyright <C> 2019 - 2024 Jonas Lochmann
+ * TimeLimit Copyright <C> 2019 - 2025 Jonas Lochmann
  *
  * This program is free software: you can redistribute it and/or modify
  * it under the terms of the GNU General Public License as published by
@@ -23,6 +23,7 @@ import io.timelimit.android.async.Threads
 import io.timelimit.android.coroutines.executeAndWait
 import io.timelimit.android.data.backup.DatabaseBackup
 import io.timelimit.android.data.devicename.DeviceName
+import io.timelimit.android.data.model.ConsentFlags
 import io.timelimit.android.logic.AppLogic
 import io.timelimit.android.sync.ApplyServerDataStatus
 import io.timelimit.android.sync.network.NewDeviceInfo
@@ -332,6 +333,11 @@ object SetupParentHandling {
                         database.config().setOwnDeviceIdSync(result.ownDeviceId)
                         database.config().setDeviceAuthTokenSync(result.deviceAuthToken)
                         database.config().setEnableBackgroundSync(state.backgroundSync)
+
+                        database.config().setConsentFlagSync(
+                            ConsentFlags.BLOCK_USER_SWITCH_BY_DEFAULT,
+                            true
+                        )
 
                         ApplyServerDataStatus.applyServerDataStatusSync(result.serverDataStatus, logic.database, logic.platformIntegration)
                     }

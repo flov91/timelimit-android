@@ -1804,6 +1804,10 @@
     <string name="dummy_app_unassigned_system_image_app">not assigned Apps from the system image</string>
     <string name="dummy_app_feature_adb">Developer Options</string>
     <string name="dummy_app_feature_dns">DNS Settings</string>
+    <string name="dummy_app_feature_add_user">Create System User</string>
+    <string name="dummy_app_feature_switch_user">Switch System User</string>
+    <string name="dummy_app_feature_vpn">Configure VPN</string>
+    <string name="dummy_app_feature_unknown_sources">Install Apps from unknown sources</string>
     <string name="dummy_app_activity_audio">Background Audio Playback</string>
 
     <string name="notify_permission_title">Notifications</string>

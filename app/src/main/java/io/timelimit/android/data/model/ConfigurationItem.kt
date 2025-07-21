@@ -1,5 +1,5 @@
 /*
- * TimeLimit Copyright <C> 2019 - 2022 Jonas Lochmann
+ * TimeLimit Copyright <C> 2019 - 2025 Jonas Lochmann
  *
  * This program is free software: you can redistribute it and/or modify
  * it under the terms of the GNU General Public License as published by
@@ -295,4 +295,7 @@ object ExperimentalFlags {
 
 object ConsentFlags {
     const val APP_LIST_SYNC = 1L
+
+    // this is used internally
+    const val BLOCK_USER_SWITCH_BY_DEFAULT = 2L
 }

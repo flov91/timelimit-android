@@ -1,5 +1,5 @@
 /*
- * TimeLimit Copyright <C> 2019 - 2022 Jonas Lochmann
+ * TimeLimit Copyright <C> 2019 - 2025 Jonas Lochmann
  *
  * This program is free software: you can redistribute it and/or modify
  * it under the terms of the GNU General Public License as published by
@@ -19,10 +19,12 @@ import io.timelimit.android.async.Threads
 import io.timelimit.android.data.invalidation.Observer
 import io.timelimit.android.data.invalidation.Table
 import io.timelimit.android.data.model.CategoryApp
+import io.timelimit.android.data.model.ConsentFlags
 import io.timelimit.android.data.model.ExperimentalFlags
 import io.timelimit.android.data.model.UserType
 import io.timelimit.android.data.model.derived.UserRelatedData
 import io.timelimit.android.integration.platform.ProtectionLevel
+import io.timelimit.android.integration.platform.android.AndroidFeatures
 import io.timelimit.android.integration.platform.android.AndroidIntegrationApps
 import io.timelimit.android.logic.blockingreason.CategoryHandlingCache
 import java.lang.ref.WeakReference
@@ -107,12 +109,23 @@ class SuspendAppsLogic(private val appLogic: AppLogic): Observer {
         val hasManagedFeatures = featureCategoryApps.isNotEmpty()
         val enableBlocking = isRestrictedUser && (enableBlockingAtSystemLevel || hasManagedFeatures)
 
+        val blockUserSwitchByDefault =
+            userAndDeviceRelatedData?.deviceRelatedData?.isConsentFlagSet(ConsentFlags.BLOCK_USER_SWITCH_BY_DEFAULT) == true
+                    && userAndDeviceRelatedData.userRelatedData?.user?.type == UserType.Child
+
+        val featureToAllowDefaults = mapOf(
+            AndroidFeatures.FEATURE_ADD_USER to false,
+            AndroidFeatures.FEATURE_USER_SWITCH to !blockUserSwitchByDefault
+        )
+
         if (!enableBlocking) {
             lastDefaultCategory = null
             lastAllowedCategoryList = emptySet()
             lastCategoryApps = emptyList()
             applySuspendedApps(emptyList())
-            applyBlockedFeatures(emptySet())
+            applyBlockedFeatures(
+                featureToAllowDefaults.filter { !it.value }.map { it.key }.toSet()
+            )
 
             return
         }
@@ -191,9 +204,15 @@ class SuspendAppsLogic(private val appLogic: AppLogic): Observer {
             val deviceSpecificFeatureIdentifiers = deviceSpecificFeatures.map { it.appSpecifierString }.toSet()
             val globalFeatures = featureCategoryApps.filter { !deviceSpecificFeatureIdentifiers.contains(it.appSpecifierString) }
             val effectiveFeatures = deviceSpecificFeatures + globalFeatures
-            val featuresToBlock = effectiveFeatures.filter { !categoryIdsToAllow.contains(it.categoryId) }
-                .map { it.appSpecifierString.substring(DummyApps.FEATURE_APP_PREFIX.length) }
-                .toSet()
+
+            val featuresToAllow = featureToAllowDefaults + effectiveFeatures.associate {
+                Pair(
+                    it.appSpecifierString.substring(DummyApps.FEATURE_APP_PREFIX.length),
+                    categoryIdsToAllow.contains(it.categoryId)
+                )
+            }
+
+            val featuresToBlock = featuresToAllow.filter { !it.value }.map { it.key }.toSet()
 
             applySuspendedApps(appsToBlock)
             applyBlockedFeatures(featuresToBlock)

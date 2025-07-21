@@ -1,5 +1,5 @@
 /*
- * TimeLimit Copyright <C> 2019 - 2022 Jonas Lochmann
+ * TimeLimit Copyright <C> 2019 - 2025 Jonas Lochmann
  *
  * This program is free software: you can redistribute it and/or modify
  * it under the terms of the GNU General Public License as published by
@@ -65,6 +65,11 @@ class AppSetupLogic(private val appLogic: AppLogic) {
                     appLogic.database.deleteAllData()
 
                     appLogic.database.config().setCustomServerUrlSync(customServerUrl)
+
+                    appLogic.database.config().setConsentFlagSync(
+                        ConsentFlags.BLOCK_USER_SWITCH_BY_DEFAULT,
+                        true
+                    )
                 }
 
                 run {

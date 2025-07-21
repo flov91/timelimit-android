@@ -507,7 +507,6 @@ class AndroidIntegration(context: Context): PlatformIntegration(maximumProtectio
 
             if (enableLockdown) {
                 // disable problematic features
-                policyManager.addUserRestriction(deviceAdmin, UserManager.DISALLOW_ADD_USER)
                 policyManager.addUserRestriction(deviceAdmin, UserManager.DISALLOW_FACTORY_RESET)
 
                 if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.M) {
@@ -557,7 +556,6 @@ class AndroidIntegration(context: Context): PlatformIntegration(maximumProtectio
                 }
             } else /* disable lockdown */ {
                 // enable problematic features
-                policyManager.clearUserRestriction(deviceAdmin, UserManager.DISALLOW_ADD_USER)
                 policyManager.clearUserRestriction(deviceAdmin, UserManager.DISALLOW_FACTORY_RESET)
 
                 if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.M) {
