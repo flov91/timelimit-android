@@ -21,7 +21,7 @@ plugins {
     id "androidx.navigation.safeargs.kotlin"
     id 'kotlin-kapt'
     id 'com.squareup.wire'
-    id("org.jetbrains.kotlin.plugin.compose") version "2.0.21"
+    id("org.jetbrains.kotlin.plugin.compose") version "2.1.10"
 }
 
 android {
@@ -172,7 +172,7 @@ dependencies {
     def paging_version = "3.3.6"
 
     implementation fileTree(dir: 'libs', include: ['*.jar'])
-    implementation "org.jetbrains.kotlin:kotlin-stdlib-jdk8:2.0.21"
+    implementation "org.jetbrains.kotlin:kotlin-stdlib-jdk8:2.1.10"
     implementation 'androidx.appcompat:appcompat:1.7.1'
     implementation 'androidx.core:core:1.16.0'
     implementation 'androidx.cardview:cardview:1.0.0'
@@ -201,8 +201,8 @@ dependencies {
     implementation "androidx.work:work-runtime-ktx:$work_version"
     // androidTestImplementation "android.arch.work:work-testing:$work_version"
 
-    implementation 'org.jetbrains.kotlinx:kotlinx-coroutines-core:1.7.3'
-    implementation 'org.jetbrains.kotlinx:kotlinx-coroutines-android:1.7.3'
+    implementation 'org.jetbrains.kotlinx:kotlinx-coroutines-core:1.9.0'
+    implementation 'org.jetbrains.kotlinx:kotlinx-coroutines-android:1.9.0'
 
     testImplementation 'junit:junit:4.13.2'
     androidTestImplementation 'androidx.test:runner:1.6.2'
@@ -230,5 +230,5 @@ dependencies {
 
     implementation 'com.google.zxing:core:3.3.3'
 
-    api "com.squareup.wire:wire-runtime:4.4.3"
+    api "com.squareup.wire:wire-runtime:5.3.5"
 }
