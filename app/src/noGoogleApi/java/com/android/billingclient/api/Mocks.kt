@@ -1,5 +1,5 @@
 /*
- * TimeLimit Copyright <C> 2019 - 2022 Jonas Lochmann
+ * TimeLimit Copyright <C> 2019 - 2025 Jonas Lochmann
  *
  * This program is free software: you can redistribute it and/or modify
  * it under the terms of the GNU General Public License as published by
@@ -42,7 +42,7 @@ object BillingClient {
     enum class ProductType { INAPP }
 
     object Builder {
-        fun enablePendingPurchases() = this
+        fun enablePendingPurchases(params: PendingPurchasesParams) = this
         fun setListener(listener: PurchasesUpdatedListener) = this
         fun build() = BillingClient
     }
@@ -143,4 +143,13 @@ object QueryPurchasesParams {
     fun newBuilder() = this
     fun setProductType(type: BillingClient.ProductType) = this
     fun build() = this
+}
+
+object PendingPurchasesParams {
+    object Builder {
+        fun enableOneTimeProducts() = this
+        fun build() = PendingPurchasesParams
+    }
+
+    fun newBuilder() = Builder
 }

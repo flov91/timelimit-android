@@ -1,5 +1,5 @@
 /*
- * TimeLimit Copyright <C> 2019 - 2023 Jonas Lochmann
+ * TimeLimit Copyright <C> 2019 - 2025 Jonas Lochmann
  *
  * This program is free software: you can redistribute it and/or modify
  * it under the terms of the GNU General Public License as published by
@@ -74,9 +74,14 @@ class ActivityPurchaseModel(application: Application): AndroidViewModel(applicat
         clientMutex.withLock {
             if (_billingClient == null) {
                 _billingClient = BillingClient.newBuilder(getApplication())
-                        .enablePendingPurchases()
-                        .setListener(purchaseUpdatedListener)
-                        .build()
+                    .enablePendingPurchases(
+                        PendingPurchasesParams
+                            .newBuilder()
+                            .enableOneTimeProducts()
+                            .build()
+                    )
+                    .setListener(purchaseUpdatedListener)
+                    .build()
             }
 
             val initBillingClient = _billingClient!!
