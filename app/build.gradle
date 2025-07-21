@@ -26,11 +26,11 @@ plugins {
 
 android {
     namespace 'io.timelimit.android'
-    compileSdk 35
+    compileSdk 36
     defaultConfig {
         applicationId "io.timelimit.android"
         minSdkVersion 26
-        targetSdkVersion 35
+        targetSdkVersion 36
         versionCode 223
         versionName "7.2.4"
         testInstrumentationRunner "androidx.test.runner.AndroidJUnitRunner"
