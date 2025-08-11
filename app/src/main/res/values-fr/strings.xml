@@ -326,4 +326,10 @@
     <string name="contacts_description">Il s\'agit d\'une liste de numéros de téléphone. Les parents peuvent ajouter des éléments depuis les contacts de ce téléphone. Chaque utilisateur de ce téléphone peut initier un appel avec l\'un de ces numéros à travers ce menu. Cela fonctionne même si l\'application de téléphone est bloquée. Les numéros de téléphone sont seulement enregistrés sur ce périphérique et ne sont jamais envoyé à des tiers.</string>
     <string name="device_background_sync_not_possible_remote">Vous pouvez uniquement changer ce réglage sur le périphérique concerné</string>
     <string name="diagnose_connection_network_id">Identifiant réseau</string>
+    <string name="dummy_app_feature_switch_user">Changer d\'utilisateur système</string>
+    <string name="dummy_app_feature_vpn">Configurer le VPN</string>
+    <string name="dummy_app_activity_audio">Lecture audio en arrière-plan</string>
+    <string name="notify_permission_title">Notifications</string>
+    <string name="dummy_app_feature_unknown_sources">Installer des applications à partir de sources inconnues</string>
+    <string name="dummy_app_feature_add_user">Créer un utilisateur système</string>
 </resources>
