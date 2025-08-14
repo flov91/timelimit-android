@@ -981,4 +981,8 @@
     <string name="account_deletion_confirmation_text">使用此功能，您可以请求删除您的注册。这将重置所有关联设备上的 TimeLimit。如果您不这样做，当您停止使用 TimeLimit 时，将会自动删除您的数据。无法根据请求删除某些数据。您可以在隐私政策中找到详情。</string>
     <string name="device_owner_transfer_text">是否要 TimeLimit 撤销自身的所有者权限并将其授予 %s？这将被视为操纵。</string>
     <string name="app_clicked_dialog_message">点击回收站图标可从类别中删除应用。要将其移动到另一个类别，请按住应用项目。</string>
+    <string name="dummy_app_feature_add_user">创建系统用户</string>
+    <string name="dummy_app_feature_switch_user">切换系统用户</string>
+    <string name="dummy_app_feature_vpn">配置 VPN</string>
+    <string name="dummy_app_feature_unknown_sources">从未知来源安装应用</string>
 </resources>
