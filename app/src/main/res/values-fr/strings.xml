@@ -23,7 +23,7 @@
     <string name="generic_back">Retour</string>
     <string name="generic_runtime_permission_rejected">Permission refusée. Vous pouvez gérer les permissions dans les paramètres système</string>
     <string name="generic_go">Valider</string>
-    <string name="generic_swipe_to_dismiss">Glissez sur un côté pour retirer ce message</string>
+    <string name="generic_swipe_to_dismiss">Glisser sur le côté pour masquer ce message</string>
     <string name="about_full_version_expired">Vous n\'avez pas acheté la version premium ou elle a expiré.</string>
     <string name="about_source_title">Code source</string>
     <string name="add_device">Ajouter un appareil</string>
