@@ -41,7 +41,7 @@
     <string name="about_full_version_always">Le serveur que vous utilisez ne limite pas l\'accès aux fonctionnalités de la version premium.</string>
     <string name="about_full_version_tap_hint">Touchez ici pour acheter ou prolonger la version premium.</string>
     <string name="about_full_version_not_in_local_mode">La version premium n\'est pas disponible en mode local. Vous pouvez acheter une licence permanente géniale.</string>
-    <string name="about_sal_tap_hint">Touchez ici pour acheter une licence permanente géniale.</string>
+    <string name="about_sal_tap_hint">Appuyer ici pour acheter une licence permanente géniale.</string>
     <string name="about_contained_software_title">Logiciels embarqués</string>
     <string name="about_diagnose_title">Diagnostic d’erreur</string>
     <string name="about_diagnose_text">Touchez ici pour accéder aux détails permettant de diagnostiquer les erreurs</string>
@@ -206,7 +206,7 @@
     <string name="category_time_limit_rules_applied_to_extra_time">est aussi appliqué au temps additionnel</string>
     <string name="category_time_limit_rules_ignore_on_extra_time">ne s’applique pas au temps additionnel</string>
     <string name="category_time_limit_rules_time_area">seulement appliqué de %s à %s</string>
-    <string name="category_time_limit_rules_session_limit">%s s’arrête après l’utilisation de %s</string>
+    <string name="category_time_limit_rules_session_limit">%s s’arrête après %s d\'utilisation</string>
     <string name="category_time_limit_rule_dialog_new">Créer la règle</string>
     <string name="category_time_limit_rule_dialog_edit">Éditer la règle</string>
     <string name="category_time_limit_rules_apply_to_extra_time">Appliquer au temps additionnel</string>
@@ -243,7 +243,7 @@
     <string name="contacts_snackbar_remove_auth">Vous devez vous connecter pour pouvoir supprimer des contacts</string>
     <string name="contacts_snackbar_removed">%s a été supprimé</string>
     <string name="contacts_snackbar_call_failed">Impossible d\'initier l\'appel téléphonique</string>
-    <string name="contacts_snackbar_call_started">Appel en cours; Vous pouvez raccrocher depuis l\'espace de notifications</string>
+    <string name="contacts_snackbar_call_started">Appel en cours. Vous pouvez raccrocher depuis l\'espace de notifications</string>
     <string name="create_category_title">Créer une catégorie</string>
     <string name="create_category_hint">nom de la nouvelle catégorie</string>
     <string name="select_custom_server_button">sélectionner un serveur personnalisé</string>
@@ -332,4 +332,54 @@
     <string name="notify_permission_title">Notifications</string>
     <string name="dummy_app_feature_unknown_sources">Installer des applications à partir de sources inconnues</string>
     <string name="dummy_app_feature_add_user">Créer un utilisateur système</string>
+    <string name="device_background_sync_text">TimeLimit peut se synchroniser lorsqu’il n’est pas utilisé. Cela lui permet d’afficher des notifications concernant les mises à jour ou les manipulations.</string>
+    <string name="diagnose_connection_title">Statut de la connexion</string>
+    <string name="diagnose_connection_general">Statut du système : %s</string>
+    <string name="diagnose_connection_check_button">Tester la connexion</string>
+    <plurals name="util_time_days">
+        <item quantity="one">%d jour</item>
+        <item quantity="many">%d jours</item>
+        <item quantity="other">%d jours</item>
+    </plurals>
+    <string name="notify_permission_text_granted">L’affichage des notifications a été autorisé</string>
+    <string name="notify_permission_btn_grant">Autoriser</string>
+    <string name="notify_permission_btn_later">Continuer sans activer les notifications</string>
+    <string name="notify_permission_rejected_toast">Refusé. Utilisez les paramètres système pour modifier cette option</string>
+    <string name="manage_parent_u2f_add_key">Ajouter un jeton</string>
+    <string name="manage_parent_u2f_status_wait_key">En attente de votre clé. Connecter la clé maintenant. NFC est %s</string>
+    <string name="manage_parent_u2f_status_wait_key_nfc_enabled">activé</string>
+    <string name="manage_parent_u2f_status_wait_key_nfc_disabled">désactivé</string>
+    <string name="manage_parent_u2f_status_wait_key_nfc_unsupported">non supporté</string>
+    <string name="manage_parent_u2f_status_interrupted">La connexion a été interrompue</string>
+    <string name="manage_parent_u2f_status_failed">La requête a échoué</string>
+    <string name="manage_parent_u2f_status_already_linked">L\'appareil est déjà relié</string>
+    <string name="manage_parent_u2f_status_needs_user_interaction">Appuyez sur la touche pour continuer</string>
+    <string name="manage_parent_u2f_status_done">L\'appareil a été relié</string>
+    <string name="manage_parent_u2f_remove_key_text">Voulez-vous retirer cette clé ?</string>
+    <string name="manage_parent_u2f_err_wrong_user">Seul l’utilisateur peut gérer ses clés U2F</string>
+    <string name="u2f_login_error_unknown">clé inconnue</string>
+    <string name="u2f_login_error_invalid">clé invalide</string>
+    <string name="account_deletion_title">Supprimer le compte</string>
+    <string name="account_deletion_text_no_account">Vous n\'utiliser pas le mode connecté, il n\'y a aucun compte à supprimer</string>
+    <string name="account_deletion_text_done">Votre demande a été envoyée</string>
+    <string name="account_deletion_confirmation_premium_toggle">J\'accepte que ma version premium (si elle existe) soit supprimée sans substitut</string>
+    <string name="account_deletion_confirmation_button">Confirmer la demande de suppression</string>
+    <string name="device_owner_transfer_title">Transférer l’appareil à un autre utilisateur</string>
+    <string name="device_owner_transfer_text">Souhaitez-vous que TimeLimit révoque cette autorisation pour lui-même et l’accorde à %s ? Cela sera interprété comme une manipulation.</string>
+    <string name="device_owner_transfer_confirm">Transférer la permission</string>
+    <string name="manage_parent_u2f_remove_key_requires_password">Vous ne pouvez retirer des clés qu\'après s\'être connecté sans utiliser de clé</string>
+    <string name="notify_permission_text">Les applications, y compris TimeLimit, ont besoin de votre autorisation pour afficher des notifications sur certaines versions d’Android. TimeLimit utilise cette fonctionnalité, notamment sur les appareils en mode restreint, par exemple pour afficher le temps restant ou pour afficher un message lorsqu’une notification a été bloquée. Les notifications sont également utilisées sur les appareils restreints et non restreints pour vous informer des problèmes éventuels. Il est fortement recommandé d’autoriser l’affichage des notifications.</string>
+    <string name="manage_parent_u2f_status_working">Création de lien en cours, ne pas déconnecter maintenant</string>
+    <string name="account_deletion_confirmation_text">Vous pouvez demander la suppression de votre compte. Cela réinitialisera TimeLimit sur tous les appareils liés. Si vous ne faites pas cette demande, vos données seront automatiquement supprimées si vous cessez d’utiliser TimeLimit. Certaines données ne peuvent pas être supprimées sur demande. Pour plus de détails, consultez la politique de confidentialité.</string>
+    <string name="app_clicked_dialog_message">Appuyez sur l’icône poubelle pour supprimer l’application de la catégorie. Pour la déplacer vers une autre catégorie, maintenez l’application enfoncée.</string>
+    <plurals name="util_time_hours">
+        <item quantity="one">%d heure</item>
+        <item quantity="many">%d heures</item>
+        <item quantity="other">%d heures</item>
+    </plurals>
+    <plurals name="category_networks_not_empty">
+        <item quantity="one">Vous avez ajouté %d réseau.</item>
+        <item quantity="many">Vous avez ajouté %d réseaux.</item>
+        <item quantity="other">Vous avez ajouté %d réseaux.</item>
+    </plurals>
 </resources>
