@@ -382,4 +382,8 @@
         <item quantity="many">Vous avez ajouté %d réseaux.</item>
         <item quantity="other">Vous avez ajouté %d réseaux.</item>
     </plurals>
+    <string name="diagnose_clock_last_time_request_x_ago">depuis %s</string>
+    <string name="diagnose_clock_btn_sync">Synchroniser le temps</string>
+    <string name="diagnose_fga_title">Détection d\'application en arrière-plan</string>
+    <string name="diagnose_exf_mad">Essayer de détecter de multiples applications actives (support du mode multitâches)</string>
 </resources>
