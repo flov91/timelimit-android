@@ -387,4 +387,6 @@
     <string name="diagnose_fga_title">Détection d\'application en arrière-plan</string>
     <string name="diagnose_exf_mad">Essayer de détecter de multiples applications actives (support du mode écran partagé)</string>
     <string name="lock_overlay_text">Blocage %s</string>
+    <string name="lock_task_confirm_dialog">As-tu fini cette tâche ? Le temps additionnel sera obtenu seulement si un parent le confirme.</string>
+    <string name="lock_overlay_warning">Échec de l\'ouverture de l\'écran de verrouillage. Vous pouvez essayer d\'utiliser le bouton d\'accueil ou bien celui d\'aperçu pour quitter cet écran.</string>
 </resources>
