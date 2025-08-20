@@ -389,4 +389,19 @@
     <string name="lock_overlay_text">Blocage %s</string>
     <string name="lock_task_confirm_dialog">As-tu fini cette tâche ? Le temps additionnel sera obtenu seulement si un parent le confirme.</string>
     <string name="lock_overlay_warning">Échec de l\'ouverture de l\'écran de verrouillage. Vous pouvez essayer d\'utiliser le bouton d\'accueil ou bien celui d\'aperçu pour quitter cet écran.</string>
+    <string name="time_warning_not_title_blocked_time_area">Avertissement de blocage du fuseau horaire pour %s</string>
+    <string name="diagnose_sync_btn_request_sync">Demande de synchronisation</string>
+    <string name="diagnose_sync_btn_request_sync_toast">Synchronisation demandée</string>
+    <string name="diagnose_sync_btn_show_exception">Montrer le détail des exceptions</string>
+    <string name="diagnose_fga_query_range">Amplitude de temps demandée</string>
+    <string name="diagnose_exf_isc">Ignorer le statut de connexion du système</string>
+    <string name="diagnose_exf_chs">TimeLimit comme lanceur</string>
+    <string name="diagnose_exf_chd">Délais avant la redirection de lancement</string>
+    <string name="diagnose_exf_nas">Forcer le temps réseau au niveau du système</string>
+    <string name="diagnose_exf_hmw">Masquer les avertissements de manipulation pour cette liste de catégorie</string>
+    <string name="diagnose_bat_title">Batterie</string>
+    <string name="diagnose_bat_status">Statut : %s</string>
+    <string name="diagnose_bat_status_mobile">Chargeur débranché</string>
+    <string name="diagnose_bat_status_charging">Chargeur branché/ batterie pleine</string>
+    <string name="diagnose_bat_level">Niveau de batterie : %d%</string>
 </resources>
