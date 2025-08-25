@@ -1,5 +1,5 @@
 /*
- * TimeLimit Copyright <C> 2019 - 2023 Jonas Lochmann
+ * TimeLimit Copyright <C> 2019 - 2025 Jonas Lochmann
  *
  * This program is free software: you can redistribute it and/or modify
  * it under the terms of the GNU General Public License as published by
@@ -91,7 +91,7 @@ class ChildAppsModel(application: Application): AndroidViewModel(application) {
                                     } else {
                                         val sortedApps = apps
                                                 .distinctBy { it.packageName }
-                                                .sortedBy { it.title.toLowerCase(Locale.getDefault()) }
+                                                .sortedBy { it.title.lowercase(Locale.getDefault()) }
 
                                         result.addAll(
                                                 sortedApps.map { app ->
@@ -124,7 +124,7 @@ class ChildAppsModel(application: Application): AndroidViewModel(application) {
 
                                 filteredChildApps
                                         .distinctBy { it.packageName }
-                                        .sortedBy { it.title.toLowerCase(Locale.getDefault()) }
+                                        .sortedBy { it.title.lowercase(Locale.getDefault()) }
                                         .map { app ->
                                             val categoryId = categoryAppByPackageName[app.packageName]?.categoryId
                                             val category = categoryById[categoryId]

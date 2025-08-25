@@ -1,5 +1,5 @@
 /*
- * TimeLimit Copyright <C> 2019 - 2020 Jonas Lochmann
+ * TimeLimit Copyright <C> 2019 - 2025 Jonas Lochmann
  *
  * This program is free software: you can redistribute it and/or modify
  * it under the terms of the GNU General Public License as published by
@@ -23,7 +23,6 @@ import io.timelimit.android.livedata.castDown
 import io.timelimit.android.logic.DefaultAppLogic
 import kotlinx.coroutines.delay
 import kotlinx.coroutines.launch
-import okhttp3.internal.wait
 
 class DiagnoseConnectionModel(application: Application): AndroidViewModel(application) {
     private val logic = DefaultAppLogic.with(application)
