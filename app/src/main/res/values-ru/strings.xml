@@ -1,3 +1,19 @@
 <?xml version="1.0" encoding="utf-8"?>
 <resources>
+    <string name="generic_ok">ОК</string>
+    <string name="generic_cancel">Отмена</string>
+    <string name="generic_help">Помощь</string>
+    <string name="generic_undo"></string>
+    <string name="generic_create">Создать</string>
+    <string name="generic_delete">Удалить</string>
+    <string name="generic_retry">Повтор</string>
+    <string name="generic_manage_card">Управлять</string>
+    <string name="generic_show_more">Показать еще</string>
+    <string name="generic_show_details">Детали</string>
+    <string name="generic_accept">Принять</string>
+    <string name="generic_reject">Отклонить</string>
+    <string name="generic_swipe_to_dismiss">Проведите в сторону, чтобы удалить сообщение</string>
+    <string name="generic_runtime_permission_rejected">Разрешение отклонено; вы можете управлять разрешениями в системных настройках</string>
+    <string name="about_version">Версия %s</string>
+    <string name="about_contact_title">Поддержка</string>
 </resources>
