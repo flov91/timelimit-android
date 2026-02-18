@@ -3,7 +3,6 @@
     <string name="generic_ok">ОК</string>
     <string name="generic_cancel">Отмена</string>
     <string name="generic_help">Помощь</string>
-    <string name="generic_undo"></string>
     <string name="generic_create">Создать</string>
     <string name="generic_delete">Удалить</string>
     <string name="generic_retry">Повтор</string>
