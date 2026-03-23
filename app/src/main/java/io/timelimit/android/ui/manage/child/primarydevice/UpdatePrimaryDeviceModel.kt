@@ -1,5 +1,5 @@
 /*
- * TimeLimit Copyright <C> 2019 - 2020 Jonas Lochmann
+ * TimeLimit Copyright <C> 2019 - 2026 Jonas Lochmann
  *
  * This program is free software: you can redistribute it and/or modify
  * it under the terms of the GNU General Public License as published by
@@ -26,6 +26,7 @@ import io.timelimit.android.async.Threads
 import io.timelimit.android.coroutines.executeAndWait
 import io.timelimit.android.coroutines.runAsync
 import io.timelimit.android.livedata.castDown
+import io.timelimit.android.livedata.waitForNonNullValue
 import io.timelimit.android.livedata.waitForNullableValue
 import io.timelimit.android.livedata.waitUntilValueMatches
 import io.timelimit.android.logic.AppLogic
@@ -204,6 +205,32 @@ class UpdatePrimaryDeviceModel(application: Application): AndroidViewModel(appli
                         break
                     }
                 }
+            }
+        }
+    }
+
+    fun setSecondary() {
+        if (hasStarted) {
+            return
+        }
+
+        hasStarted = true
+
+        statusInternal.value = Updating
+
+        runAsync {
+            if (logic.fullVersion.shouldProvideFullVersionFunctions()) {
+                try {
+                    val targetDeviceId = logic.currentDeviceLogic.requestBorrow()
+
+                    logic.currentDeviceLogic.borrowedCurrentDeviceLive.waitUntilValueMatches { it == targetDeviceId }
+
+                    statusInternal.value = Success
+                } catch (_: Exception) {
+                    statusInternal.value = FailedGeneral
+                }
+            } else {
+                statusInternal.value = FailedPremium
             }
         }
     }

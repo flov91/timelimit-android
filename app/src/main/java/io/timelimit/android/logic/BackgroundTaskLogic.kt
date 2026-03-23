@@ -1,5 +1,5 @@
 /*
- * TimeLimit Copyright <C> 2019 - 2024 Jonas Lochmann
+ * TimeLimit Copyright <C> 2019 - 2026 Jonas Lochmann
  *
  * This program is free software: you can redistribute it and/or modify
  * it under the terms of the GNU General Public License as published by
@@ -35,6 +35,7 @@ import io.timelimit.android.date.DateInTimezone
 import io.timelimit.android.date.getMinuteOfWeek
 import io.timelimit.android.extensions.MinuteOfDay
 import io.timelimit.android.extensions.nextBlockedMinuteOfWeek
+import io.timelimit.android.extensions.some
 import io.timelimit.android.integration.platform.*
 import io.timelimit.android.integration.platform.android.AccessibilityService
 import io.timelimit.android.integration.platform.android.BackgroundService
@@ -365,18 +366,34 @@ class BackgroundTaskLogic(val appLogic: AppLogic) {
 
                 val needsNetworkId = allAppsBaseHandlings.find { it.needsNetworkId } != null
                 val networkId: NetworkId? = if (needsNetworkId) appLogic.platformIntegration.getCurrentNetworkId() else null
+                var assumeCurrentDevice: CurrentDeviceLogic.HandleAsCurrentDevice? = null
 
                 fun reportStatusToCategoryHandlingCache(userRelatedData: UserRelatedData) {
                     categoryHandlingCache.reportStatus(
                             user = userRelatedData,
                             timeInMillis = nowTimestamp,
                             shouldTrustTimeTemporarily = realTime.shouldTrustTimeTemporarily,
-                            assumeCurrentDevice = CurrentDeviceLogic.handleDeviceAsCurrentDevice(deviceRelatedData, userRelatedData),
+                            assumeCurrentDevice = CurrentDeviceLogic.handleDeviceAsCurrentDevice(
+                                deviceRelatedData,
+                                userRelatedData,
+                                appLogic.currentDeviceLogic.borrowedCurrentDeviceLive.value
+                            ).also { assumeCurrentDevice = it } != CurrentDeviceLogic.HandleAsCurrentDevice.No,
                             batteryStatus = batteryStatus,
                             currentNetworkId = networkId,
                             hasPremiumOrLocalMode = deviceRelatedData.isLocalMode || deviceRelatedData.isConnectedAndHasPremium
                     )
                 }; reportStatusToCategoryHandlingCache(userRelatedData)
+
+                // extend lease if it is used
+                if (assumeCurrentDevice == CurrentDeviceLogic.HandleAsCurrentDevice.YesDueToBorrowedCurrentDevice) {
+                    if(allAppsBaseHandlings.some { handling ->
+                            handling is AppBaseHandling.UseCategories && handling.categoryIds.some { categoryId ->
+                                categoryHandlingCache.get(categoryId).dependsOnCurrentDevice
+                            }
+                        }) {
+                        appLogic.currentDeviceLogic.eventuallyRefresh()
+                    }
+                }
 
                 // check if should be blocked
                 val blockedForegroundApp = foregroundAppWithBaseHandlings.find { (_, foregroundAppBaseHandling) ->

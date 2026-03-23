@@ -1,5 +1,5 @@
 /*
- * TimeLimit Copyright <C> 2019 - 2023 Jonas Lochmann
+ * TimeLimit Copyright <C> 2019 - 2026 Jonas Lochmann
  *
  * This program is free software: you can redistribute it and/or modify
  * it under the terms of the GNU General Public License as published by
@@ -45,12 +45,12 @@ class LockModel(application: Application): AndroidViewModel(application) {
     private val networkIdLive: LiveData<NetworkId?> by lazy { needsNetworkIdLive.switchMap { needsNetworkId ->
         if (needsNetworkId) realNetworkIdLive as LiveData<NetworkId?> else liveDataFromNullableValue(null as NetworkId?)
     }.ignoreUnchanged() }
+    private val borrowedCurrentDeviceLive = logic.currentDeviceLogic.borrowedCurrentDeviceLive
     private val handlingCache = CategoryHandlingCache()
 
     val title: String? get() = logic.platformIntegration.getLocalAppTitle(packageAndActivityNameLiveInternal.value!!.first)
     val icon: Drawable? get() = logic.platformIntegration.getAppIcon(packageAndActivityNameLiveInternal.value!!.first)
     val packageAndActivityNameLive: LiveData<Pair<String, String?>> = packageAndActivityNameLiveInternal
-    var didOpenSetCurrentDeviceScreen = false
 
     fun init(packageName: String, activityName: String?) {
         if (didInit) return
@@ -70,6 +70,7 @@ class LockModel(application: Application): AndroidViewModel(application) {
             addSource(batteryStatus) { update() }
             addSource(networkIdLive) { update() }
             addSource(packageAndActivityNameLiveInternal) { update() }
+            addSource(borrowedCurrentDeviceLive) { update() }
         }
 
         private fun update() {
@@ -105,7 +106,11 @@ class LockModel(application: Application): AndroidViewModel(application) {
 
             handlingCache.reportStatus(
                     user = deviceAndUserRelatedData.userRelatedData,
-                    assumeCurrentDevice = CurrentDeviceLogic.handleDeviceAsCurrentDevice(deviceAndUserRelatedData.deviceRelatedData, deviceAndUserRelatedData.userRelatedData),
+                    assumeCurrentDevice = CurrentDeviceLogic.handleDeviceAsCurrentDevice(
+                        deviceAndUserRelatedData.deviceRelatedData,
+                        deviceAndUserRelatedData.userRelatedData,
+                        borrowedCurrentDeviceLive.value
+                    ) != CurrentDeviceLogic.HandleAsCurrentDevice.No,
                     batteryStatus = batteryStatus,
                     timeInMillis = realTime.timeInMillis,
                     shouldTrustTimeTemporarily = realTime.shouldTrustTimeTemporarily,

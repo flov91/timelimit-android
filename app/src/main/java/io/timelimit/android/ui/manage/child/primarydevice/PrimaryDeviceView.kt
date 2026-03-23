@@ -1,5 +1,5 @@
 /*
- * TimeLimit Copyright <C> 2019 - 2020 Jonas Lochmann
+ * TimeLimit Copyright <C> 2019 - 2026 Jonas Lochmann
  *
  * This program is free software: you can redistribute it and/or modify
  * it under the terms of the GNU General Public License as published by
@@ -23,7 +23,6 @@ import io.timelimit.android.databinding.PrimaryDeviceViewBinding
 import io.timelimit.android.livedata.mergeLiveData
 import io.timelimit.android.logic.AppLogic
 import io.timelimit.android.sync.actions.SetRelaxPrimaryDeviceAction
-import io.timelimit.android.sync.network.UpdatePrimaryDeviceRequestType
 import io.timelimit.android.ui.help.HelpDialogFragment
 import io.timelimit.android.ui.main.ActivityViewModel
 
@@ -91,11 +90,11 @@ object PrimaryDeviceView {
         })
 
         view.btnAssign.setOnClickListener { _ ->
-            UpdatePrimaryDeviceDialogFragment.newInstance(UpdatePrimaryDeviceRequestType.SetThisDevice).show(fragmentManager)
+            UpdatePrimaryDeviceDialogFragment.newInstance(UpdatePrimaryDeviceDialogFragment.Request.Set).show(fragmentManager)
         }
 
         view.btnUnassign.setOnClickListener { _ ->
-            UpdatePrimaryDeviceDialogFragment.newInstance(UpdatePrimaryDeviceRequestType.UnsetThisDevice).show(fragmentManager)
+            UpdatePrimaryDeviceDialogFragment.newInstance(UpdatePrimaryDeviceDialogFragment.Request.Unset).show(fragmentManager)
         }
     }
 }

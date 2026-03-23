@@ -708,6 +708,9 @@
     <string name="lock_update_current_device_title">Adjust current device</string>
     <string name="lock_update_current_device_text">Select this device as current device</string>
 
+    <string name="lock_secondary_current_device_title">Enable secondary current device</string>
+    <string name="lock_secondary_current_device_text">Additionally use this device as long as the primary device is connected</string>
+
     <string name="lock_disable_temporarily_lock_title">Disable temporary blocking</string>
     <string name="lock_disable_temporarily_all_categories">all categories</string>
 

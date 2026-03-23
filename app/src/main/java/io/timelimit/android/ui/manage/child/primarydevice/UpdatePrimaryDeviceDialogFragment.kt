@@ -1,5 +1,5 @@
 /*
- * TimeLimit Copyright <C> 2019 Jonas Lochmann
+ * TimeLimit Copyright <C> 2019 - 2026 Jonas Lochmann
  *
  * This program is free software: you can redistribute it and/or modify
  * it under the terms of the GNU General Public License as published by
@@ -32,22 +32,32 @@ class UpdatePrimaryDeviceDialogFragment: BottomSheetDialogFragment() {
         private const val ACTION_TYPE = "a"
         private const val DIALOG_TAG = "upddf"
 
-        fun newInstance(type: UpdatePrimaryDeviceRequestType) = UpdatePrimaryDeviceDialogFragment().apply {
+        fun newInstance(type: Request) = UpdatePrimaryDeviceDialogFragment().apply {
             arguments = Bundle().apply {
                 putSerializable(ACTION_TYPE, type)
             }
         }
     }
 
-    private val action: UpdatePrimaryDeviceRequestType by lazy {
-        arguments!!.getSerializable(ACTION_TYPE) as UpdatePrimaryDeviceRequestType
+    enum class Request {
+        Set,
+        Unset,
+        StartSecondary,
+    }
+
+    private val action: Request by lazy {
+        arguments!!.getSerializable(ACTION_TYPE) as Request
     }
 
     override fun onCreateView(inflater: LayoutInflater, container: ViewGroup?, savedInstanceState: Bundle?): View? {
         val binding = UpdatePrimaryDeviceDialogBinding.inflate(inflater, container, false)
         val model = ViewModelProviders.of(this).get(UpdatePrimaryDeviceModel::class.java)
 
-        model.start(action)
+        when (action) {
+            Request.Set -> model.start(UpdatePrimaryDeviceRequestType.SetThisDevice)
+            Request.Unset -> model.start(UpdatePrimaryDeviceRequestType.UnsetThisDevice)
+            Request.StartSecondary -> model.setSecondary()
+        }
 
         model.status.observe(this, Observer { status ->
             when (status) {

@@ -1,5 +1,5 @@
 /*
- * TimeLimit Copyright <C> 2019 - 2023 Jonas Lochmann
+ * TimeLimit Copyright <C> 2019 - 2026 Jonas Lochmann
  *
  * This program is free software: you can redistribute it and/or modify
  * it under the terms of the GNU General Public License as published by
@@ -424,6 +424,7 @@ object LocalDatabaseAppLogicActionDispatcher {
                 is SendKeyRequestAction -> {/* nothing to do, this is only for the server */}
                 is FinishKeyRequestAction -> {/* nothing to do, this is only for the server */}
                 is ReplyToKeyRequestAction -> {/* nothing to do, this is only for the server */}
+                is PingAction -> {/* nothing to do, this is only for the server */}
             }.let {  }
         }
     }

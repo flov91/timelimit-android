@@ -1,5 +1,5 @@
 /*
- * TimeLimit Copyright <C> 2019 - 2022 Jonas Lochmann
+ * TimeLimit Copyright <C> 2019 - 2026 Jonas Lochmann
  *
  * This program is free software: you can redistribute it and/or modify
  * it under the terms of the GNU General Public License as published by
@@ -191,8 +191,9 @@ class NotificationListener: NotificationListenerService() {
                             user = deviceAndUserRelatedData.userRelatedData,
                             assumeCurrentDevice = CurrentDeviceLogic.handleDeviceAsCurrentDevice(
                                     device = deviceAndUserRelatedData.deviceRelatedData,
-                                    user = deviceAndUserRelatedData.userRelatedData
-                            ),
+                                    user = deviceAndUserRelatedData.userRelatedData,
+                                    borrowedPrimaryDevice = appLogic.currentDeviceLogic.borrowedCurrentDeviceLive.value
+                            ) != CurrentDeviceLogic.HandleAsCurrentDevice.No,
                             batteryStatus = battery,
                             shouldTrustTimeTemporarily = time.shouldTrustTimeTemporarily,
                             timeInMillis = time.timeInMillis,

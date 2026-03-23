@@ -1,5 +1,5 @@
 /*
- * TimeLimit Copyright <C> 2019 - 2024 Jonas Lochmann
+ * TimeLimit Copyright <C> 2019 - 2026 Jonas Lochmann
  *
  * This program is free software: you can redistribute it and/or modify
  * it under the terms of the GNU General Public License as published by
@@ -27,7 +27,6 @@ import androidx.activity.compose.setContent
 import androidx.activity.enableEdgeToEdge
 import androidx.activity.viewModels
 import androidx.appcompat.app.AppCompatActivity
-import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.pager.HorizontalPager
@@ -50,7 +49,6 @@ import io.timelimit.android.data.model.UserType
 import io.timelimit.android.extensions.showSafe
 import io.timelimit.android.logic.BlockingReason
 import io.timelimit.android.logic.DefaultAppLogic
-import io.timelimit.android.sync.network.UpdatePrimaryDeviceRequestType
 import io.timelimit.android.u2f.U2fManager
 import io.timelimit.android.u2f.protocol.U2FDevice
 import io.timelimit.android.ui.IsAppInForeground
@@ -60,7 +58,6 @@ import io.timelimit.android.ui.login.AuthTokenLoginProcessor
 import io.timelimit.android.ui.login.NewLoginFragment
 import io.timelimit.android.ui.main.ActivityViewModel
 import io.timelimit.android.ui.main.ActivityViewModelHolder
-import io.timelimit.android.ui.manage.child.primarydevice.UpdatePrimaryDeviceDialogFragment
 import io.timelimit.android.ui.util.SyncStatusModel
 
 class LockActivity : AppCompatActivity(), ActivityViewModelHolder, U2fManager.DeviceFoundListener {
@@ -214,16 +211,6 @@ class LockActivity : AppCompatActivity(), ActivityViewModelHolder, U2fManager.De
         currentInstances.add(this)
 
         model.init(blockedPackageName, blockedActivityName)
-
-        model.content.observe(this) {
-            if (isResumed && it is LockscreenContent.Blocked.BlockedCategory && it.reason == BlockingReason.RequiresCurrentDevice && !model.didOpenSetCurrentDeviceScreen) {
-                model.didOpenSetCurrentDeviceScreen = true
-
-                UpdatePrimaryDeviceDialogFragment
-                        .newInstance(UpdatePrimaryDeviceRequestType.SetThisDevice)
-                        .show(supportFragmentManager)
-            }
-        }
 
         activityModel.shouldHighlightAuthenticationButton.observe(this) {
             if (it) {

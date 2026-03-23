@@ -1,5 +1,5 @@
 /*
- * TimeLimit Copyright <C> 2019 - 2024 Jonas Lochmann
+ * TimeLimit Copyright <C> 2019 - 2026 Jonas Lochmann
  *
  * This program is free software: you can redistribute it and/or modify
  * it under the terms of the GNU General Public License as published by
@@ -626,6 +626,32 @@ object ForceSyncAction: AppLogicAction() {
         writer.name(TYPE).value(TYPE_VALUE)
 
         writer.endObject()
+    }
+}
+
+data class PingAction(val deviceId: String, val event: Event, val token: String): AppLogicAction() {
+    enum class Event {
+        Ping,
+        Pong,
+        Clear,
+    }
+
+    init {
+        IdGenerator.assertIdValid(deviceId)
+        IdGenerator.assertIdValid(token)
+    }
+
+    override fun serialize(writer: JsonWriter) {
+        writer.beginObject()
+            .name(TYPE).value("PING")
+            .name("deviceId").value(deviceId)
+            .name("event").value(when (event) {
+                Event.Ping -> "ping"
+                Event.Pong -> "pong"
+                Event.Clear -> "clear"
+            })
+            .name("token").value(token)
+            .endObject()
     }
 }
 

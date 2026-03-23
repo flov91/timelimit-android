@@ -1,5 +1,5 @@
 /*
- * TimeLimit Copyright <C> 2019 - 2024 Jonas Lochmann
+ * TimeLimit Copyright <C> 2019 - 2026 Jonas Lochmann
  *
  * This program is free software: you can redistribute it and/or modify
  * it under the terms of the GNU General Public License as published by
@@ -56,6 +56,7 @@ data class CategoryItselfHandling (
         val dependsOnMinBatteryLevel: Int,
         val dependsOnMaxBatteryLevel: Int,
         val dependsOnNetworkId: Boolean,
+        val dependsOnCurrentDevice: Boolean,
         val createdWithCategoryRelatedData: CategoryRelatedData,
         val createdWithUserRelatedData: UserRelatedData,
         val createdWithBatteryStatus: BatteryStatus,
@@ -208,7 +209,8 @@ data class CategoryItselfHandling (
                     .minOrNull() ?: Long.MAX_VALUE
 
             val okBySessionDurationLimits = remainingSessionDuration == null || remainingSessionDuration > 0
-            val okByCurrentDevice = assumeCurrentDevice || (remainingTime == null && remainingSessionDuration == null)
+            val dependsOnCurrentDevice = remainingTime != null || remainingSessionDuration != null
+            val okByCurrentDevice = assumeCurrentDevice || !dependsOnCurrentDevice
 
             val dependsOnMaxTime = dependsOnMaxTimeByTempBlocking
                     .coerceAtMost(dependsOnMaxTimeByTemporarilyDisabledLimits)
@@ -283,6 +285,7 @@ data class CategoryItselfHandling (
                     dependsOnMinBatteryLevel = dependsOnMinBatteryLevel,
                     dependsOnMaxBatteryLevel = dependsOnMaxBatteryLevel,
                     dependsOnNetworkId = dependsOnNetworkId,
+                    dependsOnCurrentDevice = dependsOnCurrentDevice,
                     createdWithCategoryRelatedData = categoryRelatedData,
                     createdWithBatteryStatus = batteryStatus,
                     createdWithTemporarilyTrustTime = shouldTrustTimeTemporarily,

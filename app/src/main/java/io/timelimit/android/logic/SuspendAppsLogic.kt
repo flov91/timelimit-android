@@ -1,5 +1,5 @@
 /*
- * TimeLimit Copyright <C> 2019 - 2025 Jonas Lochmann
+ * TimeLimit Copyright <C> 2019 - 2026 Jonas Lochmann
  *
  * This program is free software: you can redistribute it and/or modify
  * it under the terms of the GNU General Public License as published by
@@ -73,6 +73,7 @@ class SuspendAppsLogic(private val appLogic: AppLogic): Observer {
         appLogic.database.registerWeakObserver(arrayOf(Table.App), WeakReference(this))
         appLogic.platformIntegration.getBatteryStatusLive().observeForever { batteryStatus = it; triggerUpdate() }
         appLogic.realTimeLogic.registerTimeModificationListener { triggerUpdate() }
+        appLogic.currentDeviceLogic.borrowedCurrentDeviceLive.observeForever { triggerUpdate() }
         userAndDeviceRelatedDataLive.observeForever { didLoadUserAndDeviceRelatedData = true; triggerUpdate() }
     }
 
@@ -145,8 +146,9 @@ class SuspendAppsLogic(private val appLogic: AppLogic): Observer {
                 batteryStatus = batteryStatus,
                 assumeCurrentDevice = CurrentDeviceLogic.handleDeviceAsCurrentDevice(
                         device = userAndDeviceRelatedData.deviceRelatedData,
-                        user = userRelatedData
-                ),
+                        user = userRelatedData,
+                        borrowedPrimaryDevice = appLogic.currentDeviceLogic.borrowedCurrentDeviceLive.value
+                ) != CurrentDeviceLogic.HandleAsCurrentDevice.No,
                 currentNetworkId = null, // not relevant/ not suspending Apps if there is no matching network
                 hasPremiumOrLocalMode = userAndDeviceRelatedData.deviceRelatedData.isLocalMode || userAndDeviceRelatedData.deviceRelatedData.isConnectedAndHasPremium
         )

@@ -654,6 +654,9 @@
     <string name="lock_update_current_device_title">Aktuelles Gerät anpassen</string>
     <string name="lock_update_current_device_text">Dieses Gerät als aktuelles Gerät festlegen</string>
 
+    <string name="lock_secondary_current_device_title">Als sekundäres aktuelles Gerät verwenden</string>
+    <string name="lock_secondary_current_device_text">Zusätzliches dieses Gerät verwenden, solange das aktuelle Gerät verbunden ist</string>
+
     <string name="lock_disable_temporarily_lock_title">Vorübergehende Sperrung abschalten</string>
     <string name="lock_disable_temporarily_all_categories">Alle Kategorien</string>
 

@@ -1,5 +1,5 @@
 /*
- * TimeLimit Copyright <C> 2019 - 2022 Jonas Lochmann
+ * TimeLimit Copyright <C> 2019 - 2026 Jonas Lochmann
  *
  * This program is free software: you can redistribute it and/or modify
  * it under the terms of the GNU General Public License as published by
@@ -40,7 +40,7 @@ data class ClientDataStatus(
         private const val LAST_KEY_RESPONSE_SEQUENCE = "kr"
         private const val DH = "dh"
         private const val U2F = "u2f"
-        const val CLIENT_LEVEL_VALUE = 6
+        const val CLIENT_LEVEL_VALUE = 7
 
         val empty = ClientDataStatus(
             deviceListVersion = "",

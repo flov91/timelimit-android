@@ -1,5 +1,5 @@
 /*
- * TimeLimit Copyright <C> 2019 - 2022 Jonas Lochmann
+ * TimeLimit Copyright <C> 2019 - 2026 Jonas Lochmann
  *
  * This program is free software: you can redistribute it and/or modify
  * it under the terms of the GNU General Public License as published by
@@ -30,6 +30,7 @@ import io.timelimit.android.logic.ServerLogic
 import io.timelimit.android.logic.crypto.CryptoSyncLogic
 import io.timelimit.android.sync.actions.apply.UploadActionsUtil
 import io.timelimit.android.sync.network.ClientDataStatus
+import io.timelimit.android.sync.network.ServerPing
 import io.timelimit.android.sync.network.api.UnauthorizedHttpError
 import io.timelimit.android.ui.IsAppInForeground
 import io.timelimit.android.work.SyncInBackgroundWorker
@@ -255,9 +256,13 @@ class SyncUtil (private val logic: AppLogic) {
         ApplyServerDataStatus.postNotifications(applyResult, logic.platformIntegration)
         val cryptoResult = CryptoSyncLogic.postPullHook(logic.database, serverResponse.pendingKeyRequests, serverResponse.keyResponses)
 
+        serverResponse.pings.filter { it.type == ServerPing.Type.Pong }.forEach { pong ->
+            logic.currentDeviceLogic.handlePong(pong.deviceId, pong.token)
+        }
+
         if (applyResult.didCreateNewActions or cryptoResult.didSendReplies) {
             if (BuildConfig.DEBUG) {
-                Log.d(LOG_TAG, "request next sync by crypto handling")
+                Log.d(LOG_TAG, "request next sync")
             }
 
             requestImportantSync()

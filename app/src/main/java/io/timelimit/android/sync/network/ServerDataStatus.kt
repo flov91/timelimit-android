@@ -1,5 +1,5 @@
 /*
- * TimeLimit Copyright <C> 2019 - 2024 Jonas Lochmann
+ * TimeLimit Copyright <C> 2019 - 2026 Jonas Lochmann
  *
  * This program is free software: you can redistribute it and/or modify
  * it under the terms of the GNU General Public License as published by
@@ -44,6 +44,7 @@ data class ServerDataStatus(
         val newUserList: ServerUserList?,
         val pendingKeyRequests: List<ServerKeyRequest>,
         val keyResponses: List<ServerKeyResponse>,
+        val pings: List<ServerPing>,
         val dh: ServerDhKey?,
         val u2f: ServerU2fData?,
         val fullVersionUntil: Long,
@@ -63,6 +64,7 @@ data class ServerDataStatus(
         private const val NEW_USER_LIST = "users"
         private const val PENDING_KEY_REQUESTS = "krq"
         private const val KEY_RESPONSES = "kr"
+        private const val PINGS = "pings"
         private const val DH = "dh"
         private const val U2F = "u2f"
         private const val FULL_VERSION_UNTIL = "fullVersion"
@@ -82,6 +84,7 @@ data class ServerDataStatus(
             var newUserList: ServerUserList? = null
             var pendingKeyRequests = emptyList<ServerKeyRequest>()
             var keyResponses = emptyList<ServerKeyResponse>()
+            var pings = emptyList<ServerPing>()
             var dh: ServerDhKey? = null
             var u2f: ServerU2fData? = null
             var fullVersionUntil: Long? = null
@@ -103,6 +106,7 @@ data class ServerDataStatus(
                     NEW_USER_LIST -> newUserList = ServerUserList.parse(reader)
                     PENDING_KEY_REQUESTS -> pendingKeyRequests = ServerKeyRequest.parseList(reader)
                     KEY_RESPONSES -> keyResponses = ServerKeyResponse.parseList(reader)
+                    PINGS -> pings = ServerPing.parseList(reader)
                     DH -> dh = ServerDhKey.parse(reader)
                     U2F -> u2f = ServerU2fData.parse(reader)
                     FULL_VERSION_UNTIL -> fullVersionUntil = reader.nextLong()
@@ -126,6 +130,7 @@ data class ServerDataStatus(
                 newUserList = newUserList,
                 pendingKeyRequests = pendingKeyRequests,
                 keyResponses = keyResponses,
+                pings = pings,
                 dh = dh,
                 u2f = u2f,
                 fullVersionUntil = fullVersionUntil!!,
@@ -1281,6 +1286,48 @@ data class ServerKeyResponse(
         }
 
         fun parseList(reader: JsonReader) = parseJsonArray(reader) { parse(reader) }
+    }
+}
+
+data class ServerPing(
+    val deviceId: String,
+    val token: String,
+    val type: Type
+) {
+    companion object {
+        fun parse(reader: JsonReader): ServerPing {
+            var deviceId: String? = null
+            var token: String? = null
+            var type: Type? = null
+
+            reader.beginObject()
+            while (reader.hasNext()) {
+                when (reader.nextName()) {
+                    "deviceId" -> deviceId = reader.nextString()
+                    "token" -> token = reader.nextString()
+                    "type" -> type = when (reader.nextString()) {
+                        "ping" -> Type.Ping
+                        "pong" -> Type.Pong
+                        else -> throw IllegalStateException()
+                    }
+                    else -> reader.skipValue()
+                }
+            }
+            reader.endObject()
+
+            return ServerPing(
+                deviceId = deviceId!!,
+                token = token!!,
+                type = type!!
+            )
+        }
+
+        fun parseList(reader: JsonReader) = parseJsonArray(reader) { parse(reader) }
+    }
+
+    enum class Type {
+        Ping,
+        Pong
     }
 }
 

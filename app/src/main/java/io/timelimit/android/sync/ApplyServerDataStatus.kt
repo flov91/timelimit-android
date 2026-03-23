@@ -18,14 +18,18 @@ package io.timelimit.android.sync
 import io.timelimit.android.async.Threads
 import io.timelimit.android.coroutines.executeAndWait
 import io.timelimit.android.coroutines.runAsync
+import io.timelimit.android.crypto.Curve25519
 import io.timelimit.android.data.Database
 import io.timelimit.android.data.model.*
 import io.timelimit.android.integration.platform.PlatformIntegration
 import io.timelimit.android.logic.crypto.CryptDataHandler
+import io.timelimit.android.logic.crypto.KeyRequestSignedData
 import io.timelimit.android.sync.actions.*
+import io.timelimit.android.sync.actions.apply.ApplyActionUtil
 import io.timelimit.android.sync.actions.dispatch.LocalDatabaseParentActionDispatcher
 import io.timelimit.android.sync.network.ServerCryptContainer
 import io.timelimit.android.sync.network.ServerDataStatus
+import io.timelimit.android.sync.network.ServerPing
 
 object ApplyServerDataStatus {
     suspend fun applyServerDataStatusCoroutine(status: ServerDataStatus, database: Database, platformIntegration: PlatformIntegration): Result {
@@ -577,6 +581,22 @@ object ApplyServerDataStatus {
                         )
                     }
                 }
+            }
+
+            status.pings.forEach { ping ->
+                ApplyActionUtil.addAppLogicActionToDatabaseSync(
+                    PingAction(
+                        deviceId = ping.deviceId,
+                        event = when (ping.type) {
+                            ServerPing.Type.Ping -> PingAction.Event.Pong
+                            ServerPing.Type.Pong -> PingAction.Event.Clear
+                        },
+                        token = ping.token
+                    ),
+                    database
+                )
+
+                didCreateNewActions = true
             }
 
             status.u2f?.also { u2f ->

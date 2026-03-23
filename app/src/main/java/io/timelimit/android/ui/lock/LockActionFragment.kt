@@ -1,5 +1,5 @@
 /*
- * TimeLimit Copyright <C> 2019 - 2024 Jonas Lochmann
+ * TimeLimit Copyright <C> 2019 - 2026 Jonas Lochmann
  *
  * This program is free software: you can redistribute it and/or modify
  * it under the terms of the GNU General Public License as published by
@@ -39,7 +39,6 @@ import io.timelimit.android.sync.actions.AddCategoryAppsAction
 import io.timelimit.android.sync.actions.IncrementCategoryExtraTimeAction
 import io.timelimit.android.sync.actions.UpdateCategoryTemporarilyBlockedAction
 import io.timelimit.android.sync.actions.UpdateNetworkTimeVerificationAction
-import io.timelimit.android.sync.network.UpdatePrimaryDeviceRequestType
 import io.timelimit.android.ui.MainActivity
 import io.timelimit.android.ui.help.HelpDialogFragment
 import io.timelimit.android.ui.main.ActivityViewModel
@@ -123,6 +122,8 @@ class LockActionFragment : Fragment() {
 
             override fun setThisDeviceAsCurrentDevice() = this@LockActionFragment.setThisDeviceAsCurrentDevice()
 
+            override fun setThisDeviceAsSecondaryCurrentDevice() = this@LockActionFragment.setThisDeviceAsSecondaryCurrentDevice()
+
             override fun requestLocationPermission() {
                 RequestWifiPermission.doRequest(this@LockActionFragment, LOCATION_REQUEST_CODE, auth.logic.platformIntegration)
             }
@@ -142,11 +143,15 @@ class LockActionFragment : Fragment() {
     }
 
     private fun setThisDeviceAsCurrentDevice() {
-        model.didOpenSetCurrentDeviceScreen = true
-
         UpdatePrimaryDeviceDialogFragment
-                .newInstance(UpdatePrimaryDeviceRequestType.SetThisDevice)
+                .newInstance(UpdatePrimaryDeviceDialogFragment.Request.Set)
                 .show(parentFragmentManager)
+    }
+
+    private fun setThisDeviceAsSecondaryCurrentDevice() {
+        UpdatePrimaryDeviceDialogFragment
+            .newInstance(UpdatePrimaryDeviceDialogFragment.Request.StartSecondary)
+            .show(parentFragmentManager)
     }
 
     private fun bindAddToCategoryOptions(userRelatedData: UserRelatedData, blockedPackageName: String) {
@@ -314,6 +319,7 @@ interface Handlers {
     fun disableTemporarilyLockForCurrentCategory()
     fun disableTemporarilyLockForAllCategories()
     fun setThisDeviceAsCurrentDevice()
+    fun setThisDeviceAsSecondaryCurrentDevice()
     fun requestLocationPermission()
     fun disableLimitsTemporarily()
 }
