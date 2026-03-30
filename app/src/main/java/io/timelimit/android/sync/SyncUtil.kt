@@ -100,10 +100,29 @@ class SyncUtil (private val logic: AppLogic) {
         runAsync {
             wipeCacheIfUpdated()
 
+            // only one request per 30 seconds on average
+            val overloadProtectionBucket = TokenBucket(
+                timeApi = logic.timeApi,
+                interval = 30 * 1000,
+                tokenPerInterval = 1,
+                maxTokens = 30,
+                startTokens = 30
+            )
+
+            val burstLimitTokenBucket = TokenBucket(
+                timeApi = logic.timeApi,
+                interval = 2500,
+                tokenPerInterval = 1,
+                maxTokens = 3,
+                startTokens = 1
+            )
+
             while (true) {
                 if (BuildConfig.DEBUG) {
                     Log.d(LOG_TAG, "wait until sync should happen")
                 }
+
+                overloadProtectionBucket.consume()
 
                 shouldSync.waitUntilValueMatches { it == true }
                 importantSyncRequested.value = false
@@ -126,8 +145,8 @@ class SyncUtil (private val logic: AppLogic) {
                     SyncInBackgroundWorker.deschedule(logic.context)
                     lastSyncExceptionInternal.postValue(null)
 
-                    // wait 2 to 3 seconds before any next sync (debounce)
-                    logic.timeApi.sleep((2 * 1000 + random.nextInt(1000)).toLong())
+                    // wait 2.5 seconds before the next sync but permit bursts
+                    burstLimitTokenBucket.consume()
                 } catch (ex: Exception) {
                     // wait 10 to 15 seconds before retrying
 
