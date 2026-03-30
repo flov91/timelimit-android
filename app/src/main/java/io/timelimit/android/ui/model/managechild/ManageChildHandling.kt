@@ -1,5 +1,5 @@
 /*
- * TimeLimit Copyright <C> 2019 - 2023 Jonas Lochmann
+ * TimeLimit Copyright <C> 2019 - 2026 Jonas Lochmann
  *
  * This program is free software: you can redistribute it and/or modify
  * it under the terms of the GNU General Public License as published by
@@ -76,7 +76,6 @@ object ManageChildHandling {
             state.toolbarIcons,
             state.toolbarOptions,
             state,
-            R.id.fragment_manage_child,
             user.name,
             backStack
         )
@@ -117,7 +116,6 @@ object ManageChildHandling {
             state.toolbarIcons,
             state.toolbarOptions,
             state,
-            R.id.fragment_manage_child_apps,
             backStack
         )
     }
@@ -131,7 +129,6 @@ object ManageChildHandling {
             state.toolbarIcons,
             state.toolbarOptions,
             state,
-            R.id.fragment_manage_child_advanced,
             backStack
         )
     }
@@ -145,7 +142,6 @@ object ManageChildHandling {
             state.toolbarIcons,
             state.toolbarOptions,
             state,
-            R.id.fragment_manage_child_contacts,
             backStack
         )
     }
@@ -186,7 +182,6 @@ object ManageChildHandling {
             state.toolbarIcons,
             state.toolbarOptions,
             state,
-            R.id.fragment_manage_child_tasks,
             backStack
         )
     }

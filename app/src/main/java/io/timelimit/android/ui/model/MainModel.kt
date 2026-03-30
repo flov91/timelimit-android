@@ -1,5 +1,5 @@
 /*
- * TimeLimit Copyright <C> 2019 - 2023 Jonas Lochmann
+ * TimeLimit Copyright <C> 2019 - 2026 Jonas Lochmann
  *
  * This program is free software: you can redistribute it and/or modify
  * it under the terms of the GNU General Public License as published by
@@ -19,7 +19,6 @@ import android.app.Application
 import androidx.lifecycle.AndroidViewModel
 import androidx.lifecycle.asFlow
 import androidx.lifecycle.viewModelScope
-import io.timelimit.android.R
 import io.timelimit.android.data.model.UserType
 import io.timelimit.android.logic.DefaultAppLogic
 import io.timelimit.android.ui.main.ActivityViewModel
@@ -36,27 +35,6 @@ import kotlinx.coroutines.channels.ReceiveChannel
 import kotlinx.coroutines.flow.*
 
 class MainModel(application: Application): AndroidViewModel(application) {
-    companion object {
-        private val viewIdPool = setOf(
-            R.id.fragment_01,
-            R.id.fragment_02,
-            R.id.fragment_03,
-            R.id.fragment_04,
-            R.id.fragment_05,
-            R.id.fragment_06,
-            R.id.fragment_07,
-            R.id.fragment_08,
-            R.id.fragment_09,
-            R.id.fragment_10,
-            R.id.fragment_11,
-            R.id.fragment_12,
-            R.id.fragment_13,
-            R.id.fragment_14,
-            R.id.fragment_15,
-            R.id.fragment_16
-        )
-    }
-
     val activityModel = ActivityViewModel(application)
     val logic = DefaultAppLogic.with(application)
 
@@ -117,17 +95,9 @@ class MainModel(application: Application): AndroidViewModel(application) {
         Case.simple<_, _, State.DeleteAccount> { AccountDeletion.handle(logic, scope, share(it), updateMethod(::updateState)) },
         Case.simple<_, _, FragmentState> { state ->
             state.transform {
-                val containerId = it.containerId ?: run {
-                    (viewIdPool - fragmentIds).firstOrNull()?.also { id ->
-                        it.containerId = id
-                    }
-                }
+                fragmentIds.add(it.containerId)
 
-                if (containerId != null) {
-                    fragmentIds.add(containerId)
-
-                    emit(Screen.FragmentScreen(it as State, it.toolbarIcons, it.toolbarOptions, it, containerId))
-                }
+                emit(Screen.FragmentScreen(it as State, it.toolbarIcons, it.toolbarOptions, it))
             }
         }
     ).shareIn(viewModelScope, SharingStarted.WhileSubscribed(1000), 1)

@@ -1,5 +1,5 @@
 /*
- * TimeLimit Copyright <C> 2019 - 2023 Jonas Lochmann
+ * TimeLimit Copyright <C> 2019 - 2026 Jonas Lochmann
  *
  * This program is free software: you can redistribute it and/or modify
  * it under the terms of the GNU General Public License as published by
@@ -77,14 +77,23 @@ sealed class State (val previous: State?): Serializable {
     data class Overview(
         val state: OverviewHandling.OverviewState = OverviewHandling.OverviewState.empty
     ): State(previous = null)
-    class About(previous: Overview): FragmentStateLegacy(previous = previous, fragmentClass = AboutFragmentWrapped::class.java)
-    class AddUser(previous: Overview): FragmentStateLegacy(previous = previous, fragmentClass = AddUserFragment::class.java)
+    class About(previous: Overview): FragmentStateLegacy(
+        previous = previous,
+        fragmentClass = AboutFragmentWrapped::class.java,
+        containerId = R.id.fragment_about
+    )
+    class AddUser(previous: Overview): FragmentStateLegacy(
+        previous = previous,
+        fragmentClass = AddUserFragment::class.java,
+        containerId = R.id.fragment_add_user
+    )
     sealed class ManageChild(
         previous: State,
         fragmentClass: Class<out Fragment>,
         val childId: String,
-        val previousOverview: Overview
-    ): FragmentStateLegacy(previous, fragmentClass) {
+        val previousOverview: Overview,
+        containerId: Int
+    ): FragmentStateLegacy(previous, fragmentClass, containerId) {
         class Main(
             previousOverview: Overview,
             childId: String
@@ -92,7 +101,8 @@ sealed class State (val previous: State?): Serializable {
             previous = previousOverview,
             fragmentClass = ManageChildFragment::class.java,
             childId = childId,
-            previousOverview = previousOverview
+            previousOverview = previousOverview,
+            containerId = R.id.fragment_manage_child
         ) {
             override val arguments get() = ManageChildFragmentArgs(childId = childId, fromRedirect = false).toBundle()
 
@@ -119,21 +129,22 @@ sealed class State (val previous: State?): Serializable {
         sealed class Sub(
             previous: State,
             val previousMain: Main,
-            fragmentClass: Class<out Fragment>
-        ): ManageChild(previous, fragmentClass, previousMain.childId, previousMain.previousOverview)
+            fragmentClass: Class<out Fragment>,
+            containerId: Int
+        ): ManageChild(previous, fragmentClass, previousMain.childId, previousMain.previousOverview, containerId)
 
-        class Apps(val previousChild: Main): Sub(previousChild, previousChild, ChildAppsFragmentWrapper::class.java) {
+        class Apps(val previousChild: Main): Sub(previousChild, previousChild, ChildAppsFragmentWrapper::class.java, R.id.fragment_manage_child_apps) {
             override val arguments: Bundle get() = ChildAppsFragmentWrapperArgs(previousChild.childId).toBundle()
         }
-        class Advanced(val previousChild: Main): Sub(previousChild, previousChild, ChildAdvancedFragmentWrapper::class.java) {
+        class Advanced(val previousChild: Main): Sub(previousChild, previousChild, ChildAdvancedFragmentWrapper::class.java, R.id.fragment_manage_child_advanced) {
             override val arguments: Bundle get() = ChildAdvancedFragmentWrapperArgs(previousChild.childId).toBundle()
         }
-        class Contacts(val previousChild: Main): Sub(previousChild, previousChild, ContactsFragment::class.java)
+        class Contacts(val previousChild: Main): Sub(previousChild, previousChild, ContactsFragment::class.java, R.id.fragment_manage_child_contacts)
         data class UsageHistory(
             val previousChild: Main,
             val state: ManageChildUsageHistory.State = ManageChildUsageHistory.State()
-        ): Sub(previousChild, previousChild, Fragment::class.java)
-        class Tasks(val previousChild: Main): Sub(previousChild, previousChild, ChildTasksFragmentWrapper::class.java) {
+        ): Sub(previousChild, previousChild, Fragment::class.java, R.id.fragment_manage_child_usage_history)
+        class Tasks(val previousChild: Main): Sub(previousChild, previousChild, ChildTasksFragmentWrapper::class.java, R.id.fragment_manage_child_tasks) {
             override val arguments: Bundle get() = ChildTasksFragmentWrapperArgs(previousChild.childId).toBundle()
         }
 
@@ -141,12 +152,13 @@ sealed class State (val previous: State?): Serializable {
             previous: State,
             val previousChild: ManageChild.Main,
             val categoryId: String,
-            fragmentClass: Class<out Fragment>
-        ): Sub(previous, previousChild, fragmentClass) {
+            fragmentClass: Class<out Fragment>,
+            containerId: Int
+        ): Sub(previous, previousChild, fragmentClass, containerId) {
             class Main(
                 previousChild: ManageChild.Main,
                 categoryId: String
-            ): ManageCategory(previousChild, previousChild, categoryId, ManageCategoryFragment::class.java) {
+            ): ManageCategory(previousChild, previousChild, categoryId, ManageCategoryFragment::class.java, R.id.fragment_manage_category) {
                 override val arguments: Bundle get() = ManageCategoryFragmentArgs(
                     childId = previousChild.childId,
                     categoryId = categoryId
@@ -161,17 +173,18 @@ sealed class State (val previous: State?): Serializable {
             sealed class Sub(
                 previous: State,
                 val previousCategory: Main,
-                fragmentClass: Class<out Fragment>
-            ): ManageCategory(previous, previousCategory.previousChild, previousCategory.categoryId, fragmentClass)
+                fragmentClass: Class<out Fragment>,
+                containerId: Int
+            ): ManageCategory(previous, previousCategory.previousChild, previousCategory.categoryId, fragmentClass, containerId)
 
             data class BlockedTimes(
                 val previousMain2: Main,
                 val details: ManageCategoryBlockedTimes.State = ManageCategoryBlockedTimes.State.initial
-            ): Sub(previousMain2, previousMain2, Fragment::class.java)
+            ): Sub(previousMain2, previousMain2, Fragment::class.java, R.id.fragment_manage_category_blocked_times)
 
             class Advanced(
                 previousCategory: Main
-            ): Sub(previousCategory, previousCategory, CategoryAdvancedFragmentWrapper::class.java) {
+            ): Sub(previousCategory, previousCategory, CategoryAdvancedFragmentWrapper::class.java, R.id.fragment_manage_category_advanced) {
                 override val arguments: Bundle get() = CategoryAdvancedFragmentWrapperArgs(
                     childId = previousCategory.previousChild.childId,
                     categoryId = previousCategory.categoryId
@@ -179,24 +192,24 @@ sealed class State (val previous: State?): Serializable {
             }
         }
     }
-    sealed class ManageParent(previous: State, fragmentClass: Class<out Fragment>): FragmentStateLegacy(previous = previous, fragmentClass = fragmentClass) {
+    sealed class ManageParent(previous: State, fragmentClass: Class<out Fragment>, containerId: Int): FragmentStateLegacy(previous = previous, fragmentClass = fragmentClass, containerId = containerId) {
         class Main(
             previous: Overview,
             val parentId: String
-        ): ManageParent(previous = previous, fragmentClass = ManageParentFragment::class.java) {
+        ): ManageParent(previous = previous, fragmentClass = ManageParentFragment::class.java, containerId = R.id.fragment_manage_parent) {
             override val arguments get() = ManageParentFragmentArgs(parentId).toBundle()
         }
 
-        class ChangePassword(val previousParent: Main): ManageParent(previousParent, ChangeParentPasswordFragment::class.java) {
+        class ChangePassword(val previousParent: Main): ManageParent(previousParent, ChangeParentPasswordFragment::class.java, R.id.fragment_manage_parent_change_password) {
             override val arguments: Bundle get() = ChangeParentPasswordFragmentArgs(previousParent.parentId).toBundle()
         }
-        class RestorePassword(val previousParent: Main): ManageParent(previousParent, RestoreParentPasswordFragment::class.java) {
+        class RestorePassword(val previousParent: Main): ManageParent(previousParent, RestoreParentPasswordFragment::class.java, R.id.fragment_manage_parent_password) {
             override val arguments: Bundle get() = RestoreParentPasswordFragmentArgs(previousParent.parentId).toBundle()
         }
-        class LinkMail(val previousParent: Main): ManageParent(previousParent, LinkParentMailFragment::class.java) {
+        class LinkMail(val previousParent: Main): ManageParent(previousParent, LinkParentMailFragment::class.java, R.id.fragment_manage_parent_link_mail) {
             override val arguments: Bundle get() = LinkParentMailFragmentArgs(previousParent.parentId).toBundle()
         }
-        class U2F(val previousParent: Main): ManageParent(previousParent, ManageParentU2FKeyFragment::class.java) {
+        class U2F(val previousParent: Main): ManageParent(previousParent, ManageParentU2FKeyFragment::class.java, R.id.fragment_manage_parent_u2f) {
             override val arguments: Bundle get() = ManageParentU2FKeyFragmentArgs(previousParent.parentId).toBundle()
         }
     }
@@ -204,68 +217,71 @@ sealed class State (val previous: State?): Serializable {
         previous: State,
         val previousOverview: Overview,
         val deviceId: String,
-        fragmentClass: Class<out Fragment>
-    ): FragmentStateLegacy(previous, fragmentClass) {
+        fragmentClass: Class<out Fragment>,
+        containerId: Int
+    ): FragmentStateLegacy(previous, fragmentClass, containerId) {
         class Main(
             previousOverview: Overview,
             deviceId: String
-        ): ManageDevice(previousOverview, previousOverview, deviceId, ManageDeviceFragment::class.java) {
+        ): ManageDevice(previousOverview, previousOverview, deviceId, ManageDeviceFragment::class.java, R.id.fragment_manage_device_main) {
             override val arguments: Bundle get() = ManageDeviceFragmentArgs(deviceId).toBundle()
         }
 
         sealed class Sub(
             val previousManageDeviceMain: Main,
             fragmentClass: Class<out Fragment>,
-            previous: State = previousManageDeviceMain
+            previous: State = previousManageDeviceMain,
+            containerId: Int
         ): ManageDevice(
             previous,
             previousManageDeviceMain.previousOverview,
             previousManageDeviceMain.deviceId,
-            fragmentClass
+            fragmentClass,
+            containerId
         )
 
         data class User(
             val previousMain: Main,
             val overlay: Overlay? = null
-        ): Sub(previousMain, Fragment::class.java) {
+        ): Sub(previousMain, Fragment::class.java, containerId = R.id.fragment_manage_device_user) {
             sealed class Overlay: Serializable {
                 data class EnableDefaultUserDialog(val userId: String): Overlay()
                 object AdjustDefaultUserTimeout: Overlay()
             }
         }
-        data class Permissions(val previousMain: Main, val currentDialog: SystemPermission? = null): Sub(previousMain, Fragment::class.java) {
+        data class Permissions(val previousMain: Main, val currentDialog: SystemPermission? = null): Sub(previousMain, Fragment::class.java, containerId = R.id.fragment_manage_device_permissions) {
             override fun matches(other: State): Boolean =
                 if (other is Permissions) this.previousMain.matches(other.previousMain)
                 else false
         }
-        data class DeviceOwner(val previousPermissions: Permissions, val details: DeviceOwnerHandling.OwnerState = DeviceOwnerHandling.OwnerState()): Sub(previousPermissions.previousMain, Fragment::class.java, previousPermissions)
-        class Features(previousMain: Main): Sub(previousMain, ManageDeviceFeaturesFragment::class.java) {
+        data class DeviceOwner(val previousPermissions: Permissions, val details: DeviceOwnerHandling.OwnerState = DeviceOwnerHandling.OwnerState()): Sub(previousPermissions.previousMain, Fragment::class.java, previousPermissions, R.id.fragment_manage_device_owner)
+        class Features(previousMain: Main): Sub(previousMain, ManageDeviceFeaturesFragment::class.java, containerId = R.id.fragment_manage_device_features) {
             override val arguments: Bundle get() = ManageDeviceFeaturesFragmentArgs(deviceId).toBundle()
         }
-        class Advanced(previousMain: Main): Sub(previousMain, ManageDeviceAdvancedFragment::class.java) {
+        class Advanced(previousMain: Main): Sub(previousMain, ManageDeviceAdvancedFragment::class.java, containerId = R.id.fragment_manage_device_advanced) {
             override val arguments: Bundle get() = ManageDeviceAdvancedFragmentArgs(deviceId).toBundle()
         }
     }
-    class SetupDevice(val previousOverview: Overview): FragmentStateLegacy(previous = previousOverview, fragmentClass = SetupDeviceFragment::class.java)
+    class SetupDevice(val previousOverview: Overview): FragmentStateLegacy(previous = previousOverview, fragmentClass = SetupDeviceFragment::class.java, R.id.fragment_setup_device)
     data class DeleteAccount(
         val previousOverview: Overview,
         val content: AccountDeletion.MyState = AccountDeletion.MyState.Preparing()
     ): State(previousOverview)
-    class Uninstall(previous: Overview): FragmentStateLegacy(previous = previous, fragmentClass = UninstallFragment::class.java)
+    class Uninstall(previous: Overview): FragmentStateLegacy(previous = previous, fragmentClass = UninstallFragment::class.java, R.id.fragment_uninstall)
     object DiagnoseScreen {
-        class Main(previous: About): FragmentStateLegacy(previous, DiagnoseMainFragment::class.java)
-        class Battery(previous: Main): FragmentStateLegacy(previous, DiagnoseBatteryFragment::class.java)
-        class Clock(previous: Main): FragmentStateLegacy(previous, DiagnoseClockFragment::class.java)
-        class Connection(previous: Main): FragmentStateLegacy(previous, DiagnoseConnectionFragment::class.java)
-        class ExperimentalFlags(previous: Main): FragmentStateLegacy(previous, DiagnoseExperimentalFlagFragment::class.java)
-        class ExitReasons(previous: Main): FragmentStateLegacy(previous, DiagnoseExitReasonFragment::class.java)
-        class Crypto(previous: Main): FragmentStateLegacy(previous, DiagnoseCryptoFragment::class.java)
-        class ForegroundApp(previous: Main): FragmentStateLegacy(previous, DiagnoseForegroundAppFragment::class.java)
-        class Sync(previous: Main): FragmentStateLegacy(previous, DiagnoseSyncFragment::class.java)
+        class Main(previous: About): FragmentStateLegacy(previous, DiagnoseMainFragment::class.java, R.id.fragment_diagnose_main)
+        class Battery(previous: Main): FragmentStateLegacy(previous, DiagnoseBatteryFragment::class.java, R.id.fragment_diagnose_battery)
+        class Clock(previous: Main): FragmentStateLegacy(previous, DiagnoseClockFragment::class.java, R.id.fragment_diagnose_clock)
+        class Connection(previous: Main): FragmentStateLegacy(previous, DiagnoseConnectionFragment::class.java, R.id.fragment_diagnose_connection)
+        class ExperimentalFlags(previous: Main): FragmentStateLegacy(previous, DiagnoseExperimentalFlagFragment::class.java, R.id.fragment_diagnose_experimental_flag)
+        class ExitReasons(previous: Main): FragmentStateLegacy(previous, DiagnoseExitReasonFragment::class.java, R.id.fragment_diagnose_exit_reason)
+        class Crypto(previous: Main): FragmentStateLegacy(previous, DiagnoseCryptoFragment::class.java, R.id.fragment_diagnose_crypto)
+        class ForegroundApp(previous: Main): FragmentStateLegacy(previous, DiagnoseForegroundAppFragment::class.java, R.id.fragment_diagnose_foreground_app)
+        class Sync(previous: Main): FragmentStateLegacy(previous, DiagnoseSyncFragment::class.java, R.id.fragment_diagnose_sync)
     }
     sealed class Setup(previous: State): State(previous) {
-        class SetupTerms: FragmentStateLegacy(previous = null, fragmentClass = SetupTermsFragment::class.java)
-        class SetupHelpInfo(previous: SetupTerms): FragmentStateLegacy(previous = previous, fragmentClass = SetupHelpInfoFragment::class.java)
+        class SetupTerms: FragmentStateLegacy(previous = null, fragmentClass = SetupTermsFragment::class.java, R.id.fragment_setup_terms)
+        class SetupHelpInfo(previous: SetupTerms): FragmentStateLegacy(previous = previous, fragmentClass = SetupHelpInfoFragment::class.java, R.id.fragment_setup_help_info)
         class SelectMode(previous: SetupHelpInfo): Setup(previous)
         data class DevicePermissions(
             val previousSelectMode: SelectMode,
@@ -276,10 +292,10 @@ sealed class State (val previous: State?): Serializable {
             data class SystemPermissionDialog(val permission: SystemPermission): Dialog()
             object ParentKeyDialog: Dialog()
         }
-        class LocalMode(previous: DevicePermissions): FragmentStateLegacy(previous = previous, fragmentClass = SetupLocalModeFragment::class.java)
+        class LocalMode(previous: DevicePermissions): FragmentStateLegacy(previous = previous, fragmentClass = SetupLocalModeFragment::class.java, R.id.fragment_setup_local_mode)
         class ConnectedPrivacy(previousSelectMode: SelectMode): Setup(previousSelectMode)
         class SelectConnectedMode(previousConnectedPrivacy: ConnectedPrivacy): Setup(previousConnectedPrivacy)
-        class RemoteChild(previous: SelectConnectedMode): FragmentStateLegacy(previous = previous, fragmentClass = SetupRemoteChildFragment::class.java)
+        class RemoteChild(previous: SelectConnectedMode): FragmentStateLegacy(previous = previous, fragmentClass = SetupRemoteChildFragment::class.java, R.id.fragment_setup_remote_child)
         sealed class ParentModeSetup(previous: State): Setup(previous)
         data class ParentMailAuthentication(
             val previousSelectConnectedMode: SelectConnectedMode,
@@ -317,9 +333,9 @@ sealed class State (val previous: State?): Serializable {
             }
         }
     }
-    class ParentMode: FragmentStateLegacy(previous = null, fragmentClass = ParentModeFragment::class.java)
+    class ParentMode: FragmentStateLegacy(previous = null, fragmentClass = ParentModeFragment::class.java, R.id.fragment_setup_parent_mode)
     object Purchase {
-        class Purchase(previous: About): FragmentStateLegacy(previous, PurchaseFragment::class.java)
-        class StayAwesome(previous: About): FragmentStateLegacy(previous, StayAwesomeFragment::class.java)
+        class Purchase(previous: About): FragmentStateLegacy(previous, PurchaseFragment::class.java, R.id.fragment_purchase)
+        class StayAwesome(previous: About): FragmentStateLegacy(previous, StayAwesomeFragment::class.java, R.id.fragment_stay_awesome)
     }
 }

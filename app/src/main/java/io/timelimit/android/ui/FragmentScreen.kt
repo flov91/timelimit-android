@@ -40,7 +40,7 @@ fun FragmentScreen(
         modifier = modifier.fillMaxSize(),
         factory = { context ->
             FragmentContainerView(context).also {
-                val containerId = screen.containerId
+                val containerId = screen.fragment.containerId
                 val fragment = fragmentManager.findFragmentById(containerId)
 
                 it.id = containerId
@@ -79,7 +79,7 @@ fun FragmentScreen(
                 Log.d(LOG_TAG, "detach $screen")
             }
 
-            fragmentManager.findFragmentById(screen.containerId)?.also { fragment ->
+            fragmentManager.findFragmentById(screen.fragment.containerId)?.also { fragment ->
                 fragmentManager.beginTransaction()
                     .detach(fragment)
                     .commitAllowingStateLoss()

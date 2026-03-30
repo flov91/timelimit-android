@@ -1,5 +1,5 @@
 /*
- * TimeLimit Copyright <C> 2019 - 2023 Jonas Lochmann
+ * TimeLimit Copyright <C> 2019 - 2026 Jonas Lochmann
  *
  * This program is free software: you can redistribute it and/or modify
  * it under the terms of the GNU General Public License as published by
@@ -19,7 +19,7 @@ import android.os.Bundle
 import androidx.fragment.app.Fragment
 
 interface FragmentState {
-    var containerId: Int?
+    val containerId: Int
     val fragmentClass: Class<out Fragment>
     val arguments: Bundle get() = Bundle()
     val toolbarIcons: List<Menu.Icon> get() = emptyList()

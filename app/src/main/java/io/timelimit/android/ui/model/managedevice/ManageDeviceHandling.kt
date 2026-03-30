@@ -1,5 +1,5 @@
 /*
- * TimeLimit Copyright <C> 2019 - 2023 Jonas Lochmann
+ * TimeLimit Copyright <C> 2019 - 2026 Jonas Lochmann
  *
  * This program is free software: you can redistribute it and/or modify
  * it under the terms of the GNU General Public License as published by
@@ -87,7 +87,6 @@ object ManageDeviceHandling {
             state.toolbarIcons,
             state.toolbarOptions,
             state,
-            R.id.fragment_manage_device_main,
             device.name,
             backStack
         )
@@ -174,7 +173,6 @@ object ManageDeviceHandling {
             state.toolbarIcons,
             state.toolbarOptions,
             state,
-            R.id.fragment_manage_device_features,
             backStack
         )
     }
@@ -189,7 +187,6 @@ object ManageDeviceHandling {
             state.toolbarIcons,
             state.toolbarOptions,
             state,
-            R.id.fragment_manage_device_advanced,
             backStack
         )
     }

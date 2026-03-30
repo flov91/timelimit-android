@@ -1,5 +1,5 @@
 /*
- * TimeLimit Copyright <C> 2019 - 2023 Jonas Lochmann
+ * TimeLimit Copyright <C> 2019 - 2026 Jonas Lochmann
  *
  * This program is free software: you can redistribute it and/or modify
  * it under the terms of the GNU General Public License as published by
@@ -40,8 +40,7 @@ sealed class Screen(
         state: State,
         toolbarIcons: List<Menu.Icon>,
         toolbarOptions: List<Menu.Dropdown>,
-        val fragment: FragmentState,
-        val containerId: Int
+        val fragment: FragmentState
     ): Screen(state, toolbarIcons, toolbarOptions)
 
     class OverviewScreen(
@@ -72,10 +71,9 @@ sealed class Screen(
         toolbarIcons: List<Menu.Icon>,
         toolbarOptions: List<Menu.Dropdown>,
         fragment: FragmentState,
-        containerId: Int,
         childName: String,
         override val backStack: List<BackStackItem>
-    ): FragmentScreen(state, toolbarIcons, toolbarOptions, fragment, containerId), ScreenWithBackStack, ScreenWithTitle {
+    ): FragmentScreen(state, toolbarIcons, toolbarOptions, fragment), ScreenWithBackStack, ScreenWithTitle {
         override val title = Title.Plain(childName)
     }
 
@@ -84,9 +82,8 @@ sealed class Screen(
         toolbarIcons: List<Menu.Icon>,
         toolbarOptions: List<Menu.Dropdown>,
         fragment: FragmentState,
-        containerId: Int,
         override val backStack: List<BackStackItem>
-    ): FragmentScreen(state, toolbarIcons, toolbarOptions, fragment, containerId), ScreenWithBackStack, ScreenWithTitle {
+    ): FragmentScreen(state, toolbarIcons, toolbarOptions, fragment), ScreenWithBackStack, ScreenWithTitle {
         override val title = Title.StringResource(R.string.child_apps_title)
     }
 
@@ -95,9 +92,8 @@ sealed class Screen(
         toolbarIcons: List<Menu.Icon>,
         toolbarOptions: List<Menu.Dropdown>,
         fragment: FragmentState,
-        containerId: Int,
         override val backStack: List<BackStackItem>
-    ): FragmentScreen(state, toolbarIcons, toolbarOptions, fragment, containerId), ScreenWithBackStack, ScreenWithTitle {
+    ): FragmentScreen(state, toolbarIcons, toolbarOptions, fragment), ScreenWithBackStack, ScreenWithTitle {
         override val title = Title.StringResource(R.string.manage_child_tab_other)
     }
 
@@ -106,9 +102,8 @@ sealed class Screen(
         toolbarIcons: List<Menu.Icon>,
         toolbarOptions: List<Menu.Dropdown>,
         fragment: FragmentState,
-        containerId: Int,
         override val backStack: List<BackStackItem>
-    ): FragmentScreen(state, toolbarIcons, toolbarOptions, fragment, containerId), ScreenWithBackStack, ScreenWithTitle {
+    ): FragmentScreen(state, toolbarIcons, toolbarOptions, fragment), ScreenWithBackStack, ScreenWithTitle {
         override val title = Title.StringResource(R.string.contacts_title_long)
     }
 
@@ -127,9 +122,8 @@ sealed class Screen(
         toolbarIcons: List<Menu.Icon>,
         toolbarOptions: List<Menu.Dropdown>,
         fragment: FragmentState,
-        containerId: Int,
         override val backStack: List<BackStackItem>
-    ): FragmentScreen(state, toolbarIcons, toolbarOptions, fragment, containerId), ScreenWithBackStack, ScreenWithTitle {
+    ): FragmentScreen(state, toolbarIcons, toolbarOptions, fragment), ScreenWithBackStack, ScreenWithTitle {
         override val title = Title.StringResource(R.string.manage_child_tasks)
     }
     class ManageCategory(
@@ -137,10 +131,9 @@ sealed class Screen(
         toolbarIcons: List<Menu.Icon>,
         toolbarOptions: List<Menu.Dropdown>,
         fragment: FragmentState,
-        containerId: Int,
         val categoryName: String,
         override val backStack: List<BackStackItem>
-    ): FragmentScreen(state, toolbarIcons, toolbarOptions, fragment, containerId), ScreenWithBackStack, ScreenWithTitle {
+    ): FragmentScreen(state, toolbarIcons, toolbarOptions, fragment), ScreenWithBackStack, ScreenWithTitle {
         override val title = Title.Plain(categoryName)
     }
     class ManageCategoryAdvanced(
@@ -148,9 +141,8 @@ sealed class Screen(
         toolbarIcons: List<Menu.Icon>,
         toolbarOptions: List<Menu.Dropdown>,
         fragment: FragmentState,
-        containerId: Int,
         override val backStack: List<BackStackItem>
-    ): FragmentScreen(state, toolbarIcons, toolbarOptions, fragment, containerId), ScreenWithBackStack, ScreenWithTitle {
+    ): FragmentScreen(state, toolbarIcons, toolbarOptions, fragment), ScreenWithBackStack, ScreenWithTitle {
         override val title = Title.StringResource(R.string.category_settings)
     }
 
@@ -171,10 +163,9 @@ sealed class Screen(
         toolbarIcons: List<Menu.Icon>,
         toolbarOptions: List<Menu.Dropdown>,
         fragment: FragmentState,
-        containerId: Int,
         deviceName: String,
         override val backStack: List<BackStackItem>
-    ): FragmentScreen(state, toolbarIcons, toolbarOptions, fragment, containerId), ScreenWithBackStack, ScreenWithTitle {
+    ): FragmentScreen(state, toolbarIcons, toolbarOptions, fragment), ScreenWithBackStack, ScreenWithTitle {
         override val title = Title.Plain(deviceName)
     }
 
@@ -202,9 +193,8 @@ sealed class Screen(
         toolbarIcons: List<Menu.Icon>,
         toolbarOptions: List<Menu.Dropdown>,
         fragment: FragmentState,
-        containerId: Int,
         override val backStack: List<BackStackItem>
-    ): FragmentScreen(state, toolbarIcons, toolbarOptions, fragment, containerId), ScreenWithBackStack, ScreenWithTitle {
+    ): FragmentScreen(state, toolbarIcons, toolbarOptions, fragment), ScreenWithBackStack, ScreenWithTitle {
         override val title = Title.StringResource(R.string.manage_device_card_feature_title)
     }
 
@@ -213,9 +203,8 @@ sealed class Screen(
         toolbarIcons: List<Menu.Icon>,
         toolbarOptions: List<Menu.Dropdown>,
         fragment: FragmentState,
-        containerId: Int,
         override val backStack: List<BackStackItem>
-    ): FragmentScreen(state, toolbarIcons, toolbarOptions, fragment, containerId), ScreenWithBackStack, ScreenWithTitle {
+    ): FragmentScreen(state, toolbarIcons, toolbarOptions, fragment), ScreenWithBackStack, ScreenWithTitle {
         override val title = Title.StringResource(R.string.manage_device_card_manage_title)
     }
 

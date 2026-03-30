@@ -1,6 +1,6 @@
 <?xml version="1.0" encoding="utf-8"?>
 <!--
-  TimeLimit Copyright <C> 2019 - 2023 Jonas Lochmann
+  TimeLimit Copyright <C> 2019 - 2026 Jonas Lochmann
   This program is free software: you can redistribute it and/or modify
   it under the terms of the GNU General Public License as published by
   the Free Software Foundation version 3 of the License.
@@ -14,22 +14,8 @@
   along with this program. If not, see <https://www.gnu.org/licenses/>.
 -->
 <resources>
-    <item name="fragment_01" type="id" />
-    <item name="fragment_02" type="id" />
-    <item name="fragment_03" type="id" />
-    <item name="fragment_04" type="id" />
-    <item name="fragment_05" type="id" />
-    <item name="fragment_06" type="id" />
-    <item name="fragment_07" type="id" />
-    <item name="fragment_08" type="id" />
-    <item name="fragment_09" type="id" />
-    <item name="fragment_10" type="id" />
-    <item name="fragment_11" type="id" />
-    <item name="fragment_12" type="id" />
-    <item name="fragment_13" type="id" />
-    <item name="fragment_14" type="id" />
-    <item name="fragment_15" type="id" />
-    <item name="fragment_16" type="id" />
+    <item name="fragment_about" type="id" />
+    <item name="fragment_add_user" type="id" />
     <item name="fragment_manage_child" type="id" />
     <item name="fragment_manage_child_apps" type="id" />
     <item name="fragment_manage_child_advanced" type="id" />
@@ -40,7 +26,32 @@
     <item name="fragment_manage_category_advanced" type="id" />
     <item name="fragment_manage_category_blocked_times" type="id" />
     <item name="fragment_manage_device_main" type="id" />
+    <item name="fragment_manage_device_user" type="id" />
     <item name="fragment_manage_device_permissions" type="id" />
+    <item name="fragment_manage_device_owner" type="id" />
     <item name="fragment_manage_device_features" type="id" />
     <item name="fragment_manage_device_advanced" type="id" />
+    <item name="fragment_manage_parent" type="id" />
+    <item name="fragment_manage_parent_change_password" type="id" />
+    <item name="fragment_manage_parent_password" type="id" />
+    <item name="fragment_manage_parent_link_mail" type="id" />
+    <item name="fragment_manage_parent_u2f" type="id" />
+    <item name="fragment_setup_device" type="id" />
+    <item name="fragment_uninstall" type="id" />
+    <item name="fragment_diagnose_main" type="id" />
+    <item name="fragment_diagnose_battery" type="id" />
+    <item name="fragment_diagnose_clock" type="id" />
+    <item name="fragment_diagnose_connection" type="id" />
+    <item name="fragment_diagnose_experimental_flag" type="id" />
+    <item name="fragment_diagnose_exit_reason" type="id" />
+    <item name="fragment_diagnose_crypto" type="id" />
+    <item name="fragment_diagnose_foreground_app" type="id" />
+    <item name="fragment_diagnose_sync" type="id" />
+    <item name="fragment_setup_terms" type="id" />
+    <item name="fragment_setup_help_info" type="id" />
+    <item name="fragment_setup_local_mode" type="id" />
+    <item name="fragment_setup_remote_child" type="id" />
+    <item name="fragment_setup_parent_mode" type="id" />
+    <item name="fragment_purchase" type="id" />
+    <item name="fragment_stay_awesome" type="id" />
 </resources>
