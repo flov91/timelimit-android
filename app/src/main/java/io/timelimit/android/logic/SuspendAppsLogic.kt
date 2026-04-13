@@ -131,7 +131,7 @@ class SuspendAppsLogic(private val appLogic: AppLogic): Observer {
             return
         }
 
-        val userRelatedData = userAndDeviceRelatedData!!.userRelatedData!!
+        val userRelatedData = userAndDeviceRelatedData.userRelatedData
 
         val latch = CountDownLatch(1)
 
@@ -145,10 +145,9 @@ class SuspendAppsLogic(private val appLogic: AppLogic): Observer {
                 timeInMillis = realTime.timeInMillis,
                 batteryStatus = batteryStatus,
                 assumeCurrentDevice = CurrentDeviceLogic.handleDeviceAsCurrentDevice(
-                        device = userAndDeviceRelatedData.deviceRelatedData,
-                        user = userRelatedData,
-                        borrowedPrimaryDevice = appLogic.currentDeviceLogic.borrowedCurrentDeviceLive.value
-                ) != CurrentDeviceLogic.HandleAsCurrentDevice.No,
+                    deviceAndUserRelatedData = userAndDeviceRelatedData,
+                    borrowedPrimaryDevice = appLogic.currentDeviceLogic.borrowedCurrentDeviceLive.value
+                ) is CurrentDeviceLogic.HandleAsCurrentDevice.Yes,
                 currentNetworkId = null, // not relevant/ not suspending Apps if there is no matching network
                 hasPremiumOrLocalMode = userAndDeviceRelatedData.deviceRelatedData.isLocalMode || userAndDeviceRelatedData.deviceRelatedData.isConnectedAndHasPremium
         )

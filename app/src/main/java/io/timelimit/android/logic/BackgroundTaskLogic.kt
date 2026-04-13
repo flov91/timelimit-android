@@ -30,7 +30,7 @@ import io.timelimit.android.data.model.DevicePlatform
 import io.timelimit.android.data.model.ExperimentalFlags
 import io.timelimit.android.data.model.ManipulationFlag
 import io.timelimit.android.data.model.UserType
-import io.timelimit.android.data.model.derived.UserRelatedData
+import io.timelimit.android.data.model.derived.DeviceAndUserRelatedData
 import io.timelimit.android.date.DateInTimezone
 import io.timelimit.android.date.getMinuteOfWeek
 import io.timelimit.android.extensions.MinuteOfDay
@@ -368,24 +368,23 @@ class BackgroundTaskLogic(val appLogic: AppLogic) {
                 val networkId: NetworkId? = if (needsNetworkId) appLogic.platformIntegration.getCurrentNetworkId() else null
                 var assumeCurrentDevice: CurrentDeviceLogic.HandleAsCurrentDevice? = null
 
-                fun reportStatusToCategoryHandlingCache(userRelatedData: UserRelatedData) {
+                fun reportStatusToCategoryHandlingCache(deviceAndUserRelatedData: DeviceAndUserRelatedData) {
                     categoryHandlingCache.reportStatus(
                             user = userRelatedData,
                             timeInMillis = nowTimestamp,
                             shouldTrustTimeTemporarily = realTime.shouldTrustTimeTemporarily,
                             assumeCurrentDevice = CurrentDeviceLogic.handleDeviceAsCurrentDevice(
-                                deviceRelatedData,
-                                userRelatedData,
+                                deviceAndUserRelatedData,
                                 appLogic.currentDeviceLogic.borrowedCurrentDeviceLive.value
-                            ).also { assumeCurrentDevice = it } != CurrentDeviceLogic.HandleAsCurrentDevice.No,
+                            ).also { assumeCurrentDevice = it } is CurrentDeviceLogic.HandleAsCurrentDevice.Yes,
                             batteryStatus = batteryStatus,
                             currentNetworkId = networkId,
                             hasPremiumOrLocalMode = deviceRelatedData.isLocalMode || deviceRelatedData.isConnectedAndHasPremium
                     )
-                }; reportStatusToCategoryHandlingCache(userRelatedData)
+                }; reportStatusToCategoryHandlingCache(deviceAndUSerRelatedData)
 
                 // extend lease if it is used
-                if (assumeCurrentDevice == CurrentDeviceLogic.HandleAsCurrentDevice.YesDueToBorrowedCurrentDevice) {
+                if (assumeCurrentDevice is CurrentDeviceLogic.HandleAsCurrentDevice.Yes.BorrowedCurrentDevice) {
                     if(allAppsBaseHandlings.some { handling ->
                             handling is AppBaseHandling.UseCategories && handling.categoryIds.some { categoryId ->
                                 categoryHandlingCache.get(categoryId).dependsOnCurrentDevice
@@ -637,7 +636,7 @@ class BackgroundTaskLogic(val appLogic: AppLogic) {
                         continue
                     }
 
-                    reportStatusToCategoryHandlingCache(userRelatedData = newDeviceAndUserRelatedData.userRelatedData)
+                    reportStatusToCategoryHandlingCache(newDeviceAndUserRelatedData)
                 }
 
                 // show notification

@@ -107,10 +107,9 @@ class LockModel(application: Application): AndroidViewModel(application) {
             handlingCache.reportStatus(
                     user = deviceAndUserRelatedData.userRelatedData,
                     assumeCurrentDevice = CurrentDeviceLogic.handleDeviceAsCurrentDevice(
-                        deviceAndUserRelatedData.deviceRelatedData,
-                        deviceAndUserRelatedData.userRelatedData,
+                        deviceAndUserRelatedData,
                         borrowedCurrentDeviceLive.value
-                    ) != CurrentDeviceLogic.HandleAsCurrentDevice.No,
+                    ) is CurrentDeviceLogic.HandleAsCurrentDevice.Yes,
                     batteryStatus = batteryStatus,
                     timeInMillis = realTime.timeInMillis,
                     shouldTrustTimeTemporarily = realTime.shouldTrustTimeTemporarily,

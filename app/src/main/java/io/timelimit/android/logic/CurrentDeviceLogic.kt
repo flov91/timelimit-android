@@ -25,9 +25,9 @@ import io.timelimit.android.coroutines.executeAndWait
 import io.timelimit.android.coroutines.runAsync
 import io.timelimit.android.data.IdGenerator
 import io.timelimit.android.data.model.Device
-import io.timelimit.android.data.model.derived.DeviceRelatedData
-import io.timelimit.android.data.model.derived.UserRelatedData
+import io.timelimit.android.data.model.derived.DeviceAndUserRelatedData
 import io.timelimit.android.livedata.*
+import io.timelimit.android.logic.CurrentDeviceLogic.HandleAsCurrentDevice.No
 import io.timelimit.android.sync.actions.PingAction
 import io.timelimit.android.sync.actions.apply.ApplyActionUtil
 
@@ -39,35 +39,47 @@ class CurrentDeviceLogic(private val appLogic: AppLogic) {
         private val BORROW_REFRESH_INTERVAL = 1000 * 60 * 2 .. 1000 * 60 * 4 // 2 to 4 minutes
         private const val BORROW_EXPIRE_TIMEOUT = 1000 * 60 * 5 // 5 minutes
 
-        fun handleDeviceAsCurrentDevice(device: DeviceRelatedData, user: UserRelatedData, borrowedPrimaryDevice: String?): HandleAsCurrentDevice {
-            if (device.isLocalMode) {
-                return HandleAsCurrentDevice.YesDueToLocalMode
+        fun handleDeviceAsCurrentDevice(deviceAndUserRelatedData: DeviceAndUserRelatedData, borrowedPrimaryDevice: String?): HandleAsCurrentDevice {
+            if (deviceAndUserRelatedData.deviceRelatedData.isLocalMode) {
+                return HandleAsCurrentDevice.Yes.LocalMode
             }
 
-            if (user.user.currentDevice == device.deviceEntry.id) {
-                return HandleAsCurrentDevice.YesDueToCurrentDevice
+            val user = deviceAndUserRelatedData.userRelatedData?.user ?: return No.CurrentDeviceImpossible.NoUserAssigned
+
+            if (user.id != deviceAndUserRelatedData.deviceRelatedData.deviceEntry.currentUserId) {
+                return No.CurrentDeviceImpossible.WrongUserAssigned
             }
 
-            if (device.isConnectedAndHasPremium) {
-                if (user.user.relaxPrimaryDevice) {
-                    return HandleAsCurrentDevice.YesDueToRelaxedCurrentDevice
-                }
-
-                if (user.user.currentDevice == borrowedPrimaryDevice) {
-                    return HandleAsCurrentDevice.YesDueToBorrowedCurrentDevice
-                }
+            if (deviceAndUserRelatedData.deviceRelatedData.isConnectedAndHasPremium && user.relaxPrimaryDevice) {
+                return HandleAsCurrentDevice.Yes.RelaxedCurrentDevice
             }
 
-            return HandleAsCurrentDevice.No
+            if (user.currentDevice == deviceAndUserRelatedData.deviceRelatedData.deviceEntry.id) {
+                return HandleAsCurrentDevice.Yes.PrimaryDevice
+            }
+
+            if (deviceAndUserRelatedData.deviceRelatedData.isConnectedAndHasPremium && user.currentDevice == borrowedPrimaryDevice) {
+                return HandleAsCurrentDevice.Yes.BorrowedCurrentDevice
+            }
+
+            return No.NotPrimaryDevice
         }
     }
 
-    enum class HandleAsCurrentDevice {
-        No,
-        YesDueToLocalMode,
-        YesDueToCurrentDevice,
-        YesDueToRelaxedCurrentDevice,
-        YesDueToBorrowedCurrentDevice,
+    sealed class HandleAsCurrentDevice {
+        sealed class No: HandleAsCurrentDevice() {
+            sealed class CurrentDeviceImpossible: No() {
+                object NoUserAssigned: CurrentDeviceImpossible()
+                object WrongUserAssigned: CurrentDeviceImpossible()
+            }
+            object NotPrimaryDevice: No()
+        }
+        sealed class Yes: HandleAsCurrentDevice() {
+            object LocalMode: Yes()
+            object PrimaryDevice: Yes()
+            object RelaxedCurrentDevice: Yes()
+            object BorrowedCurrentDevice: Yes()
+        }
     }
 
     internal data class BorrowedCurrentDevice(

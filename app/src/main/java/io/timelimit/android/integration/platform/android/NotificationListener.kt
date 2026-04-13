@@ -190,10 +190,9 @@ class NotificationListener: NotificationListenerService() {
                             categoryRelatedData = categoryRelatedData,
                             user = deviceAndUserRelatedData.userRelatedData,
                             assumeCurrentDevice = CurrentDeviceLogic.handleDeviceAsCurrentDevice(
-                                    device = deviceAndUserRelatedData.deviceRelatedData,
-                                    user = deviceAndUserRelatedData.userRelatedData,
-                                    borrowedPrimaryDevice = appLogic.currentDeviceLogic.borrowedCurrentDeviceLive.value
-                            ) != CurrentDeviceLogic.HandleAsCurrentDevice.No,
+                                deviceAndUserRelatedData = deviceAndUserRelatedData,
+                                borrowedPrimaryDevice = appLogic.currentDeviceLogic.borrowedCurrentDeviceLive.value
+                            ) is CurrentDeviceLogic.HandleAsCurrentDevice.Yes,
                             batteryStatus = battery,
                             shouldTrustTimeTemporarily = time.shouldTrustTimeTemporarily,
                             timeInMillis = time.timeInMillis,
