@@ -375,7 +375,7 @@ class BackgroundTaskLogic(val appLogic: AppLogic) {
                             shouldTrustTimeTemporarily = realTime.shouldTrustTimeTemporarily,
                             assumeCurrentDevice = CurrentDeviceLogic.handleDeviceAsCurrentDevice(
                                 deviceAndUserRelatedData,
-                                appLogic.currentDeviceLogic.borrowedCurrentDeviceLive.value
+                                appLogic.currentDeviceLogic.borrowedCurrentDevice.value
                             ).also { assumeCurrentDevice = it } is CurrentDeviceLogic.HandleAsCurrentDevice.Yes,
                             batteryStatus = batteryStatus,
                             currentNetworkId = networkId,

@@ -45,7 +45,7 @@ class LockModel(application: Application): AndroidViewModel(application) {
     private val networkIdLive: LiveData<NetworkId?> by lazy { needsNetworkIdLive.switchMap { needsNetworkId ->
         if (needsNetworkId) realNetworkIdLive as LiveData<NetworkId?> else liveDataFromNullableValue(null as NetworkId?)
     }.ignoreUnchanged() }
-    private val borrowedCurrentDeviceLive = logic.currentDeviceLogic.borrowedCurrentDeviceLive
+    private val borrowedCurrentDevice = logic.currentDeviceLogic.borrowedCurrentDevice.asLiveData()
     private val handlingCache = CategoryHandlingCache()
 
     val title: String? get() = logic.platformIntegration.getLocalAppTitle(packageAndActivityNameLiveInternal.value!!.first)
@@ -70,7 +70,7 @@ class LockModel(application: Application): AndroidViewModel(application) {
             addSource(batteryStatus) { update() }
             addSource(networkIdLive) { update() }
             addSource(packageAndActivityNameLiveInternal) { update() }
-            addSource(borrowedCurrentDeviceLive) { update() }
+            addSource(borrowedCurrentDevice) { update() }
         }
 
         private fun update() {
@@ -108,7 +108,7 @@ class LockModel(application: Application): AndroidViewModel(application) {
                     user = deviceAndUserRelatedData.userRelatedData,
                     assumeCurrentDevice = CurrentDeviceLogic.handleDeviceAsCurrentDevice(
                         deviceAndUserRelatedData,
-                        borrowedCurrentDeviceLive.value
+                        borrowedCurrentDevice.value
                     ) is CurrentDeviceLogic.HandleAsCurrentDevice.Yes,
                     batteryStatus = batteryStatus,
                     timeInMillis = realTime.timeInMillis,

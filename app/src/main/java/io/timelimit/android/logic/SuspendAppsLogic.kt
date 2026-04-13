@@ -16,6 +16,7 @@
 package io.timelimit.android.logic
 
 import io.timelimit.android.async.Threads
+import io.timelimit.android.coroutines.runAsyncExpectForever
 import io.timelimit.android.data.invalidation.Observer
 import io.timelimit.android.data.invalidation.Table
 import io.timelimit.android.data.model.CategoryApp
@@ -73,7 +74,7 @@ class SuspendAppsLogic(private val appLogic: AppLogic): Observer {
         appLogic.database.registerWeakObserver(arrayOf(Table.App), WeakReference(this))
         appLogic.platformIntegration.getBatteryStatusLive().observeForever { batteryStatus = it; triggerUpdate() }
         appLogic.realTimeLogic.registerTimeModificationListener { triggerUpdate() }
-        appLogic.currentDeviceLogic.borrowedCurrentDeviceLive.observeForever { triggerUpdate() }
+        runAsyncExpectForever { appLogic.currentDeviceLogic.borrowedCurrentDevice.collect { triggerUpdate() } }
         userAndDeviceRelatedDataLive.observeForever { didLoadUserAndDeviceRelatedData = true; triggerUpdate() }
     }
 
@@ -146,7 +147,7 @@ class SuspendAppsLogic(private val appLogic: AppLogic): Observer {
                 batteryStatus = batteryStatus,
                 assumeCurrentDevice = CurrentDeviceLogic.handleDeviceAsCurrentDevice(
                     deviceAndUserRelatedData = userAndDeviceRelatedData,
-                    borrowedPrimaryDevice = appLogic.currentDeviceLogic.borrowedCurrentDeviceLive.value
+                    borrowedPrimaryDevice = appLogic.currentDeviceLogic.borrowedCurrentDevice.value
                 ) is CurrentDeviceLogic.HandleAsCurrentDevice.Yes,
                 currentNetworkId = null, // not relevant/ not suspending Apps if there is no matching network
                 hasPremiumOrLocalMode = userAndDeviceRelatedData.deviceRelatedData.isLocalMode || userAndDeviceRelatedData.deviceRelatedData.isConnectedAndHasPremium

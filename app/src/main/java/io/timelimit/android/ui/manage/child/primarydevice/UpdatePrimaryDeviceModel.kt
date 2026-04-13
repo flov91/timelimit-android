@@ -26,7 +26,6 @@ import io.timelimit.android.async.Threads
 import io.timelimit.android.coroutines.executeAndWait
 import io.timelimit.android.coroutines.runAsync
 import io.timelimit.android.livedata.castDown
-import io.timelimit.android.livedata.waitForNonNullValue
 import io.timelimit.android.livedata.waitForNullableValue
 import io.timelimit.android.livedata.waitUntilValueMatches
 import io.timelimit.android.logic.AppLogic
@@ -36,6 +35,8 @@ import io.timelimit.android.sync.network.UpdatePrimaryDeviceRequestType
 import io.timelimit.android.sync.network.UpdatePrimaryDeviceResponseType
 import kotlinx.coroutines.Job
 import kotlinx.coroutines.delay
+import kotlinx.coroutines.flow.filter
+import kotlinx.coroutines.flow.first
 import kotlinx.coroutines.isActive
 import kotlinx.coroutines.withContext
 import java.io.IOException
@@ -223,7 +224,7 @@ class UpdatePrimaryDeviceModel(application: Application): AndroidViewModel(appli
                 try {
                     val targetDeviceId = logic.currentDeviceLogic.requestBorrow()
 
-                    logic.currentDeviceLogic.borrowedCurrentDeviceLive.waitUntilValueMatches { it == targetDeviceId }
+                    logic.currentDeviceLogic.borrowedCurrentDevice.filter { it?.deviceId == targetDeviceId }.first()
 
                     statusInternal.value = Success
                 } catch (_: Exception) {

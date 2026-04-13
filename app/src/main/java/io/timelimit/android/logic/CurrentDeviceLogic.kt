@@ -16,13 +16,13 @@
 package io.timelimit.android.logic
 
 import android.util.Log
-import androidx.lifecycle.MutableLiveData
 import androidx.lifecycle.map
 import androidx.lifecycle.switchMap
 import io.timelimit.android.BuildConfig
 import io.timelimit.android.async.Threads
 import io.timelimit.android.coroutines.executeAndWait
 import io.timelimit.android.coroutines.runAsync
+import io.timelimit.android.coroutines.runAsyncExpectForever
 import io.timelimit.android.data.IdGenerator
 import io.timelimit.android.data.model.Device
 import io.timelimit.android.data.model.derived.DeviceAndUserRelatedData
@@ -30,6 +30,11 @@ import io.timelimit.android.livedata.*
 import io.timelimit.android.logic.CurrentDeviceLogic.HandleAsCurrentDevice.No
 import io.timelimit.android.sync.actions.PingAction
 import io.timelimit.android.sync.actions.apply.ApplyActionUtil
+import kotlinx.coroutines.channels.Channel
+import kotlinx.coroutines.flow.MutableStateFlow
+import kotlinx.coroutines.flow.asStateFlow
+import kotlinx.coroutines.launch
+import kotlinx.coroutines.selects.select
 
 class CurrentDeviceLogic(private val appLogic: AppLogic) {
     companion object {
@@ -39,7 +44,7 @@ class CurrentDeviceLogic(private val appLogic: AppLogic) {
         private val BORROW_REFRESH_INTERVAL = 1000 * 60 * 2 .. 1000 * 60 * 4 // 2 to 4 minutes
         private const val BORROW_EXPIRE_TIMEOUT = 1000 * 60 * 5 // 5 minutes
 
-        fun handleDeviceAsCurrentDevice(deviceAndUserRelatedData: DeviceAndUserRelatedData, borrowedPrimaryDevice: String?): HandleAsCurrentDevice {
+        fun handleDeviceAsCurrentDevice(deviceAndUserRelatedData: DeviceAndUserRelatedData, borrowedPrimaryDevice: BorrowedCurrentDevice?): HandleAsCurrentDevice {
             if (deviceAndUserRelatedData.deviceRelatedData.isLocalMode) {
                 return HandleAsCurrentDevice.Yes.LocalMode
             }
@@ -58,7 +63,12 @@ class CurrentDeviceLogic(private val appLogic: AppLogic) {
                 return HandleAsCurrentDevice.Yes.PrimaryDevice
             }
 
-            if (deviceAndUserRelatedData.deviceRelatedData.isConnectedAndHasPremium && user.currentDevice == borrowedPrimaryDevice) {
+            if (
+                deviceAndUserRelatedData.deviceRelatedData.isConnectedAndHasPremium &&
+                borrowedPrimaryDevice != null &&
+                borrowedPrimaryDevice.since != null &&
+                user.currentDevice == borrowedPrimaryDevice.deviceId
+            ) {
                 return HandleAsCurrentDevice.Yes.BorrowedCurrentDevice
             }
 
@@ -82,22 +92,19 @@ class CurrentDeviceLogic(private val appLogic: AppLogic) {
         }
     }
 
-    internal data class BorrowedCurrentDevice(
+    data class BorrowedCurrentDevice(
         val deviceId: String,
         val since: Long?,
         val tokenRequest: TokenRequest
     )
 
-    internal sealed class TokenRequest {
+    sealed class TokenRequest {
         data class Scheduled(val at: Long): TokenRequest()
         data class Ongoing(val since: Long, val token: String): TokenRequest()
     }
 
-    private val borrowedCurrentDeviceLock = Any()
-    private var borrowedCurrentDevice: BorrowedCurrentDevice? = null
-    private val borrowedCurrentDeviceLiveMutable = MutableLiveData<String?>().apply { postValue(null) }
-
-    val borrowedCurrentDeviceLive = borrowedCurrentDeviceLiveMutable.castDown()
+    private val borrowedCurrentDeviceState = MutableStateFlow(null as BorrowedCurrentDevice?)
+    val borrowedCurrentDevice = borrowedCurrentDeviceState.asStateFlow()
 
     private val userDeviceEntries = appLogic.deviceUserId.switchMap { deviceUserId ->
         if (deviceUserId == "") {
@@ -157,18 +164,14 @@ class CurrentDeviceLogic(private val appLogic: AppLogic) {
             Log.d(LOG_TAG, "ping $currentDeviceId with token $token")
         }
 
-        synchronized(borrowedCurrentDeviceLock) {
-            borrowedCurrentDevice = BorrowedCurrentDevice(
-                deviceId = currentDeviceId,
-                since = null,
-                tokenRequest = TokenRequest.Ongoing(
-                    since = appLogic.timeApi.getCurrentUptimeInMillis(),
-                    token = token
-                )
+        borrowedCurrentDeviceState.value = BorrowedCurrentDevice(
+            deviceId = currentDeviceId,
+            since = null,
+            tokenRequest = TokenRequest.Ongoing(
+                since = appLogic.timeApi.getCurrentUptimeInMillis(),
+                token = token
             )
-
-            updateBorrowLiveData()
-        }
+        )
 
         ApplyActionUtil.applyAppLogicAction(
             PingAction(
@@ -188,92 +191,118 @@ class CurrentDeviceLogic(private val appLogic: AppLogic) {
             Log.d(LOG_TAG, "got pong from $senderDeviceId with token $token")
         }
 
-        synchronized(borrowedCurrentDeviceLock) {
-            val d = borrowedCurrentDevice
-            val now = appLogic.timeApi.getCurrentUptimeInMillis()
+        val d = borrowedCurrentDeviceState.value
+        val now = appLogic.timeApi.getCurrentUptimeInMillis()
 
-            if (
-                d?.deviceId == senderDeviceId &&
-                d.tokenRequest is TokenRequest.Ongoing &&
-                d.tokenRequest.token == token &&
-                d.tokenRequest.since + BORROW_REPLY_TIMEOUT > now
-                ) {
-                borrowedCurrentDevice = d.copy(
-                    since = d.tokenRequest.since,
-                    tokenRequest = TokenRequest.Scheduled(
-                        d.tokenRequest.since + BORROW_REFRESH_INTERVAL.random()
-                    )
+        if (
+            d?.deviceId == senderDeviceId &&
+            d.tokenRequest is TokenRequest.Ongoing &&
+            d.tokenRequest.token == token &&
+            d.tokenRequest.since + BORROW_REPLY_TIMEOUT > now
+        ) {
+            val dNew = d.copy(
+                since = d.tokenRequest.since,
+                tokenRequest = TokenRequest.Scheduled(
+                    d.tokenRequest.since + BORROW_REFRESH_INTERVAL.random()
                 )
+            )
 
-                if (BuildConfig.DEBUG) {
-                    Log.d(LOG_TAG, "validated pong; current device is $borrowedCurrentDevice")
-                }
+            val updated = borrowedCurrentDeviceState.compareAndSet(d, dNew)
 
-                updateBorrowLiveData()
+            if (!updated) {
+                // concurrently updated
+
+                return
+            }
+
+            if (BuildConfig.DEBUG) {
+                Log.d(LOG_TAG, "validated pong; current device is $dNew")
             }
         }
     }
 
     fun eventuallyRefresh() {
-        synchronized(borrowedCurrentDeviceLock) {
-            val d = borrowedCurrentDevice
-            val now = appLogic.timeApi.getCurrentUptimeInMillis()
+        val d = borrowedCurrentDeviceState.value
+        val now = appLogic.timeApi.getCurrentUptimeInMillis()
 
-            // nothing to extend
-            if (d?.since == null) return
+        // nothing to extend
+        if (d?.since == null) return
 
-            // already expired
-            if (d.since + BORROW_EXPIRE_TIMEOUT <= now) return
+        // already expired
+        if (d.since + BORROW_EXPIRE_TIMEOUT <= now) return
 
-            if (d.tokenRequest is TokenRequest.Scheduled && d.tokenRequest.at <= now) {
-                val token = IdGenerator.generateId()
+        if (d.tokenRequest is TokenRequest.Scheduled && d.tokenRequest.at <= now) {
+            val token = IdGenerator.generateId()
 
-                if (BuildConfig.DEBUG) {
-                    Log.d(LOG_TAG, "refresh with token $token")
-                }
+            if (BuildConfig.DEBUG) {
+                Log.d(LOG_TAG, "refresh with token $token")
+            }
 
-                borrowedCurrentDevice = d.copy(
-                    tokenRequest = TokenRequest.Ongoing(since = now, token = token)
-                )
+            val updated = borrowedCurrentDeviceState.compareAndSet(
+                d,
+                d.copy(tokenRequest = TokenRequest.Ongoing(since = now, token = token))
+            )
 
-                updateBorrowLiveData()
+            if (!updated) {
+                // concurrent modification in between
 
-                runAsync {
-                    try {
-                        ApplyActionUtil.applyAppLogicAction(
-                            PingAction(
-                                deviceId = d.deviceId,
-                                event = PingAction.Event.Ping,
-                                token = token
-                            ),
-                            appLogic,
-                            ignoreIfDeviceIsNotConfigured = false
-                        )
-                    } catch (_: Exception) {
-                        // ignore the exception; the lease will expire soon
-                    }
+                return
+            }
+
+            runAsync {
+                try {
+                    ApplyActionUtil.applyAppLogicAction(
+                        PingAction(
+                            deviceId = d.deviceId,
+                            event = PingAction.Event.Ping,
+                            token = token
+                        ),
+                        appLogic,
+                        ignoreIfDeviceIsNotConfigured = false
+                    )
+                } catch (_: Exception) {
+                    // ignore the exception; the lease will expire soon
                 }
             }
         }
     }
 
-    private val updateBorrowLiveData = Runnable { updateBorrowLiveData() }
+    init {
+        val channel = Channel<Unit>(Channel.CONFLATED)
 
-    private fun updateBorrowLiveData() {
-        appLogic.timeApi.cancelScheduledAction(updateBorrowLiveData)
+        runAsyncExpectForever {
+            // generate change notifications
+            borrowedCurrentDeviceState.collect { channel.send(Unit) }
+        }
 
-        val d = borrowedCurrentDevice
-        val now = appLogic.timeApi.getCurrentUptimeInMillis()
+        runAsyncExpectForever {
+            while (true) {
+                val d = borrowedCurrentDeviceState.value
 
-        val valid = d?.since != null && d.since <= now && d.since + BORROW_EXPIRE_TIMEOUT > now
+                if (d == null || d.since == null) {
+                    // wait for the next value
 
-        borrowedCurrentDeviceLiveMutable.postValue(when (valid) {
-            true -> d.deviceId
-            false -> null
-        })
+                    channel.receive()
+                } else {
+                    // wait for expiry
 
-        if (valid) {
-            appLogic.timeApi.runDelayed(updateBorrowLiveData, d.since + BORROW_EXPIRE_TIMEOUT - now)
+                    val now = appLogic.timeApi.getCurrentUptimeInMillis()
+                    val valid = d.since <= now && d.since + BORROW_EXPIRE_TIMEOUT > now
+
+                    if (valid) {
+                        select {
+                            channel.onReceive {/* value changed */}
+                            launch { appLogic.timeApi.sleep(d.since + BORROW_EXPIRE_TIMEOUT - now) }.onJoin {/* timeout reached */}
+                        }
+                    } else {
+                        // wipe the value, if it is still current
+                        borrowedCurrentDeviceState.compareAndSet(d, null)
+
+                        // and consume the change notification
+                        channel.receive()
+                    }
+                }
+            }
         }
     }
 }
