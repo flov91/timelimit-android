@@ -51,10 +51,6 @@ class ManageDisableTimelimitsView(context: Context, attributeSet: AttributeSet):
 }
 
 interface ManageDisableTimelimitsViewHandlers {
-    fun disableTimeLimitsUntilSelectedTimeOfToday()
-    fun disableTimeLimitsUntilSelectedDate()
-    fun disableTimeLimitsForDuration(duration: Long)
-    fun disableTimeLimitsForToday()
     fun enableTimeLimits()
     fun showDisableTimeLimitsHelp()
 }

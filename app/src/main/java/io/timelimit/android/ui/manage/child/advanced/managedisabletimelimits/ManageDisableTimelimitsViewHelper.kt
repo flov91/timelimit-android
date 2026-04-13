@@ -1,5 +1,5 @@
 /*
- * TimeLimit Copyright <C> 2019 - 2024 Jonas Lochmann
+ * TimeLimit Copyright <C> 2019 - 2026 Jonas Lochmann
  *
  * This program is free software: you can redistribute it and/or modify
  * it under the terms of the GNU General Public License as published by
@@ -34,72 +34,10 @@ import java.time.ZoneId
 import java.util.*
 
 object ManageDisableTimelimitsViewHelper {
-    fun createHandlers(childId: String, childTimezone: String, activity: FragmentActivity, hasFullVersion: Boolean): ManageDisableTimelimitsViewHandlers {
+    fun createHandlers(childId: String, activity: FragmentActivity): ManageDisableTimelimitsViewHandlers {
         val auth = getActivityViewModel(activity)
-        val logic = DefaultAppLogic.with(activity)
-
-        fun getCurrentTime() = RealTime.newInstance().apply {
-            logic.realTimeLogic.getRealTime(this)
-        }.timeInMillis
 
         return object : ManageDisableTimelimitsViewHandlers {
-            override fun disableTimeLimitsForDuration(duration: Long) {
-                if (!hasFullVersion) {
-                    RequiresPurchaseDialogFragment().show(activity.supportFragmentManager)
-                    return
-                }
-
-                auth.tryDispatchParentAction(
-                        SetUserDisableLimitsUntilAction(
-                                childId = childId,
-                                timestamp = getCurrentTime() + duration
-                        )
-                )
-            }
-
-            override fun disableTimeLimitsForToday() {
-                if (!hasFullVersion) {
-                    RequiresPurchaseDialogFragment().show(activity.supportFragmentManager)
-                    return
-                }
-
-                val dayOfEpoch = DateInTimezone.newInstance(getCurrentTime(), TimeZone.getTimeZone(childTimezone)).dayOfEpoch.toLong()
-
-                val nextDayStart = LocalDate.ofEpochDay(dayOfEpoch)
-                        .plusDays(1)
-                        .atStartOfDay(ZoneId.of(childTimezone))
-                        .toEpochSecond() * 1000
-
-                auth.tryDispatchParentAction(
-                        SetUserDisableLimitsUntilAction(
-                                childId = childId,
-                                timestamp = nextDayStart
-                        )
-                )
-            }
-
-            override fun disableTimeLimitsUntilSelectedDate() {
-                if (!hasFullVersion) {
-                    RequiresPurchaseDialogFragment().show(activity.supportFragmentManager)
-                    return
-                }
-
-                if (auth.requestAuthenticationOrReturnTrue()) {
-                    DisableTimelimitsUntilDateDialogFragment.newInstance(childId).show(activity.supportFragmentManager)
-                }
-            }
-
-            override fun disableTimeLimitsUntilSelectedTimeOfToday() {
-                if (!hasFullVersion) {
-                    RequiresPurchaseDialogFragment().show(activity.supportFragmentManager)
-                    return
-                }
-
-                if (auth.requestAuthenticationOrReturnTrue()) {
-                    DisableTimelimitsUntilTimeDialogFragment.newInstance(childId).show(activity.supportFragmentManager)
-                }
-            }
-
             override fun enableTimeLimits() {
                 auth.tryDispatchParentAction(
                         SetUserDisableLimitsUntilAction(

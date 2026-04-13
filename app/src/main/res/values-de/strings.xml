@@ -1066,6 +1066,7 @@
     <string name="manage_disable_time_limits_title">Zeitbegrenzungen deaktivieren</string>
     <string name="manage_disable_time_limits_text">Hiermit können alle Zeitbegrenzungen und Sperrzeiten aufgehoben werden</string>
     <string name="manage_disable_time_limits_info_enabled">Zeitbegrenzungen sind deaktiviert bis %s</string>
+    <string name="manage_disable_time_limits_obsolete">Diese Option ist veraltet. Verwenden Sie die Option an den Kategorien.</string>
 
     <string name="manage_disable_time_limits_btn_enable">Zeitbegrenzungen wieder aktivieren</string>
     <string name="manage_disable_time_limits_btn_10_min">für 10 Minuten</string>

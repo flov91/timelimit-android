@@ -1,5 +1,5 @@
 /*
- * TimeLimit Copyright <C> 2019 - 2023 Jonas Lochmann
+ * TimeLimit Copyright <C> 2019 - 2026 Jonas Lochmann
  *
  * This program is free software: you can redistribute it and/or modify
  * it under the terms of the GNU General Public License as published by
@@ -57,20 +57,10 @@ class ManageChildAdvancedFragment : Fragment() {
         val binding = FragmentManageChildAdvancedBinding.inflate(layoutInflater, container, false)
 
         run {
-            // disable time limits
-
-            mergeLiveData(childEntry, logic.fullVersion.shouldProvideFullVersionFunctions).observe(viewLifecycleOwner, Observer {
-                (child, hasFullVersion) ->
-
-                if (child != null) {
-                    binding.disableTimeLimits.handlers = ManageDisableTimelimitsViewHelper.createHandlers(
-                            childId = childId,
-                            childTimezone = child.timeZone,
-                            activity = requireActivity(),
-                            hasFullVersion = hasFullVersion == true
-                    )
-                }
-            })
+            binding.disableTimeLimits.handlers = ManageDisableTimelimitsViewHelper.createHandlers(
+                childId = childId,
+                activity = requireActivity(),
+            )
 
             mergeLiveData(childEntry, liveDataFromFunction { logic.realTimeLogic.getCurrentTimeInMillis() }).map {
                 (child, time) ->

@@ -1115,6 +1115,7 @@
     <string name="manage_disable_time_limits_title">Disable time limits</string>
     <string name="manage_disable_time_limits_text">Using this, all time limits and blocked time areas can be disabled</string>
     <string name="manage_disable_time_limits_info_enabled">Time limits are disabled until %s</string>
+    <string name="manage_disable_time_limits_obsolete">This option is obsolete. Use the option at the categories.</string>
 
     <string name="manage_disable_time_limits_btn_enable">Enable time limits again</string>
     <string name="manage_disable_time_limits_btn_10_min">for 10 minutes</string>
