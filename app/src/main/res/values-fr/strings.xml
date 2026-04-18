@@ -360,7 +360,7 @@
     <string name="u2f_login_error_unknown">clé inconnue</string>
     <string name="u2f_login_error_invalid">clé invalide</string>
     <string name="account_deletion_title">Supprimer le compte</string>
-    <string name="account_deletion_text_no_account">Vous n\'utiliser pas le mode connecté, il n\'y a aucun compte à supprimer</string>
+    <string name="account_deletion_text_no_account">Vous n\'utilisez pas le mode connecté, il n\'y a aucun compte à supprimer</string>
     <string name="account_deletion_text_done">Votre demande a été envoyée</string>
     <string name="account_deletion_confirmation_premium_toggle">J\'accepte que ma version premium (si elle existe) soit supprimée sans substitut</string>
     <string name="account_deletion_confirmation_button">Confirmer la demande de suppression</string>
