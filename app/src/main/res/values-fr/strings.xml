@@ -403,7 +403,7 @@
     <string name="diagnose_bat_status">Statut : %s</string>
     <string name="diagnose_bat_status_mobile">Chargeur débranché</string>
     <string name="diagnose_bat_status_charging">Chargeur branché/ batterie pleine</string>
-    <string name="diagnose_bat_level">Niveau de batterie : %d%</string>
+    <string name="diagnose_bat_level">Niveau : %d%</string>
     <string name="child_self_limit_add_help">Ceci est surtout utile pour les limitations imposées à soi-même. Elle permet d\'ajouter des limites sans se connecter en tant que parent :\n- ajouter des règles de limite de temps.\n- étendre les plages horaires de blocage.\n- ajouter du temps d\'utilisation.\n- créer des catégories.\n- activer le filtre de notifications pour une catégorie.\n- paramétrer une catégorie-parent du moment que la catégorie est déplacée plus bas dans la hiérarchie des catégories.\n- ajouter des applis à des catégories si elles sont déplacées à une catégorie-enfant de leur catégorie actuelle, ou si elles ne font partie d\'aucune catégorie et que la catégorie cible est une catégorie-enfant de la catégorie pour les applis non-affectées.\n- bloquer temporairement des catégories et étendre le blocage temporaire des catégories.\n- désactiver la désactivation temporaire des limites d\'une catégorie</string>
     <string name="diagnose_clock_day_of_epoch">Jour de l\'époque : %d</string>
     <string name="diagnose_exf_rsl">Seulement autoriser l\'identification d\'utilisateurs Parent avec une catégorie de limitation d\'identification après la synchronisation</string>
