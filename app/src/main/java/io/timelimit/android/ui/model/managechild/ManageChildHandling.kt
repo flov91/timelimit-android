@@ -506,6 +506,43 @@ object ManageChildHandling {
         })
     }
 
+    suspend fun unsetCurrentDeviceInBackground(logic: AppLogic) {
+        val userAndDeviceRelatedData = Threads.database.executeAndWait {
+            logic.database.derivedDataDao().getUserAndDeviceRelatedDataSync()
+        }!!
+
+        val user = userAndDeviceRelatedData.userRelatedData!!.user
+
+        if (user.currentDevice != userAndDeviceRelatedData.deviceRelatedData.deviceEntry.id) throw IllegalStateException()
+
+        logic.syncUtil.requestImportantSyncAndWait()
+
+        val server = logic.serverLogic.getServerConfigCoroutine()
+
+        val response = server.api.updatePrimaryDevice(
+            UpdatePrimaryDeviceRequest(
+                action = UpdatePrimaryDeviceRequestType.UnsetThisDevice,
+                currentUserId = user.id,
+                deviceAuthToken = server.deviceAuthToken
+            )
+        )
+
+        if (response.status != UpdatePrimaryDeviceResponseType.Success) {
+            throw IllegalStateException()
+        }
+
+        // adjust in database
+        Threads.database.executeAndWait {
+            logic.database.runInTransaction {
+                logic.database.user().updateUserSync(
+                    logic.database.user()
+                        .getUserByIdSync(user.id)!!
+                        .copy(currentDevice = "")
+                )
+            }
+        }
+    }
+
     sealed class CurrentDeviceContent {
         object LocalModeContent: CurrentDeviceContent()
         class InactiveUserContent(

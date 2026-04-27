@@ -1,5 +1,5 @@
 /*
- * TimeLimit Copyright <C> 2019 - 2023 Jonas Lochmann
+ * TimeLimit Copyright <C> 2019 - 2026 Jonas Lochmann
  *
  * This program is free software: you can redistribute it and/or modify
  * it under the terms of the GNU General Public License as published by
@@ -30,7 +30,7 @@ import io.timelimit.android.sync.websocket.WebsocketClient
 import io.timelimit.android.sync.websocket.WebsocketClientCreator
 import io.timelimit.android.sync.websocket.WebsocketClientListener
 import io.timelimit.android.ui.IsAppInForeground
-import io.timelimit.android.ui.manage.child.primarydevice.UpdatePrimaryDeviceModel
+import io.timelimit.android.ui.model.managechild.ManageChildHandling
 
 class WebsocketClientLogic(
         private val appLogic: AppLogic,
@@ -205,7 +205,7 @@ class WebsocketClientLogic(
                                                 throw IllegalStateException("current device would be affected by primary device")
                                             }
 
-                                            UpdatePrimaryDeviceModel.unsetPrimaryDeviceInBackground(appLogic)
+                                            ManageChildHandling.unsetCurrentDeviceInBackground(appLogic)
                                         } catch (ex: Exception) {
                                             if (BuildConfig.DEBUG) {
                                                 Log.w(LOG_TAG, "could not unset this device as current device", ex)
