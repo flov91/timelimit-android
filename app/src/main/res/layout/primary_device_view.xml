@@ -49,14 +49,14 @@
             <TextView
                 android:id="@+id/title_view"
                 android:textAppearance="?android:textAppearanceLarge"
-                android:text="@string/primary_device_title"
+                android:text="@string/current_device_title"
                 android:layout_width="match_parent"
                 android:layout_height="wrap_content" />
 
             <TextView
                 android:visibility="@{status == PrimaryDeviceStatus.LocalMode ? View.VISIBLE : View.GONE}"
                 android:textAppearance="?android:textAppearanceMedium"
-                android:text="@string/primary_device_status_local_mode"
+                android:text="@string/current_device_status_local_mode"
                 android:layout_width="match_parent"
                 android:layout_height="wrap_content" />
 

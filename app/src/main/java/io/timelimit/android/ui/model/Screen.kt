@@ -108,7 +108,7 @@ sealed class Screen(
         state,
         toolbarIcons = IntroHandling.toolbarIcons(intro)
     ), ScreenWithBackStack, ScreenWithTitle, ScreenWithSnackbar, ScreenWithAuthenticationFab {
-        override val title = Title.StringResource(R.string.primary_device_title)
+        override val title = Title.StringResource(R.string.current_device_title)
     }
 
     class ManageChildContactsScreen(
