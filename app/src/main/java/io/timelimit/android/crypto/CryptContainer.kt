@@ -1,5 +1,5 @@
 /*
- * TimeLimit Copyright <C> 2019 - 2022 Jonas Lochmann
+ * TimeLimit Copyright <C> 2019 - 2026 Jonas Lochmann
  *
  * This program is free software: you can redistribute it and/or modify
  * it under the terms of the GNU General Public License as published by
@@ -27,6 +27,10 @@ object CryptContainer {
     const val KEY_SIZE = 16
     private const val AUTH_TAG_BITS = 128
     private const val AUTH_TAG_BYTES = AUTH_TAG_BITS / 8
+
+    const val FORMAT_LEGACY = 0
+    const val FORMAT_APP_LIST_V2 = 1
+    const val FORMAT_APP_DIFF_V2 = 2
 
     data class EncryptParameters(val generation: Long, val counter: Long, val key: ByteArray) {
         companion object {
@@ -93,31 +97,40 @@ object CryptContainer {
         return SecretKeySpec(key, "AES")
     }
 
-    private fun buildAAD(generation: Long): ByteArray = ByteArray(8).also { result ->
-        ByteBuffer.wrap(result).putLong(0, generation)
-    }
+    private fun buildAAD(generation: Long, formatVersion: Int): ByteArray =
+        if (formatVersion == 0) {
+            ByteArray(8).also { result ->
+                ByteBuffer.wrap(result).putLong(0, generation)
+            }
+        } else {
+            ByteArray(12).also { result ->
+                ByteBuffer.wrap(result)
+                    .putLong(0, generation)
+                    .putInt(8, formatVersion)
+            }
+        }
 
-    fun decrypt(key: ByteArray, input: ByteArray): ByteArray {
+    fun decrypt(key: ByteArray, input: ByteArray, formatVersion: Int): ByteArray {
         val header = Header.read(input)
 
         val cipher = Cipher.getInstance("AES/GCM/NoPadding").also {
             it.init(Cipher.DECRYPT_MODE, buildSecretKey(key), GCMParameterSpec(AUTH_TAG_BITS, buildIV(header.counter, header.iv)))
-            it.updateAAD(buildAAD(header.generation))
+            it.updateAAD(buildAAD(header.generation, formatVersion))
         }
 
         try {
             return cipher.doFinal(input, Header.SIZE, input.size - Header.SIZE)
-        } catch (ex: AEADBadTagException) {
+        } catch (_: AEADBadTagException) {
             throw CryptException.WrongKey()
         }
     }
 
-    fun encrypt(input: ByteArray, params: EncryptParameters): ByteArray {
+    fun encrypt(input: ByteArray, params: EncryptParameters, formatVersion: Int): ByteArray {
         val iv = SecureRandom().nextInt()
 
         val cipher = Cipher.getInstance("AES/GCM/NoPadding").also {
             it.init(Cipher.ENCRYPT_MODE, buildSecretKey(params.key), GCMParameterSpec(AUTH_TAG_BITS, buildIV(params.counter, iv)))
-            it.updateAAD(buildAAD(params.generation))
+            it.updateAAD(buildAAD(params.generation, formatVersion))
         }
 
         val result = ByteArray(Header.SIZE + input.size + AUTH_TAG_BYTES)

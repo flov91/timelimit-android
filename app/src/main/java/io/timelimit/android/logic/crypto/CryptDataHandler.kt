@@ -1,5 +1,5 @@
 /*
- * TimeLimit Copyright <C> 2019 - 2022 Jonas Lochmann
+ * TimeLimit Copyright <C> 2019 - 2026 Jonas Lochmann
  *
  * This program is free software: you can redistribute it and/or modify
  * it under the terms of the GNU General Public License as published by
@@ -101,14 +101,18 @@ object CryptDataHandler {
         } else if (currentItem.currentGenerationKey == null) {
             currentItem.copy(status = CryptContainerMetadata.ProcessingStatus.MissingKey)
         } else {
-            try {
-                CryptContainer.decrypt(currentItem.currentGenerationKey, data.data)
+            val isCryptoValid = isKeyValid(
+                key = currentItem.currentGenerationKey,
+                data = data.data,
+                type = type
+            )
 
+            if (isCryptoValid) {
                 currentItem.copy(
                     status = CryptContainerMetadata.ProcessingStatus.Unprocessed,
                     nextCounter = header.counter + 1
                 )
-            } catch (ex: CryptException.WrongKey) {
+            } else {
                 currentItem.copy(status = CryptContainerMetadata.ProcessingStatus.CryptoDamage)
             }
         }
@@ -165,5 +169,27 @@ object CryptDataHandler {
 
     data class Result (val didCreateKeyRequests: Boolean) {
         fun or(other: Result) = Result(this.didCreateKeyRequests or other.didCreateKeyRequests)
+    }
+
+    fun isKeyValid(key: ByteArray, data: ByteArray, type: Int) = try {
+        CryptContainer.decrypt(key, data, CryptContainer.FORMAT_LEGACY)
+
+        true
+    } catch (_: CryptException.WrongKey) {
+        try {
+            if (type == CryptContainerMetadata.TYPE_APP_LIST_BASE) {
+                CryptContainer.decrypt(key, data, CryptContainer.FORMAT_APP_LIST_V2)
+
+                true
+            } else if (type == CryptContainerMetadata.TYPE_APP_LIST_DIFF) {
+                CryptContainer.decrypt(key, data, CryptContainer.FORMAT_APP_DIFF_V2)
+
+                true
+            } else {
+                false
+            }
+        } catch (_: CryptException.WrongKey) {
+            false
+        }
     }
 }

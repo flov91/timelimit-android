@@ -1,5 +1,5 @@
 /*
- * TimeLimit Copyright <C> 2019 - 2022 Jonas Lochmann
+ * TimeLimit Copyright <C> 2019 - 2026 Jonas Lochmann
  *
  * This program is free software: you can redistribute it and/or modify
  * it under the terms of the GNU General Public License as published by
@@ -25,6 +25,7 @@ import androidx.lifecycle.LiveData
 import androidx.paging.LivePagedListBuilder
 import androidx.recyclerview.widget.LinearLayoutManager
 import io.timelimit.android.R
+import io.timelimit.android.async.Threads
 import io.timelimit.android.databinding.DiagnoseCryptoFragmentBinding
 import io.timelimit.android.livedata.liveDataFromNullableValue
 import io.timelimit.android.logic.DefaultAppLogic
@@ -45,6 +46,16 @@ class DiagnoseCryptoFragment : Fragment(), FragmentWithCustomTitle {
                     adapter.submitList(it)
                     binding.isListEmpty = it.isEmpty()
                 }
+
+        binding.clearCacheBtn.setOnClickListener {
+            Threads.database.execute {
+                try {
+                    logic.database.cryptContainer().resetDamagedContent()
+                } catch (_: Exception) {
+                    // ignore
+                }
+            }
+        }
 
         return binding.root
     }

@@ -1,5 +1,5 @@
 /*
- * TimeLimit Copyright <C> 2019 - 2022 Jonas Lochmann
+ * TimeLimit Copyright <C> 2019 - 2026 Jonas Lochmann
  *
  * This program is free software: you can redistribute it and/or modify
  * it under the terms of the GNU General Public License as published by
@@ -15,56 +15,54 @@
  */
 package io.timelimit.android.logic.applist
 
-import io.timelimit.android.proto.toAppActivityItem
-import io.timelimit.android.proto.toInstalledApp
+import io.timelimit.android.logic.applist.data.InstalledAppsDer
+import io.timelimit.android.logic.applist.data.InstalledAppsDifferenceDer
+import io.timelimit.android.logic.applist.data.RemovedAppActivityDer
 import io.timelimit.android.sync.actions.AddInstalledAppsAction
 import io.timelimit.android.sync.actions.AppLogicAction
 import io.timelimit.android.sync.actions.RemoveInstalledAppsAction
 import io.timelimit.android.sync.actions.UpdateAppActivitiesAction
-import io.timelimit.proto.applist.InstalledAppsDifferenceProto
-import io.timelimit.proto.applist.InstalledAppsProto
-import io.timelimit.proto.applist.RemovedAppActivityProto
 
 object AppsDifferenceUtil {
-    fun calculateAppsDifference(old: InstalledAppsProto, current: InstalledAppsProto): InstalledAppsDifferenceProto {
-        val oldAppsByPackageName = old.apps.associateBy { it.package_name }
-        val packageNamesToRemove = (oldAppsByPackageName.keys - current.apps.map { it.package_name }.toSet()).toList()
-        val appsToAdd = current.apps.filter { app -> oldAppsByPackageName[app.package_name] != app }
+    fun calculateAppsDifference(old: InstalledAppsDer, current: InstalledAppsDer): InstalledAppsDifferenceDer {
+        val oldAppsByPackageName = old.apps.associateBy { it.packageName }
+        val packageNamesToRemove = (oldAppsByPackageName.keys - current.apps.map { it.packageName }.toSet()).toList()
+        val appsToAdd = current.apps.filter { app -> oldAppsByPackageName[app.packageName] != app }
 
-        val oldActivitiesIndexed = old.activities.associateBy { Pair(it.package_name, it.class_name) }
-        val currentActivitiesIndexed = current.activities.associateBy { Pair(it.package_name, it.class_name) }
+        val oldActivitiesIndexed = old.activities.associateBy { Pair(it.packageName, it.className) }
+        val currentActivitiesIndexed = current.activities.associateBy { Pair(it.packageName, it.className) }
         val activitiesToRemove = (oldActivitiesIndexed.keys - currentActivitiesIndexed.keys)
-            .map { activity -> RemovedAppActivityProto(package_name = activity.first, class_name = activity.second) }
+            .map { activity -> RemovedAppActivityDer(packageName = activity.first, className = activity.second) }
         val activitiesToAdd = currentActivitiesIndexed.filter { (key, activity) -> oldActivitiesIndexed[key] != activity }
             .values.toList()
 
-        return InstalledAppsDifferenceProto(
-            added = InstalledAppsProto(
+        return InstalledAppsDifferenceDer(
+            added = InstalledAppsDer(
                 apps = appsToAdd,
                 activities = activitiesToAdd
             ),
-            removed_packages = packageNamesToRemove,
-            removed_activities = activitiesToRemove
+            removedPackages = packageNamesToRemove,
+            removedActivities = activitiesToRemove
         )
     }
 
-    fun calculateAppsDifferenceActions(difference: InstalledAppsDifferenceProto, deviceId: String): List<AppLogicAction> {
+    fun calculateAppsDifferenceActions(difference: InstalledAppsDifferenceDer): List<AppLogicAction> {
         val result = mutableListOf<AppLogicAction>()
 
-        if (difference.removed_packages.isNotEmpty()) {
-            result.add(RemoveInstalledAppsAction(packageNames = difference.removed_packages))
+        if (difference.removedPackages.isNotEmpty()) {
+            result.add(RemoveInstalledAppsAction(packageNames = difference.removedPackages))
         }
 
-        if (difference.added != null && difference.added.apps.isNotEmpty()) {
+        if (difference.added.apps.isNotEmpty()) {
             result.add(AddInstalledAppsAction(apps = difference.added.apps.map { it.toInstalledApp() }))
         }
 
-        val addedActivities = difference.added?.activities ?: emptyList()
-        val removedActivities = difference.removed_activities
+        val addedActivities = difference.added.activities
+        val removedActivities = difference.removedActivities
 
         if (addedActivities.isNotEmpty() || removedActivities.isNotEmpty()) {
             result.add(UpdateAppActivitiesAction(
-                removedActivities = removedActivities.map { it.package_name to it.class_name },
+                removedActivities = removedActivities.map { it.packageName to it.className },
                 updatedOrAddedActivities = addedActivities.map { it.toAppActivityItem() }
             ))
         }

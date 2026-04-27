@@ -102,7 +102,7 @@ class SyncInstalledAppsLogic(val appLogic: AppLogic) {
             val savedPlain = InstalledAppsUtil.getInstalledAppsFromPlainDatabaseAsync(appLogic.database, deviceState.id)
 
             val diffPlain = AppsDifferenceUtil.calculateAppsDifference(savedPlain, installed)
-            val diffPlainActions = AppsDifferenceUtil.calculateAppsDifferenceActions(diffPlain, deviceState.id)
+            val diffPlainActions = AppsDifferenceUtil.calculateAppsDifferenceActions(diffPlain)
 
             if (diffPlainActions.isNotEmpty()) {
                 Threads.database.executeAndWait {

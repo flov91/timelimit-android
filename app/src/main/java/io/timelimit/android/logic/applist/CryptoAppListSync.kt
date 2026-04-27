@@ -1,5 +1,5 @@
 /*
- * TimeLimit Copyright <C> 2019 - 2022 Jonas Lochmann
+ * TimeLimit Copyright <C> 2019 - 2026 Jonas Lochmann
  *
  * This program is free software: you can redistribute it and/or modify
  * it under the terms of the GNU General Public License as published by
@@ -21,25 +21,29 @@ import io.timelimit.android.crypto.CryptContainer
 import io.timelimit.android.data.Database
 import io.timelimit.android.data.model.CryptContainerData
 import io.timelimit.android.data.model.CryptContainerMetadata
-import io.timelimit.android.extensions.encodedSize
 import io.timelimit.android.logic.ServerApiLevelInfo
+import io.timelimit.android.logic.applist.data.InstalledAppsDer
+import io.timelimit.android.logic.applist.data.InstalledAppsDifferenceDer
+import io.timelimit.android.logic.applist.data.SavedAppsDifferenceDer
 import io.timelimit.android.proto.build
 import io.timelimit.android.proto.encodeDeflated
+import io.timelimit.android.proto.encodeDeflatedDer
 import io.timelimit.android.sync.SyncUtil
 import io.timelimit.android.sync.actions.AppLogicAction
 import io.timelimit.android.sync.actions.UpdateInstalledAppsAction
 import io.timelimit.android.sync.actions.apply.ApplyActionUtil
 import io.timelimit.proto.applist.InstalledAppsDifferenceProto
-import io.timelimit.proto.applist.InstalledAppsProto
 import io.timelimit.proto.applist.SavedAppsDifferenceProto
 
 object CryptoAppListSync {
+    private const val ENCRYPT_LEGACY = true
+
     class TooLargeException(val size: Int): RuntimeException("app list is too big: $size")
 
     suspend fun sync(
         deviceState: DeviceState,
         database: Database,
-        installed: InstalledAppsProto,
+        installed: InstalledAppsDer,
         syncUtil: SyncUtil,
         serverApiLevelInfo: ServerApiLevelInfo
     ) {
@@ -91,7 +95,7 @@ object CryptoAppListSync {
             forceNewGeneration = baseCryptConfig.type != CryptContainerMetadata.PrepareEncryptionResult.Type.IncrementedCounter || savedCrypt.base?.decrypted == null
         )
 
-        val diffCrypto: InstalledAppsDifferenceProto? = if (savedCrypt.base?.decrypted == null) null
+        val diffCrypto: InstalledAppsDifferenceDer? = if (savedCrypt.base?.decrypted == null) null
         else AppsDifferenceUtil.calculateAppsDifference(savedCrypt.base.decrypted.data, installed)
 
         if (
@@ -107,18 +111,45 @@ object CryptoAppListSync {
                 diffCrypto.encodedSize() >= savedCrypt.base.decrypted.data.encodedSize() / 10
             ) {
                 val (baseEncrypted, diffEncrypted) = Threads.crypto.executeAndWait {
-                    val baseEncrypted = CryptContainer.encrypt(
-                        installed.encodeDeflated(),
-                        baseCryptConfig.params
-                    )
+                    val baseEncrypted =
+                        if (ENCRYPT_LEGACY)
+                            CryptContainer.encrypt(
+                                installed.toProto().encodeDeflated(),
+                                baseCryptConfig.params,
+                                CryptContainer.FORMAT_LEGACY
+                            )
+                    else
+                            CryptContainer.encrypt(
+                                encodeDeflatedDer { installed.derEncode(it) },
+                                baseCryptConfig.params,
+                                CryptContainer.FORMAT_APP_LIST_V2
+                            )
 
-                    val diffEncrypted = CryptContainer.encrypt(
-                        SavedAppsDifferenceProto.build(
-                            baseEncrypted,
-                            InstalledAppsDifferenceProto()
-                        ).encodeDeflated(),
-                        diffCryptConfig.params
-                    )
+                    val diffEncrypted =
+                        if (ENCRYPT_LEGACY) {
+                            CryptContainer.encrypt(
+                                SavedAppsDifferenceProto.build(
+                                    baseEncrypted,
+                                    InstalledAppsDifferenceProto()
+                                ).encodeDeflated(),
+                                diffCryptConfig.params,
+                                CryptContainer.FORMAT_LEGACY
+                            )
+                        } else {
+                            val baseHeader = CryptContainer.Header.read(baseEncrypted)
+
+                            val diff = SavedAppsDifferenceDer(
+                                InstalledAppsDifferenceDer(),
+                                baseHeader.generation,
+                                baseHeader.counter
+                            )
+
+                            CryptContainer.encrypt(
+                                encodeDeflatedDer { diff.derEncode(it) },
+                                diffCryptConfig.params,
+                                CryptContainer.FORMAT_APP_DIFF_V2
+                            )
+                        }
 
                     Pair(baseEncrypted, diffEncrypted)
                 }
@@ -171,15 +202,31 @@ object CryptoAppListSync {
 
                 syncUtil.requestImportantSync()
             } else {
-                val diffEncrypted = Threads.crypto.executeAndWait {
-                    CryptContainer.encrypt(
-                        SavedAppsDifferenceProto.build(
-                            savedCrypt.base.decrypted.header,
-                            diffCrypto
-                        ).encodeDeflated(),
-                        diffCryptConfig.params
-                    )
-                }
+                val diffEncrypted =
+                    if (ENCRYPT_LEGACY) {
+                        CryptContainer.encrypt(
+                            SavedAppsDifferenceProto.build(
+                                savedCrypt.base.decrypted.header,
+                                diffCrypto.toProto()
+                            ).encodeDeflated(),
+                            diffCryptConfig.params,
+                            CryptContainer.FORMAT_LEGACY
+                        )
+                    } else {
+                        val baseHeader = savedCrypt.base.decrypted.header
+
+                        val diff = SavedAppsDifferenceDer(
+                            diffCrypto,
+                            baseHeader.generation,
+                            baseHeader.counter
+                        )
+
+                        CryptContainer.encrypt(
+                            encodeDeflatedDer { diff.derEncode(it) },
+                            diffCryptConfig.params,
+                            CryptContainer.FORMAT_APP_DIFF_V2
+                        )
+                    }
 
                 throwIfTooLarge(diffEncrypted)
 

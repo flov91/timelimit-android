@@ -1,5 +1,5 @@
 /*
- * TimeLimit Copyright <C> 2019 - 2022 Jonas Lochmann
+ * TimeLimit Copyright <C> 2019 - 2026 Jonas Lochmann
  *
  * This program is free software: you can redistribute it and/or modify
  * it under the terms of the GNU General Public License as published by
@@ -68,6 +68,9 @@ interface CryptContainerDao {
 
     @Query("SELECT * FROM crypt_container_metadata")
     fun getDiagnoseData(): DataSource.Factory<Int, CryptContainerMetadata>
+
+    @Query("UPDATE crypt_container_metadata SET status = 2 WHERE status IN (3, 4)")
+    fun resetDamagedContent()
 
     @Entity
     data class MetadataAndContent(

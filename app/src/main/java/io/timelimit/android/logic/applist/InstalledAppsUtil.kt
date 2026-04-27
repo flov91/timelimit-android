@@ -1,5 +1,5 @@
 /*
- * TimeLimit Copyright <C> 2019 - 2022 Jonas Lochmann
+ * TimeLimit Copyright <C> 2019 - 2026 Jonas Lochmann
  *
  * This program is free software: you can redistribute it and/or modify
  * it under the terms of the GNU General Public License as published by
@@ -28,9 +28,12 @@ import io.timelimit.android.data.model.CryptContainerMetadata
 import io.timelimit.android.livedata.waitForNonNullValue
 import io.timelimit.android.logic.AppLogic
 import io.timelimit.android.logic.DummyApps
+import io.timelimit.android.logic.applist.data.InstalledAppsDer
+import io.timelimit.android.logic.applist.data.InstalledAppsDifferenceDer
+import io.timelimit.android.logic.applist.data.SavedAppsDifferenceDer
 import io.timelimit.android.proto.decodeInflated
-import io.timelimit.android.proto.toProto
-import io.timelimit.proto.applist.InstalledAppsDifferenceProto
+import io.timelimit.android.proto.decodeInflatedDer
+import io.timelimit.android.proto.toDer
 import io.timelimit.proto.applist.InstalledAppsProto
 import io.timelimit.proto.applist.SavedAppsDifferenceProto
 import java.io.IOException
@@ -38,10 +41,10 @@ import java.io.IOException
 object InstalledAppsUtil {
     private const val LOG_TAG = "InstalledAppsUtil"
 
-    suspend fun getInstalledAppsFromPlainDatabaseAsync(database: Database, deviceId: String): InstalledAppsProto {
-        return InstalledAppsProto(
-            apps = database.app().getAppsByDeviceIdAsync(deviceId = deviceId).waitForNonNullValue().map { it.toProto() },
-            activities = database.appActivity().getAppActivitiesByDeviceIds(deviceIds = listOf(deviceId)).waitForNonNullValue().map { it.toProto() }
+    suspend fun getInstalledAppsFromPlainDatabaseAsync(database: Database, deviceId: String): InstalledAppsDer {
+        return InstalledAppsDer(
+            apps = database.app().getAppsByDeviceIdAsync(deviceId = deviceId).waitForNonNullValue().map { it.toDer() },
+            activities = database.appActivity().getAppActivitiesByDeviceIds(deviceIds = listOf(deviceId)).waitForNonNullValue().map { it.toDer() }
         )
     }
 
@@ -75,12 +78,10 @@ object InstalledAppsUtil {
                 ) {
                     val baseHeader = CryptContainer.Header.read(baseValue.encryptedData)
 
-                    val baseDecrypted = CryptContainer.decrypt(
-                        baseValue.metadata.currentGenerationKey,
-                        baseValue.encryptedData
+                    val baseData = decryptAppList(
+                        key = baseValue.metadata.currentGenerationKey,
+                        data = baseValue.encryptedData
                     )
-
-                    val baseData = InstalledAppsProto.ADAPTER.decodeInflated(baseDecrypted)
 
                     Decrypted(
                         data = baseData,
@@ -109,17 +110,13 @@ object InstalledAppsUtil {
                 ) {
                     val diffHeader = CryptContainer.Header.read(diffValue.encryptedData)
 
-                    val diffDecrypted = CryptContainer.decrypt(
-                        diffValue.metadata.currentGenerationKey,
-                        diffValue.encryptedData
+                    val diffData = decryptAppDiff(
+                        key = diffValue.metadata.currentGenerationKey,
+                        data = diffValue.encryptedData
                     )
 
-                    val diffData =
-                        SavedAppsDifferenceProto.ADAPTER.decodeInflated(diffDecrypted).apps
-                            ?: InstalledAppsDifferenceProto()
-
                     Decrypted(
-                        data = diffData,
+                        data = diffData.apps,
                         header = diffHeader
                     )
                 } else null
@@ -145,15 +142,15 @@ object InstalledAppsUtil {
     }
 
     data class EncryptedInstalledApps(
-        val base: Encrypted<InstalledAppsProto>?,
-        val diff: Encrypted<InstalledAppsDifferenceProto>?
+        val base: Encrypted<InstalledAppsDer>?,
+        val diff: Encrypted<InstalledAppsDifferenceDer>?
     )
 
     data class Encrypted<T>(val meta: CryptContainerMetadata, val decrypted: Decrypted<T>?)
 
     data class Decrypted<T>(val data: T, val header: CryptContainer.Header)
 
-    suspend fun getInstalledAppsFromOs(appLogic: AppLogic, deviceState: DeviceState): InstalledAppsProto {
+    suspend fun getInstalledAppsFromOs(appLogic: AppLogic, deviceState: DeviceState): InstalledAppsDer {
         val apps = kotlin.run {
             val currentlyInstalled = Threads.backgroundOSInteraction.executeAndWait {
                 appLogic.platformIntegration.getLocalApps(deviceId = deviceState.id)
@@ -167,7 +164,7 @@ object InstalledAppsUtil {
                 )
             }
 
-            (currentlyInstalled + featureDummyApps).map { it.toProto() }
+            (currentlyInstalled + featureDummyApps).map { it.toDer() }
         }
 
         val activities = if (deviceState.enableActivityLevelBlocking)
@@ -176,20 +173,60 @@ object InstalledAppsUtil {
                 val dummyActivities = apps.map { app ->
                     AppActivity(
                         deviceId = deviceState.id,
-                        appPackageName = app.package_name,
+                        appPackageName = app.packageName,
                         activityClassName = DummyApps.ACTIVITY_BACKGROUND_AUDIO,
                         title = appLogic.context.getString(R.string.dummy_app_activity_audio)
                     )
                 }
 
-                (realActivities + dummyActivities).map { it.toProto() }
+                (realActivities + dummyActivities).map { it.toDer() }
             }
         else
             emptyList()
 
-        return InstalledAppsProto(
+        return InstalledAppsDer(
             apps = apps,
             activities = activities
+        )
+    }
+
+    fun decryptAppList(key: ByteArray, data: ByteArray) = try {
+        val baseDecrypted = CryptContainer.decrypt(
+            key,
+            data,
+            CryptContainer.FORMAT_APP_LIST_V2
+        )
+
+        baseDecrypted.decodeInflatedDer(InstalledAppsDer::derDecode)
+    } catch (_: CryptException.WrongKey) {
+        val baseDecrypted = CryptContainer.decrypt(
+            key,
+            data,
+            CryptContainer.FORMAT_LEGACY
+        )
+
+        InstalledAppsProto.ADAPTER.decodeInflated(baseDecrypted).let {
+            InstalledAppsDer.fromProto(it)
+        }
+    }
+
+    fun decryptAppDiff(key: ByteArray, data: ByteArray) = try {
+        val diffDecrypted = CryptContainer.decrypt(
+            key,
+            data,
+            CryptContainer.FORMAT_APP_DIFF_V2
+        )
+
+        diffDecrypted.decodeInflatedDer(SavedAppsDifferenceDer::derDecode)
+    } catch (_: CryptException.WrongKey) {
+        val diffDecrypted = CryptContainer.decrypt(
+            key,
+            data,
+            CryptContainer.FORMAT_LEGACY
+        )
+
+        SavedAppsDifferenceDer.fromProto(
+            SavedAppsDifferenceProto.ADAPTER.decodeInflated(diffDecrypted)
         )
     }
 }

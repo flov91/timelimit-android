@@ -50,5 +50,11 @@
 
         </FrameLayout>
 
+        <Button
+            android:id="@+id/clear_cache_btn"
+            android:text="@string/diagnose_sync_btn_clear_cache"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content" />
+
     </LinearLayout>
 </layout>

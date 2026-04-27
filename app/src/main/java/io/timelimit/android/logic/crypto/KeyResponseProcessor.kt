@@ -1,5 +1,5 @@
 /*
- * TimeLimit Copyright <C> 2019 - 2022 Jonas Lochmann
+ * TimeLimit Copyright <C> 2019 - 2026 Jonas Lochmann
  *
  * This program is free software: you can redistribute it and/or modify
  * it under the terms of the GNU General Public License as published by
@@ -150,19 +150,18 @@ object KeyResponseProcessor {
                 }
 
                 val encryptedData = database.cryptContainer().getData(cryptContainerMeta.cryptContainerId)!!
+
                 val encryptedDataHeader = try {
                     CryptContainer.Header.read(encryptedData.encryptedData)
                 } catch (ex: CryptException.InvalidContainer) {
                     null
                 }
 
-                val isKeyValid = try {
-                    CryptContainer.decrypt(decryptedKey, encryptedData.encryptedData)
-
-                    true
-                } catch (ex: CryptException.WrongKey) {
-                    false
-                }
+                val isKeyValid = CryptDataHandler.isKeyValid(
+                    key = decryptedKey,
+                    data = encryptedData.encryptedData,
+                    type = cryptContainerMeta.type
+                )
 
                 if (isKeyValid && encryptedDataHeader != null) {
                     if (BuildConfig.DEBUG) {

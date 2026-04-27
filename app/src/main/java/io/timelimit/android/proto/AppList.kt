@@ -1,5 +1,5 @@
 /*
- * TimeLimit Copyright <C> 2019 - 2022 Jonas Lochmann
+ * TimeLimit Copyright <C> 2019 - 2026 Jonas Lochmann
  *
  * This program is free software: you can redistribute it and/or modify
  * it under the terms of the GNU General Public License as published by
@@ -19,9 +19,8 @@ import io.timelimit.android.crypto.CryptContainer
 import io.timelimit.android.data.model.App
 import io.timelimit.android.data.model.AppActivity
 import io.timelimit.android.data.model.AppRecommendation
-import io.timelimit.android.sync.actions.AppActivityItem
-import io.timelimit.android.sync.actions.InstalledApp
-import io.timelimit.proto.applist.InstalledAppActivityProto
+import io.timelimit.android.logic.applist.data.InstalledAppActivityDer
+import io.timelimit.android.logic.applist.data.InstalledAppDer
 import io.timelimit.proto.applist.InstalledAppProto
 import io.timelimit.proto.applist.InstalledAppsDifferenceProto
 import io.timelimit.proto.applist.SavedAppsDifferenceProto
@@ -32,35 +31,16 @@ fun InstalledAppProto.Recommendation.toDb(): AppRecommendation = when (this) {
     InstalledAppProto.Recommendation.BLACKLIST -> AppRecommendation.Blacklist
 }
 
-fun AppRecommendation.toProto(): InstalledAppProto.Recommendation = when (this) {
-    AppRecommendation.None -> InstalledAppProto.Recommendation.NONE
-    AppRecommendation.Whitelist -> InstalledAppProto.Recommendation.WHITELIST
-    AppRecommendation.Blacklist -> InstalledAppProto.Recommendation.BLACKLIST
-}
-
-fun InstalledAppProto.toInstalledApp(): InstalledApp = InstalledApp(
-    packageName = this.package_name,
+fun App.toDer(): InstalledAppDer = InstalledAppDer(
+    packageName = this.packageName,
     title = this.title,
-    recommendation = this.recommendation.toDb(),
-    isLaunchable = this.is_launchable
+    isLaunchable = this.isLaunchable,
+    recommendation = this.recommendation
 )
 
-fun App.toProto(): InstalledAppProto = InstalledAppProto(
-    package_name = this.packageName,
-    title = this.title,
-    is_launchable = this.isLaunchable,
-    recommendation = this.recommendation.toProto()
-)
-
-fun InstalledAppActivityProto.toAppActivityItem(): AppActivityItem = AppActivityItem(
-    packageName = this.package_name,
-    className = this.class_name,
-    title = this.title
-)
-
-fun AppActivity.toProto(): InstalledAppActivityProto = InstalledAppActivityProto(
-    package_name = this.appPackageName,
-    class_name = this.activityClassName,
+fun AppActivity.toDer(): InstalledAppActivityDer = InstalledAppActivityDer(
+    packageName = this.appPackageName,
+    className = this.activityClassName,
     title = this.title
 )
 

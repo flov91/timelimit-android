@@ -1,5 +1,5 @@
 /*
- * TimeLimit Copyright <C> 2019 - 2022 Jonas Lochmann
+ * TimeLimit Copyright <C> 2019 - 2026 Jonas Lochmann
  *
  * This program is free software: you can redistribute it and/or modify
  * it under the terms of the GNU General Public License as published by
@@ -17,6 +17,11 @@ package io.timelimit.android.proto
 
 import com.squareup.wire.Message
 import com.squareup.wire.ProtoAdapter
+import io.timelimit.android.encoding.DerReader
+import io.timelimit.android.encoding.DerReaderUnexpectedFurtherData
+import io.timelimit.android.encoding.DerWriter
+import io.timelimit.android.encoding.InputStreamDerReader
+import io.timelimit.android.encoding.OutputStreamDerWriter
 import okio.Buffer
 import okio.use
 import java.io.ByteArrayInputStream
@@ -30,3 +35,22 @@ fun <A : Message<A, B>, B : Message.Builder<A, B>> Message<A, B>.encodeDeflated(
 fun <T> ProtoAdapter<T>.decodeInflated(input: ByteArray): T = InflaterInputStream(ByteArrayInputStream(input)).use {
     this.decode(it)
 }
+
+fun encodeDeflatedDer(serialize: (DerWriter) -> Unit): ByteArray = Buffer().also { buffer ->
+    DeflaterOutputStream(buffer.outputStream()).use {
+        OutputStreamDerWriter(it).also { serialize(it) }
+    }
+}.readByteArray()
+
+fun <T> ByteArray.decodeInflatedDer(parser: (DerReader) -> T): T =
+    InflaterInputStream(ByteArrayInputStream(this)).use {
+        val reader = InputStreamDerReader.fromStream(it)
+
+        try {
+            parser(reader)
+        } finally {
+            if (!reader.isEof()) {
+                throw DerReaderUnexpectedFurtherData()
+            }
+        }
+    }

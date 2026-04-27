@@ -1,5 +1,5 @@
 /*
- * TimeLimit Copyright <C> 2019 - 2022 Jonas Lochmann
+ * TimeLimit Copyright <C> 2019 - 2026 Jonas Lochmann
  *
  * This program is free software: you can redistribute it and/or modify
  * it under the terms of the GNU General Public License as published by
@@ -24,6 +24,7 @@ import io.timelimit.android.data.dao.CryptContainerDao
 import io.timelimit.android.data.model.App
 import io.timelimit.android.data.model.AppActivity
 import io.timelimit.android.data.model.CryptContainerMetadata
+import io.timelimit.android.logic.applist.InstalledAppsUtil
 import io.timelimit.android.proto.decodeInflated
 import io.timelimit.android.proto.toDb
 import io.timelimit.proto.applist.InstalledAppsProto
@@ -59,47 +60,55 @@ object DecryptProcessor {
 
                 if (!(isReadyForProcessing(baseData) && isReadyForProcessing(diffData))) continue
 
-                val (baseDecrypted, baseHeader) = try {
-                    CryptContainer.decrypt(
+                val (baseContent, baseHeader) = try {
+                    InstalledAppsUtil.decryptAppList(
                         baseData.metadata.currentGenerationKey ?: continue,
                         baseData.encryptedData
                     ) to CryptContainer.Header.read(baseData.encryptedData)
-                } catch (ex: CryptException) {
+                } catch (_: CryptException) {
+                    if (BuildConfig.DEBUG) {
+                        Log.d(LOG_TAG, "content damaged due to crypt exception")
+                    }
+
                     database.cryptContainer().updateMetadata(baseData.metadata.copy(status = CryptContainerMetadata.ProcessingStatus.CryptoDamage))
 
                     continue
-                }
-
-                val diffDecrypted = try {
-                    CryptContainer.decrypt(
-                        diffData.metadata.currentGenerationKey ?: continue,
-                        diffData.encryptedData
-                    )
-                } catch (ex: CryptException) {
-                    database.cryptContainer().updateMetadata(diffData.metadata.copy(status = CryptContainerMetadata.ProcessingStatus.CryptoDamage))
-
-                    continue
-                }
-
-                val baseContent = try {
-                    InstalledAppsProto.ADAPTER.decodeInflated(baseDecrypted)
                 } catch (ex: IOException) {
+                    if (BuildConfig.DEBUG) {
+                        Log.d(LOG_TAG, "content damaged", ex)
+                    }
+
                     database.cryptContainer().updateMetadata(baseData.metadata.copy(status = CryptContainerMetadata.ProcessingStatus.ContentDamage))
 
                     continue
                 }
 
                 val diffContent = try {
-                    SavedAppsDifferenceProto.ADAPTER.decodeInflated(diffDecrypted)
+                    InstalledAppsUtil.decryptAppDiff(
+                        diffData.metadata.currentGenerationKey ?: continue,
+                        diffData.encryptedData
+                    )
+                } catch (_: CryptException) {
+                    if (BuildConfig.DEBUG) {
+                        Log.d(LOG_TAG, "content damaged due to crypt exception")
+                    }
+
+                    database.cryptContainer().updateMetadata(diffData.metadata.copy(status = CryptContainerMetadata.ProcessingStatus.CryptoDamage))
+
+                    continue
                 } catch (ex: IOException) {
+                    if (BuildConfig.DEBUG) {
+                        Log.d(LOG_TAG, "content damaged", ex)
+                    }
+
                     database.cryptContainer().updateMetadata(diffData.metadata.copy(status = CryptContainerMetadata.ProcessingStatus.ContentDamage))
 
                     continue
                 }
 
                 if (
-                    diffContent.base_generation != baseHeader.generation ||
-                    diffContent.base_counter != baseHeader.counter
+                    diffContent.baseGeneration != baseHeader.generation ||
+                    diffContent.baseCounter != baseHeader.counter
                 ) {
                     database.cryptContainer().updateMetadata(diffData.metadata.copy(status = CryptContainerMetadata.ProcessingStatus.ContentDamage))
 
@@ -113,10 +122,10 @@ object DecryptProcessor {
                     baseContent.apps.map {
                         App(
                             deviceId = metadata.deviceId,
-                            packageName = it.package_name,
+                            packageName = it.packageName,
                             title = it.title,
-                            isLaunchable = it.is_launchable,
-                            recommendation = it.recommendation.toDb()
+                            isLaunchable = it.isLaunchable,
+                            recommendation = it.recommendation
                         )
                     }
                 )
@@ -125,8 +134,8 @@ object DecryptProcessor {
                     baseContent.activities.map {
                         AppActivity(
                             deviceId = metadata.deviceId,
-                            appPackageName = it.package_name,
-                            activityClassName = it.class_name,
+                            appPackageName = it.packageName,
+                            activityClassName = it.className,
                             title = it.title
                         )
                     }
@@ -134,38 +143,38 @@ object DecryptProcessor {
 
                 database.app().removeAppsByDeviceIdAndPackageNamesSync(
                     metadata.deviceId,
-                    diffContent.apps?.removed_packages ?: emptyList()
+                    diffContent.apps.removedPackages
                 )
 
-                diffContent.apps?.removed_activities?.forEach {
+                diffContent.apps.removedActivities.forEach {
                     database.appActivity().deleteAppActivitiesSync(
                         deviceId = metadata.deviceId,
-                        packageName = it.package_name,
-                        activities = listOf(it.class_name)
+                        packageName = it.packageName,
+                        activities = listOf(it.className)
                     )
                 }
 
                 database.app().addAppsSync(
-                    diffContent.apps?.added?.apps?.map {
+                    diffContent.apps.added.apps.map {
                         App(
                             deviceId = metadata.deviceId,
-                            packageName = it.package_name,
+                            packageName = it.packageName,
                             title = it.title,
-                            isLaunchable = it.is_launchable,
-                            recommendation = it.recommendation.toDb()
+                            isLaunchable = it.isLaunchable,
+                            recommendation = it.recommendation
                         )
-                    } ?: emptyList()
+                    }
                 )
 
                 database.appActivity().addAppActivitiesSync(
-                    diffContent.apps?.added?.activities?.map {
+                    diffContent.apps.added.activities.map {
                         AppActivity(
                             deviceId = metadata.deviceId,
-                            appPackageName = it.package_name,
-                            activityClassName = it.class_name,
+                            appPackageName = it.packageName,
+                            activityClassName = it.className,
                             title = it.title
                         )
-                    } ?: emptyList()
+                    }
                 )
 
                 database.cryptContainer().updateMetadata(listOf(
