@@ -30,7 +30,7 @@ import io.timelimit.android.sync.websocket.WebsocketClient
 import io.timelimit.android.sync.websocket.WebsocketClientCreator
 import io.timelimit.android.sync.websocket.WebsocketClientListener
 import io.timelimit.android.ui.IsAppInForeground
-import io.timelimit.android.ui.model.managechild.ManageChildHandling
+import io.timelimit.android.ui.model.managechild.ManageChildCurrentDevice
 
 class WebsocketClientLogic(
         private val appLogic: AppLogic,
@@ -205,7 +205,7 @@ class WebsocketClientLogic(
                                                 throw IllegalStateException("current device would be affected by primary device")
                                             }
 
-                                            ManageChildHandling.unsetCurrentDeviceInBackground(appLogic)
+                                            ManageChildCurrentDevice.unsetCurrentDeviceInBackground(appLogic)
                                         } catch (ex: Exception) {
                                             if (BuildConfig.DEBUG) {
                                                 Log.w(LOG_TAG, "could not unset this device as current device", ex)

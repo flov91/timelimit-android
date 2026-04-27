@@ -27,7 +27,7 @@ import io.timelimit.android.ui.model.intro.IntroHandling
 import io.timelimit.android.ui.model.mailauthentication.MailAuthentication
 import io.timelimit.android.ui.model.main.OverviewHandling
 import io.timelimit.android.ui.model.managechild.ManageCategoryBlockedTimes
-import io.timelimit.android.ui.model.managechild.ManageChildHandling
+import io.timelimit.android.ui.model.managechild.ManageChildCurrentDevice
 import io.timelimit.android.ui.model.managechild.ManageChildUsageHistory
 import io.timelimit.android.ui.model.managedevice.ManageDeviceUser
 import io.timelimit.android.ui.model.setup.SetupParentHandling
@@ -100,7 +100,7 @@ sealed class Screen(
 
     class ManageChildCurrentDeviceScreen(
         state: State,
-        val content: ManageChildHandling.CurrentDeviceContent,
+        val content: ManageChildCurrentDevice.Content,
         val intro: IntroHandling.Screen,
         override val backStack: List<BackStackItem>,
         override val snackbarHostState: SnackbarHostState

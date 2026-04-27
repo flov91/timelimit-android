@@ -34,7 +34,7 @@ import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.unit.dp
 import io.timelimit.android.R
 import io.timelimit.android.ui.model.Screen
-import io.timelimit.android.ui.model.managechild.ManageChildHandling
+import io.timelimit.android.ui.model.managechild.ManageChildCurrentDevice
 import io.timelimit.android.ui.view.IntroCard
 import io.timelimit.android.ui.view.SwitchRow
 
@@ -53,21 +53,21 @@ fun CurrentDeviceScreen(
         }
 
         when (screen.content) {
-            is ManageChildHandling.CurrentDeviceContent.LocalModeContent -> {
+            is ManageChildCurrentDevice.Content.LocalMode -> {
                 Text(
                     stringResource(R.string.current_device_status_local_mode),
                     Modifier.fillMaxWidth().padding(8.dp),
                     textAlign = TextAlign.Center
                 )
             }
-            is ManageChildHandling.CurrentDeviceContent.InactiveUserContent -> {
+            is ManageChildCurrentDevice.Content.InactiveUser -> {
                 SwitchRow(
                     label = stringResource(R.string.current_device_checkbox_relax),
                     checked = screen.content.relaxed,
                     onCheckedChange = screen.content.toggle
                 )
             }
-            is ManageChildHandling.CurrentDeviceContent.ActiveUserContent -> {
+            is ManageChildCurrentDevice.Content.ActiveUser -> {
                 val actions = screen.content.actions
                 val mode = screen.content.mode
                 val transition = screen.content.transition // TODO: show the transition
@@ -75,7 +75,7 @@ fun CurrentDeviceScreen(
                 Card(
                     onClick = actions.makePrimary,
                     backgroundColor =
-                        if (mode == ManageChildHandling.CurrentDeviceContent.ActiveUserContent.Mode.PrimaryDevice) MaterialTheme.colors.primary
+                        if (mode == ManageChildCurrentDevice.Content.ActiveUser.Mode.PrimaryDevice) MaterialTheme.colors.primary
                         else MaterialTheme.colors.surface
                 ) {
                     Column (
@@ -89,19 +89,19 @@ fun CurrentDeviceScreen(
 
                         Text(stringResource(R.string.current_device_role_primary_description))
 
-                        if (transition is ManageChildHandling.CurrentDeviceContent.ActiveUserContent.Transition.ConvertToPrimary) {
+                        if (transition is ManageChildCurrentDevice.Content.ActiveUser.Transition.ConvertToPrimary) {
                             Text(
                                 when (transition) {
-                                    is ManageChildHandling.CurrentDeviceContent.ActiveUserContent.Transition.ConvertToPrimary.SendingRequest -> stringResource(
+                                    is ManageChildCurrentDevice.Content.ActiveUser.Transition.ConvertToPrimary.SendingRequest -> stringResource(
                                         R.string.current_device_status_sending_request
                                     )
-                                    is ManageChildHandling.CurrentDeviceContent.ActiveUserContent.Transition.ConvertToPrimary.WaitingForSync -> stringResource(
+                                    is ManageChildCurrentDevice.Content.ActiveUser.Transition.ConvertToPrimary.WaitingForSync -> stringResource(
                                         R.string.current_device_status_waiting_for_sync
                                     )
-                                    is ManageChildHandling.CurrentDeviceContent.ActiveUserContent.Transition.ConvertToPrimary.SendingSignOutRequest -> stringResource(
+                                    is ManageChildCurrentDevice.Content.ActiveUser.Transition.ConvertToPrimary.SendingSignOutRequest -> stringResource(
                                         R.string.current_device_status_sending_request
                                     )
-                                    is ManageChildHandling.CurrentDeviceContent.ActiveUserContent.Transition.ConvertToPrimary.WaitingForSignOutAtOtherDevice -> stringResource(
+                                    is ManageChildCurrentDevice.Content.ActiveUser.Transition.ConvertToPrimary.WaitingForSignOutAtOtherDevice -> stringResource(
                                         R.string.current_device_status_waiting_for_device,
                                         transition.deviceName
                                     )
@@ -116,7 +116,7 @@ fun CurrentDeviceScreen(
                 Card(
                     onClick = actions.makeSecondary,
                     backgroundColor =
-                        if (mode == ManageChildHandling.CurrentDeviceContent.ActiveUserContent.Mode.SecondaryDevice) MaterialTheme.colors.primary
+                        if (mode == ManageChildCurrentDevice.Content.ActiveUser.Mode.SecondaryDevice) MaterialTheme.colors.primary
                         else MaterialTheme.colors.surface
                 ) {
                     Column (Modifier.padding(8.dp)) {
@@ -127,13 +127,13 @@ fun CurrentDeviceScreen(
 
                         Text(stringResource(R.string.current_device_role_secondary_description))
 
-                        if (transition is ManageChildHandling.CurrentDeviceContent.ActiveUserContent.Transition.ConvertToSecondary) {
+                        if (transition is ManageChildCurrentDevice.Content.ActiveUser.Transition.ConvertToSecondary) {
                             Text(
                                 when (transition) {
-                                    is ManageChildHandling.CurrentDeviceContent.ActiveUserContent.Transition.ConvertToSecondary.SendingPing -> stringResource(
+                                    is ManageChildCurrentDevice.Content.ActiveUser.Transition.ConvertToSecondary.SendingPing -> stringResource(
                                         R.string.current_device_status_sending_request
                                     )
-                                    is ManageChildHandling.CurrentDeviceContent.ActiveUserContent.Transition.ConvertToSecondary.WaitingForReply -> stringResource(
+                                    is ManageChildCurrentDevice.Content.ActiveUser.Transition.ConvertToSecondary.WaitingForReply -> stringResource(
                                         R.string.current_device_status_waiting_for_device,
                                         transition.deviceName
                                     )
@@ -148,7 +148,7 @@ fun CurrentDeviceScreen(
                 Card(
                     onClick = actions.makeOther,
                     backgroundColor =
-                        if (mode == ManageChildHandling.CurrentDeviceContent.ActiveUserContent.Mode.OtherDevice) MaterialTheme.colors.primary
+                        if (mode == ManageChildCurrentDevice.Content.ActiveUser.Mode.OtherDevice) MaterialTheme.colors.primary
                         else MaterialTheme.colors.surface
                 ) {
                     Column (Modifier.padding(8.dp)) {
@@ -159,13 +159,13 @@ fun CurrentDeviceScreen(
 
                         Text(stringResource(R.string.current_device_role_other_description))
 
-                        if (transition is ManageChildHandling.CurrentDeviceContent.ActiveUserContent.Transition.ConvertToOther) {
+                        if (transition is ManageChildCurrentDevice.Content.ActiveUser.Transition.ConvertToOther) {
                             Text(
                                 when (transition) {
-                                    is ManageChildHandling.CurrentDeviceContent.ActiveUserContent.Transition.ConvertToOther.SendingRequest -> stringResource(
+                                    is ManageChildCurrentDevice.Content.ActiveUser.Transition.ConvertToOther.SendingRequest -> stringResource(
                                         R.string.current_device_status_sending_request
                                     )
-                                    is ManageChildHandling.CurrentDeviceContent.ActiveUserContent.Transition.ConvertToOther.WaitingForSync -> stringResource(
+                                    is ManageChildCurrentDevice.Content.ActiveUser.Transition.ConvertToOther.WaitingForSync -> stringResource(
                                         R.string.current_device_status_waiting_for_sync
                                     )
                                 }
@@ -179,7 +179,7 @@ fun CurrentDeviceScreen(
                 Card(
                     onClick = actions.makeRelaxed,
                     backgroundColor =
-                        if (mode == ManageChildHandling.CurrentDeviceContent.ActiveUserContent.Mode.RelaxedPrimaryDevice) MaterialTheme.colors.primary
+                        if (mode == ManageChildCurrentDevice.Content.ActiveUser.Mode.RelaxedPrimaryDevice) MaterialTheme.colors.primary
                         else MaterialTheme.colors.surface
                 ) {
                     Column (Modifier.padding(8.dp)) {
