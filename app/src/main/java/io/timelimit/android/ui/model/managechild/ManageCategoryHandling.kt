@@ -16,9 +16,6 @@
 package io.timelimit.android.ui.model.managechild
 
 import androidx.compose.material.SnackbarHostState
-import androidx.compose.material.icons.Icons
-import androidx.compose.material.icons.outlined.Info
-import io.timelimit.android.R
 import io.timelimit.android.data.model.Category
 import io.timelimit.android.data.model.HintsToShow
 import io.timelimit.android.logic.AppLogic
@@ -26,7 +23,6 @@ import io.timelimit.android.ui.manage.category.blocked_times.BlockedTimesData
 import io.timelimit.android.ui.model.ActivityCommand
 import io.timelimit.android.ui.model.AuthenticationModelApi
 import io.timelimit.android.ui.model.BackStackItem
-import io.timelimit.android.ui.model.Menu
 import io.timelimit.android.ui.model.Screen
 import io.timelimit.android.ui.model.State
 import io.timelimit.android.ui.model.Title
@@ -159,16 +155,9 @@ object ManageCategoryHandling {
         val introLive = IntroHandling.handle(logic, HintsToShow.BLOCKED_TIME_AREAS)
 
         emitAll(combine(stateLive, parentBackStackLive, nestedLive, introLive) { state, backStack, nested, intro ->
-            val toolbarIcons =
-                if (intro is IntroHandling.Screen.Hidden) listOf(Menu.Icon(
-                    Icons.Outlined.Info,
-                    R.string.generic_help,
-                    handler = intro.show
-                )) else emptyList()
-
             Screen.ManageBlockedTimes(
                 state,
-                toolbarIcons,
+                IntroHandling.toolbarIcons(intro),
                 state.toolbarOptions,
                 nested,
                 intro,

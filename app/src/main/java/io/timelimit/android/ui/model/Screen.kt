@@ -27,6 +27,7 @@ import io.timelimit.android.ui.model.intro.IntroHandling
 import io.timelimit.android.ui.model.mailauthentication.MailAuthentication
 import io.timelimit.android.ui.model.main.OverviewHandling
 import io.timelimit.android.ui.model.managechild.ManageCategoryBlockedTimes
+import io.timelimit.android.ui.model.managechild.ManageChildHandling
 import io.timelimit.android.ui.model.managechild.ManageChildUsageHistory
 import io.timelimit.android.ui.model.managedevice.ManageDeviceUser
 import io.timelimit.android.ui.model.setup.SetupParentHandling
@@ -95,6 +96,19 @@ sealed class Screen(
         override val backStack: List<BackStackItem>
     ): FragmentScreen(state, toolbarIcons, toolbarOptions, fragment), ScreenWithBackStack, ScreenWithTitle {
         override val title = Title.StringResource(R.string.manage_child_tab_other)
+    }
+
+    class ManageChildCurrentDeviceScreen(
+        state: State,
+        val content: ManageChildHandling.CurrentDeviceContent,
+        val intro: IntroHandling.Screen,
+        override val backStack: List<BackStackItem>,
+        override val snackbarHostState: SnackbarHostState
+    ): Screen(
+        state,
+        toolbarIcons = IntroHandling.toolbarIcons(intro)
+    ), ScreenWithBackStack, ScreenWithTitle, ScreenWithSnackbar, ScreenWithAuthenticationFab {
+        override val title = Title.StringResource(R.string.primary_device_title)
     }
 
     class ManageChildContactsScreen(

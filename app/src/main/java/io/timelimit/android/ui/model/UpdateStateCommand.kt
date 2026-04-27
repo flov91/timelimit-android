@@ -178,6 +178,11 @@ sealed class UpdateStateCommand {
                 if (state is State.ManageChild.Main) State.ManageChild.Advanced(state)
                 else null
         }
+        object ManageCurrentDevice: UpdateStateCommand() {
+            override fun transform(state: State): State? =
+                if (state is State.ManageChild.Advanced) State.ManageChild.AdvancedCurrentDevice(state)
+                else null
+        }
         object Contacts: UpdateStateCommand() {
             override fun transform(state: State): State? =
                 if (state is State.ManageChild.Main) State.ManageChild.Contacts(state)

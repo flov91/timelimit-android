@@ -37,7 +37,9 @@ import io.timelimit.android.ui.manage.child.advanced.managedisabletimelimits.Man
 import io.timelimit.android.ui.manage.child.advanced.password.ManageChildPassword
 import io.timelimit.android.ui.manage.child.advanced.selflimitadd.ChildSelfLimitAddView
 import io.timelimit.android.ui.manage.child.advanced.timezone.UserTimezoneView
-import io.timelimit.android.ui.manage.child.primarydevice.PrimaryDeviceView
+import io.timelimit.android.ui.manage.child.primarydevice.CurrentDeviceView
+import io.timelimit.android.ui.model.UpdateStateCommand
+import io.timelimit.android.ui.model.execute
 
 class ManageChildAdvancedFragment : Fragment() {
     companion object {
@@ -102,14 +104,16 @@ class ManageChildAdvancedFragment : Fragment() {
             }
         }
 
-        PrimaryDeviceView.bind(
+        CurrentDeviceView.bind(
                 view = binding.primaryDeviceView,
-                fragmentManager = parentFragmentManager,
                 childId = childId,
                 lifecycleOwner = this,
-                logic = logic,
-                auth = auth
+                logic = logic
         )
+
+        binding.primaryDeviceView.card.setOnClickListener {
+            requireActivity().execute(UpdateStateCommand.ManageChild.ManageCurrentDevice)
+        }
 
         ManageChildPassword.bind(
                 view = binding.password,

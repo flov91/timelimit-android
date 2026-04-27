@@ -1,5 +1,5 @@
 /*
- * TimeLimit Copyright <C> 2019 - 2023 Jonas Lochmann
+ * TimeLimit Copyright <C> 2019 - 2026 Jonas Lochmann
  *
  * This program is free software: you can redistribute it and/or modify
  * it under the terms of the GNU General Public License as published by
@@ -45,6 +45,7 @@ import io.timelimit.android.ui.model.intro.IntroHandling
 @Composable
 fun IntroCard(
     intro: IntroHandling.Screen,
+    padding: Boolean = true,
     content: @Composable () -> Unit
 ) {
     val currentIntro = rememberUpdatedState(intro)
@@ -69,7 +70,8 @@ fun IntroCard(
     ) {
         SwipeToDismiss(state = state, background = {/* empty */}) {
             Card (
-                Modifier.padding(8.dp)
+                if (padding) Modifier.padding(8.dp)
+                else Modifier
             ) {
                 Column(
                     modifier = Modifier.padding(8.dp),

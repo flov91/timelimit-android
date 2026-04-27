@@ -15,9 +15,13 @@
  */
 package io.timelimit.android.ui.model.intro
 
+import androidx.compose.material.icons.Icons
+import androidx.compose.material.icons.outlined.Info
 import androidx.lifecycle.asFlow
+import io.timelimit.android.R
 import io.timelimit.android.async.Threads
 import io.timelimit.android.logic.AppLogic
+import io.timelimit.android.ui.model.Menu
 import kotlinx.coroutines.flow.Flow
 import kotlinx.coroutines.flow.map
 
@@ -54,4 +58,10 @@ object IntroHandling {
             }
         }
     }
+
+    fun toolbarIcons(intro: Screen) = if (intro is Screen.Hidden) listOf(Menu.Icon(
+        Icons.Outlined.Info,
+        R.string.generic_help,
+        handler = intro.show
+    )) else emptyList()
 }

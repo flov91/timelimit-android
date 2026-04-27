@@ -1,5 +1,5 @@
 /*
- * TimeLimit Copyright <C> 2019 - 2024 Jonas Lochmann
+ * TimeLimit Copyright <C> 2019 - 2026 Jonas Lochmann
  *
  * This program is free software: you can redistribute it and/or modify
  * it under the terms of the GNU General Public License as published by
@@ -24,6 +24,7 @@ import io.timelimit.android.ui.account.DeleteRegistrationScreen
 import io.timelimit.android.ui.authentication.AuthenticateByMailScreen
 import io.timelimit.android.ui.diagnose.deviceowner.DeviceOwnerScreen
 import io.timelimit.android.ui.manage.category.blocked_times.BlockedTimesScreen
+import io.timelimit.android.ui.manage.child.primarydevice.CurrentDeviceScreen
 import io.timelimit.android.ui.manage.child.usagehistory.UsageHistoryScreen
 import io.timelimit.android.ui.manage.device.manage.permission.ManageDevicePermissionScreen
 import io.timelimit.android.ui.manage.device.manage.user.ManageDeviceUserScreen
@@ -67,5 +68,6 @@ fun ScreenMultiplexer(
         is Screen.ConfirmNewParentAccount -> ConfirmNewParentAccount(confirm = screen.confirm, reject = screen.reject, modifier = modifier.padding(paddingValues))
         is Screen.ParentBaseConfiguration -> ParentBaseConfiguration(content = screen.content, modifier = modifier.padding(paddingValues))
         is Screen.ParentSetupConsent -> ParentSetupConsent(content = screen.content, errorDialog = screen.errorDialog, modifier = modifier.padding(paddingValues))
+        is Screen.ManageChildCurrentDeviceScreen -> CurrentDeviceScreen(screen = screen, modifier = modifier.padding(paddingValues))
     }
 }

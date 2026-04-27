@@ -1368,6 +1368,45 @@
     <string name="password_validator_empty">The password must not be empty</string>
     <string name="password_validator_too_short">The password must have at least <xliff:g example="5" id="number of chars">%d</xliff:g> characters</string>
 
+    <string name="current_device_title">Current Device</string>
+    <string name="current_device_description">
+        If a user has multiple devices, it must be decided
+        how to deal with the possibility of no connection and the usage of
+        time limited Apps. You can select the role for this device here.
+    </string>
+    <string name="current_device_status_local_mode">
+        You are using the local mode.
+        There is only one device so everything is solved.
+    </string>
+    <string name="current_device_role_primary_title">Primary Device</string>
+    <string name="current_device_role_primary_description">Permits using time limited Apps at this
+        device - without internet connection too.
+        This can be used at most at one device per time.
+        Time limited Apps can only be used at other devices if they are connected
+        to this one.
+    </string>
+    <string name="current_device_role_secondary_title">Secondary Device</string>
+    <string name="current_device_role_secondary_description">Permits using time limited Apps
+        at this device as long as there is a connection to the primary device.
+        If not used, this device will transition to the other device role.
+    </string>
+    <string name="current_device_role_other_title">Other Device</string>
+    <string name="current_device_role_other_description">Time limited Apps
+        can not be used at this device.
+    </string>
+    <string name="current_device_role_relaxed_title">Relaxed Mode</string>
+    <string name="current_device_role_relaxed_description">Permits using time limited Apps
+        at all devices - independent of the internet connection. While offline,
+        used times from other devices are not received. Thus, more time than configured can
+        be used.
+    </string>
+    <string name="current_device_error_missing_primary">No Primary Device found; can not become Secondary Device</string>
+    <string name="current_device_error_is_primary">Primary Device can not transition directly to Secondary Device</string>
+    <string name="current_device_status_waiting_for_sync">Waiting for Synchronization</string>
+    <string name="current_device_status_sending_request">Sending Request</string>
+    <string name="current_device_status_waiting_for_device">Waiting for Reaction from Device %s</string>
+    <string name="current_device_checkbox_relax">Allow using limited Apps at devices which are not the current device</string>
+
     <string name="primary_device_title">Current device</string>
     <string name="primary_device_description">
         The current device is the device on which limited Apps can be used
@@ -1691,6 +1730,7 @@
     </string>
     <string name="update_primary_device_toast_requires_full_version">This action requires the premium version</string>
     <string name="update_primary_device_toast_success">The current device was changed</string>
+    <string name="update_primary_device_toast_requires_primary_device">No primary device found; can not become a secondary device</string>
 
     <string name="update">Update</string>
     <string name="update_unsupported_text">This build does not have an integrated

@@ -1,5 +1,5 @@
 /*
- * TimeLimit Copyright <C> 2019 - 2021 Jonas Lochmann
+ * TimeLimit Copyright <C> 2019 - 2026 Jonas Lochmann
  *
  * This program is free software: you can redistribute it and/or modify
  * it under the terms of the GNU General Public License as published by
@@ -21,6 +21,7 @@ import androidx.room.Dao
 import androidx.room.Insert
 import androidx.room.Query
 import io.timelimit.android.data.model.PendingSyncAction
+import kotlinx.coroutines.flow.Flow
 
 @Dao
 interface PendingSyncActionDao {
@@ -65,4 +66,7 @@ interface PendingSyncActionDao {
 
     @Query("SELECT * FROM pending_sync_action ORDER BY sequence_number ASC")
     fun getAllPendingSyncActionsPaged(): DataSource.Factory<Int, PendingSyncAction>
+
+    @Query("SELECT * FROM pending_sync_action WHERE sequence_number = :sequenceNumber")
+    fun getPendingSyncActionBySequenceNumberFlow(sequenceNumber: Long): Flow<PendingSyncAction?>
 }

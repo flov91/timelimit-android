@@ -139,6 +139,9 @@ sealed class State (val previous: State?): Serializable {
         class Advanced(val previousChild: Main): Sub(previousChild, previousChild, ChildAdvancedFragmentWrapper::class.java, R.id.fragment_manage_child_advanced) {
             override val arguments: Bundle get() = ChildAdvancedFragmentWrapperArgs(previousChild.childId).toBundle()
         }
+        class AdvancedCurrentDevice(
+            previousAdvanced: Advanced
+        ): Sub(previousAdvanced, previousAdvanced.previousMain, Fragment::class.java, R.id.fragment_manage_child_advanced_current_device)
         class Contacts(val previousChild: Main): Sub(previousChild, previousChild, ContactsFragment::class.java, R.id.fragment_manage_child_contacts)
         data class UsageHistory(
             val previousChild: Main,

@@ -1,5 +1,5 @@
 /*
- * TimeLimit Copyright <C> 2019 - 2022 Jonas Lochmann
+ * TimeLimit Copyright <C> 2019 - 2026 Jonas Lochmann
  *
  * This program is free software: you can redistribute it and/or modify
  * it under the terms of the GNU General Public License as published by
@@ -45,9 +45,11 @@ object ApplyActionUtil {
     private const val LOG_TAG = "ApplyActionUtil"
 
     fun addAppLogicActionToDatabaseSync(action: AppLogicAction, database: Database) = database.runInUnobservedTransaction {
+        val sequenceNumber = database.config().getNextSyncActionSequenceActionAndIncrementIt()
+
         database.pendingSyncAction().addSyncActionSync(
             PendingSyncAction(
-                sequenceNumber = database.config().getNextSyncActionSequenceActionAndIncrementIt(),
+                sequenceNumber = sequenceNumber,
                 scheduledForUpload = false,
                 type = PendingSyncActionType.AppLogic,
                 userId = "",
@@ -55,27 +57,27 @@ object ApplyActionUtil {
                 encodedAction = SerializationUtil.serializeAction(action)
             )
         )
+
+        sequenceNumber
     }
 
     suspend fun applyAppLogicAction(
-            action: AppLogicAction,
-            appLogic: AppLogic,
-            ignoreIfDeviceIsNotConfigured: Boolean
-    ) {
-        applyAppLogicAction(
-                action = action,
-                database = appLogic.database,
-                syncUtil = appLogic.syncUtil,
-                ignoreIfDeviceIsNotConfigured = ignoreIfDeviceIsNotConfigured
-        )
-    }
+        action: AppLogicAction,
+        appLogic: AppLogic,
+        ignoreIfDeviceIsNotConfigured: Boolean
+    ) = applyAppLogicAction(
+        action = action,
+        database = appLogic.database,
+        syncUtil = appLogic.syncUtil,
+        ignoreIfDeviceIsNotConfigured = ignoreIfDeviceIsNotConfigured
+    )
 
     private suspend fun applyAppLogicAction(
             action: AppLogicAction,
             database: Database,
             syncUtil: SyncUtil,
             ignoreIfDeviceIsNotConfigured: Boolean
-    ) {
+    ): ActionExecutionInfo {
         // uncomment this if you need to know what's dispatching an action
         /*
         if (BuildConfig.DEBUG) {
@@ -87,12 +89,12 @@ object ApplyActionUtil {
         }
         */
 
-        Threads.database.executeAndWait {
+        return Threads.database.executeAndWait {
             database.runInTransaction {
                 val ownDeviceId = database.config().getOwnDeviceIdSync()
 
                 if (ownDeviceId == null && ignoreIfDeviceIsNotConfigured) {
-                    return@runInTransaction
+                    return@runInTransaction ActionExecutionInfo.NotConfigured
                 }
 
                 LocalDatabaseAppLogicActionDispatcher.dispatchAppLogicActionSync(action, ownDeviceId!!, database)
@@ -175,14 +177,14 @@ object ApplyActionUtil {
 
                                         syncUtil.requestVeryUnimportantSync()
 
-                                        return@runInTransaction
+                                        return@runInTransaction ActionExecutionInfo.Enqueued(previousAction.sequenceNumber)
                                     }
                                 }
                             }
                         }
                     }
 
-                    addAppLogicActionToDatabaseSync(action, database)
+                    val sequenceNumber = addAppLogicActionToDatabaseSync(action, database)
 
                     if (action is AddUsedTimeActionVersion2) {
                         syncUtil.requestVeryUnimportantSync()
@@ -193,6 +195,10 @@ object ApplyActionUtil {
 
                         syncUtil.requestImportantSync()
                     }
+
+                    return@runInTransaction ActionExecutionInfo.Enqueued(sequenceNumber)
+                } else {
+                    return@runInTransaction ActionExecutionInfo.LocalMode
                 }
             }
         }
@@ -454,4 +460,10 @@ data class ApplyDirectCallAuthentication (
             is ApplyActionChildAddLimitAuthentication -> throw RuntimeException("child can not do that")
         }
     }
+}
+
+sealed class ActionExecutionInfo {
+    object NotConfigured: ActionExecutionInfo()
+    object LocalMode: ActionExecutionInfo()
+    data class Enqueued(val sequenceNumber: Long): ActionExecutionInfo()
 }

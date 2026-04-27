@@ -1,5 +1,5 @@
 /*
- * TimeLimit Copyright <C> 2019 - 2023 Jonas Lochmann
+ * TimeLimit Copyright <C> 2019 - 2026 Jonas Lochmann
  *
  * This program is free software: you can redistribute it and/or modify
  * it under the terms of the GNU General Public License as published by
@@ -49,6 +49,9 @@ abstract class DeviceDao {
 
     @Query("SELECT * FROM device")
     abstract fun getAllDevicesSync(): List<Device>
+
+    @Query("SELECT * FROM device")
+    abstract fun getAllDevicesFlow(): Flow<List<Device>>
 
     @Query("SELECT device.*, user.name AS current_user_name, user.type AS current_user_type FROM device LEFT JOIN user ON (user.id = device.current_user_id)")
     abstract fun getAllDevicesWithUserInfoFlow(): Flow<List<DeviceWithUserInfo>>

@@ -1322,6 +1322,44 @@
     <string name="password_validator_empty">Das Passwort darf nicht leer sein</string>
     <string name="password_validator_too_short">Das Passwort muss mindestens <xliff:g example="5" id="number of chars">%d</xliff:g> Zeichen haben</string>
 
+    <string name="current_device_title">Aktuelles Gerät</string>
+    <string name="current_device_description">
+        Wenn ein Benutzer mehrere Geräte hat muss geklärt werden, wie damit umgegangen
+        wird, wenn keine Verbindung besteht und zeitbegrenzte Apps verwendet werden.
+        Hier kann die Rolle für dieses Gerät gewählt werden.
+    </string>
+    <string name="current_device_status_local_mode">
+        Sie verwenden den lokalen Modus.
+        Daher gibt es nur ein Gerät und Nichts zu klären.
+    </string>
+    <string name="current_device_role_primary_title">Primäres Gerät</string>
+    <string name="current_device_role_primary_description">Ermöglicht die Verwendung von zeitbegrenzten Apps an diesem
+        Gerät - auch ohne Internetverbindung. Das ist maximal bei einem Gerät je Zeitpunkt möglich.
+        Auf anderen Geräten können zeitbegrenzte Apps nur verwendet
+        werden, wenn eine Verbindung zu diesem Gerät besteht.
+    </string>
+    <string name="current_device_role_secondary_title">Sekundäres Gerät</string>
+    <string name="current_device_role_secondary_description">Ermöglicht die Verwendung von zeitbegrenzten Apps
+        an diesem Gerät, solange eine Verbindung zum primären Gerät besteht.
+        Bei Nichtverwendung wird automatisch zum sonstigen Gerät gewechselt.
+    </string>
+    <string name="current_device_role_other_title">Sonstiges Gerät</string>
+    <string name="current_device_role_other_description">Die Verwendung von zeitbegrenzten Apps
+        ist an diesem Gerät nicht möglich.
+    </string>
+    <string name="current_device_role_relaxed_title">Entspannter Modus</string>
+    <string name="current_device_role_relaxed_description">Ermöglicht die Verwendung von zeitbegrenzten
+        Apps auf allen Geräten - auch ohne Internetverbindung. Bei Offlinenutzung werden Zeiten
+        von anderen Geräten nicht empfangen, wodurch eine längere Nutzung als eigentlich konfiguriert
+        möglich werden kann.
+    </string>
+    <string name="current_device_error_missing_primary">kein primäres Gerät gefunden; kann nicht sekundäres Gerät werden</string>
+    <string name="current_device_error_is_primary">primäres Gerät kann nicht direkt sekundäres Gerät werden</string>
+    <string name="current_device_status_waiting_for_sync">Warten auf Synchronisation</string>
+    <string name="current_device_status_sending_request">Sende Anfrage</string>
+    <string name="current_device_status_waiting_for_device">Warte auf Reaktion vom Gerät %s</string>
+    <string name="current_device_checkbox_relax">Die Nutzung von eingeschränkten Apps auch am nicht-aktuellen Gerät erlauben</string>
+
     <string name="primary_device_title">Aktuelles Gerät</string>
     <string name="primary_device_description">
         Das aktuelle Gerät ist das Gerät, an dem zeitbegrenzte Apps genutzt werden können,
