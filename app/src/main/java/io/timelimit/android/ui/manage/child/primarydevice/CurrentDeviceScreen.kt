@@ -52,108 +52,118 @@ fun CurrentDeviceScreen(
             Text(stringResource(R.string.current_device_description))
         }
 
-        when (screen.content) {
-            is ManageChildCurrentDevice.Content.LocalMode -> {
-                Text(
-                    stringResource(R.string.current_device_status_local_mode),
-                    Modifier.fillMaxWidth().padding(8.dp),
-                    textAlign = TextAlign.Center
-                )
-            }
-            is ManageChildCurrentDevice.Content.InactiveUser -> {
-                SwitchRow(
-                    label = stringResource(R.string.current_device_checkbox_relax),
-                    checked = screen.content.relaxed,
-                    onCheckedChange = screen.content.toggle
-                )
-            }
-            is ManageChildCurrentDevice.Content.ActiveUser -> {
-                val actions = screen.content.actions
-                val mode = screen.content.mode
-                val transition = screen.content.transition // TODO: show the transition
+        CurrentDeviceContent(screen.content)
+    }
+}
 
-                Card(
-                    onClick = actions.makePrimary,
-                    backgroundColor =
-                        if (mode == ManageChildCurrentDevice.Content.ActiveUser.Mode.PrimaryDevice) MaterialTheme.colors.primary
-                        else MaterialTheme.colors.surface
+@OptIn(ExperimentalMaterialApi::class)
+@Composable
+fun CurrentDeviceContent(content: ManageChildCurrentDevice.Content, shortVersion: Boolean = false) {
+    when (content) {
+        is ManageChildCurrentDevice.Content.LocalMode -> {
+            Text(
+                stringResource(R.string.current_device_status_local_mode),
+                Modifier.fillMaxWidth().padding(8.dp),
+                textAlign = TextAlign.Center
+            )
+        }
+        is ManageChildCurrentDevice.Content.InactiveUser -> {
+            SwitchRow(
+                label = stringResource(R.string.current_device_checkbox_relax),
+                checked = content.relaxed,
+                onCheckedChange = content.toggle
+            )
+        }
+        is ManageChildCurrentDevice.Content.ActiveUser -> {
+            val actions = content.actions
+            val mode = content.mode
+            val transition = content.transition
+
+            Card(
+                onClick = actions.makePrimary,
+                backgroundColor =
+                    if (mode == ManageChildCurrentDevice.Content.ActiveUser.Mode.PrimaryDevice) MaterialTheme.colors.primary
+                    else MaterialTheme.colors.surface
+            ) {
+                Column (
+                    Modifier.padding(8.dp),
+                    verticalArrangement = Arrangement.spacedBy(8.dp)
                 ) {
-                    Column (
-                        Modifier.padding(8.dp),
-                        verticalArrangement = Arrangement.spacedBy(8.dp)
-                    ) {
+                    Text(
+                        stringResource(R.string.current_device_role_primary_title),
+                        style = MaterialTheme.typography.h5
+                    )
+
+                    Text(stringResource(R.string.current_device_role_primary_description))
+
+                    if (transition is ManageChildCurrentDevice.Content.ActiveUser.Transition.ConvertToPrimary) {
                         Text(
-                            stringResource(R.string.current_device_role_primary_title),
-                            style = MaterialTheme.typography.h5
+                            when (transition) {
+                                is ManageChildCurrentDevice.Content.ActiveUser.Transition.ConvertToPrimary.SendingRequest -> stringResource(
+                                    R.string.current_device_status_sending_request
+                                )
+                                is ManageChildCurrentDevice.Content.ActiveUser.Transition.ConvertToPrimary.WaitingForSync -> stringResource(
+                                    R.string.current_device_status_waiting_for_sync
+                                )
+                                is ManageChildCurrentDevice.Content.ActiveUser.Transition.ConvertToPrimary.SendingSignOutRequest -> stringResource(
+                                    R.string.current_device_status_sending_request
+                                )
+                                is ManageChildCurrentDevice.Content.ActiveUser.Transition.ConvertToPrimary.WaitingForSignOutAtOtherDevice -> stringResource(
+                                    R.string.current_device_status_waiting_for_device,
+                                    transition.deviceName
+                                )
+                            }
                         )
 
-                        Text(stringResource(R.string.current_device_role_primary_description))
-
-                        if (transition is ManageChildCurrentDevice.Content.ActiveUser.Transition.ConvertToPrimary) {
-                            Text(
-                                when (transition) {
-                                    is ManageChildCurrentDevice.Content.ActiveUser.Transition.ConvertToPrimary.SendingRequest -> stringResource(
-                                        R.string.current_device_status_sending_request
-                                    )
-                                    is ManageChildCurrentDevice.Content.ActiveUser.Transition.ConvertToPrimary.WaitingForSync -> stringResource(
-                                        R.string.current_device_status_waiting_for_sync
-                                    )
-                                    is ManageChildCurrentDevice.Content.ActiveUser.Transition.ConvertToPrimary.SendingSignOutRequest -> stringResource(
-                                        R.string.current_device_status_sending_request
-                                    )
-                                    is ManageChildCurrentDevice.Content.ActiveUser.Transition.ConvertToPrimary.WaitingForSignOutAtOtherDevice -> stringResource(
-                                        R.string.current_device_status_waiting_for_device,
-                                        transition.deviceName
-                                    )
-                                }
-                            )
-
-                            LinearProgressIndicator(Modifier.fillMaxWidth())
-                        }
+                        LinearProgressIndicator(Modifier.fillMaxWidth())
                     }
                 }
+            }
 
-                Card(
-                    onClick = actions.makeSecondary,
-                    backgroundColor =
-                        if (mode == ManageChildCurrentDevice.Content.ActiveUser.Mode.SecondaryDevice) MaterialTheme.colors.primary
-                        else MaterialTheme.colors.surface
-                ) {
-                    Column (Modifier.padding(8.dp)) {
-                        Text(stringResource(
-                            R.string.current_device_role_secondary_title),
-                            style = MaterialTheme.typography.h5
+            Card(
+                onClick = actions.makeSecondary,
+                backgroundColor =
+                    if (mode == ManageChildCurrentDevice.Content.ActiveUser.Mode.SecondaryDevice) MaterialTheme.colors.primary
+                    else MaterialTheme.colors.surface
+            ) {
+                Column (Modifier.padding(8.dp)) {
+                    Text(stringResource(
+                        R.string.current_device_role_secondary_title),
+                        style = MaterialTheme.typography.h5
+                    )
+
+                    Text(stringResource(R.string.current_device_role_secondary_description))
+
+                    if (transition is ManageChildCurrentDevice.Content.ActiveUser.Transition.ConvertToSecondary) {
+                        Text(
+                            when (transition) {
+                                is ManageChildCurrentDevice.Content.ActiveUser.Transition.ConvertToSecondary.SendingPing -> stringResource(
+                                    R.string.current_device_status_sending_request
+                                )
+                                is ManageChildCurrentDevice.Content.ActiveUser.Transition.ConvertToSecondary.WaitingForReply -> stringResource(
+                                    R.string.current_device_status_waiting_for_device,
+                                    transition.deviceName
+                                )
+                            }
                         )
 
-                        Text(stringResource(R.string.current_device_role_secondary_description))
-
-                        if (transition is ManageChildCurrentDevice.Content.ActiveUser.Transition.ConvertToSecondary) {
-                            Text(
-                                when (transition) {
-                                    is ManageChildCurrentDevice.Content.ActiveUser.Transition.ConvertToSecondary.SendingPing -> stringResource(
-                                        R.string.current_device_status_sending_request
-                                    )
-                                    is ManageChildCurrentDevice.Content.ActiveUser.Transition.ConvertToSecondary.WaitingForReply -> stringResource(
-                                        R.string.current_device_status_waiting_for_device,
-                                        transition.deviceName
-                                    )
-                                }
-                            )
-
-                            LinearProgressIndicator(Modifier.fillMaxWidth())
-                        }
+                        LinearProgressIndicator(Modifier.fillMaxWidth())
                     }
                 }
+            }
 
+            if (!shortVersion) {
                 Card(
                     onClick = actions.makeOther,
                     backgroundColor =
                         if (mode == ManageChildCurrentDevice.Content.ActiveUser.Mode.OtherDevice) MaterialTheme.colors.primary
                         else MaterialTheme.colors.surface
                 ) {
-                    Column (Modifier.padding(8.dp)) {
-                        Text(stringResource(
-                            R.string.current_device_role_other_title),
+                    Column(Modifier.padding(8.dp)) {
+                        Text(
+                            stringResource(
+                                R.string.current_device_role_other_title
+                            ),
                             style = MaterialTheme.typography.h5
                         )
 
@@ -165,6 +175,7 @@ fun CurrentDeviceScreen(
                                     is ManageChildCurrentDevice.Content.ActiveUser.Transition.ConvertToOther.SendingRequest -> stringResource(
                                         R.string.current_device_status_sending_request
                                     )
+
                                     is ManageChildCurrentDevice.Content.ActiveUser.Transition.ConvertToOther.WaitingForSync -> stringResource(
                                         R.string.current_device_status_waiting_for_sync
                                     )
@@ -182,7 +193,7 @@ fun CurrentDeviceScreen(
                         if (mode == ManageChildCurrentDevice.Content.ActiveUser.Mode.RelaxedPrimaryDevice) MaterialTheme.colors.primary
                         else MaterialTheme.colors.surface
                 ) {
-                    Column (Modifier.padding(8.dp)) {
+                    Column(Modifier.padding(8.dp)) {
                         Text(
                             stringResource(R.string.current_device_role_relaxed_title),
                             style = MaterialTheme.typography.h5

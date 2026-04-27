@@ -19,8 +19,10 @@ package io.timelimit.android.ui.lock
 import android.app.Application
 import android.database.sqlite.SQLiteConstraintException
 import android.graphics.drawable.Drawable
+import androidx.compose.material.SnackbarHostState
 import androidx.lifecycle.*
 import io.timelimit.android.async.Threads
+import io.timelimit.android.data.model.Device
 import io.timelimit.android.data.model.TemporarilyAllowedApp
 import io.timelimit.android.data.model.UserType
 import io.timelimit.android.data.model.derived.DeviceAndUserRelatedData
@@ -32,12 +34,23 @@ import io.timelimit.android.logic.*
 import io.timelimit.android.logic.blockingreason.AppBaseHandling
 import io.timelimit.android.logic.blockingreason.CategoryHandlingCache
 import io.timelimit.android.logic.blockingreason.CategoryItselfHandling
+import io.timelimit.android.ui.model.ActivityCommand
+import io.timelimit.android.ui.model.ApiModel
+import io.timelimit.android.ui.model.managechild.ManageChildCurrentDevice
+import kotlinx.coroutines.flow.MutableStateFlow
+import kotlinx.coroutines.flow.SharingStarted
+import kotlinx.coroutines.flow.combine
+import kotlinx.coroutines.flow.filterNotNull
+import kotlinx.coroutines.flow.shareIn
+import kotlinx.coroutines.flow.transform
+import kotlinx.coroutines.sync.Mutex
 
 class LockModel(application: Application): AndroidViewModel(application) {
+    val api = ApiModel(application)
     private val packageAndActivityNameLiveInternal = MutableLiveData<Pair<String, String?>>()
     private var didInit = false
 
-    private val logic = DefaultAppLogic.with(application)
+    val logic = DefaultAppLogic.with(application)
     private val deviceAndUserRelatedData: LiveData<DeviceAndUserRelatedData?> = logic.database.derivedDataDao().getUserAndDeviceRelatedDataLive()
     private val batteryStatus: LiveData<BatteryStatus> = logic.platformIntegration.getBatteryStatusLive()
     private val realNetworkIdLive: LiveData<NetworkId> = liveDataFromFunction { logic.platformIntegration.getCurrentNetworkId() }
@@ -59,6 +72,41 @@ class LockModel(application: Application): AndroidViewModel(application) {
     }
 
     val enableAlternativeDurationSelection = logic.database.config().getEnableAlternativeDurationSelectionAsync()
+
+    val snackbarHostState = SnackbarHostState()
+    val manageCurrentDeviceLaunchFunction = ManageChildCurrentDevice.buildLaunchFunction(viewModelScope, application, snackbarHostState)
+    val manageCurrentDeviceTransitionLive = MutableStateFlow(null as ManageChildCurrentDevice.Content.ActiveUser.Transition?)
+    val manageCurrentDeviceTransitionMutex = Mutex()
+    val currentDeviceLive = logic.deviceUserEntry.asFlow().filterNotNull().combine(
+        logic.database.device().getAllDevicesFlow()
+    ) { user, devices -> devices.firstOrNull { it.id == user.currentDevice } }
+    val manageCurrentDeviceContent = combine(
+        deviceAndUserRelatedData.asFlow(),
+        manageCurrentDeviceTransitionLive,
+        logic.currentDeviceLogic.borrowedCurrentDevice
+    ) { a, b, c  -> Triple(a, b, c) }.transform { (userAndDeviceRelatedData, transition, borrowedCurrentDevice) ->
+        val userRelatedData = userAndDeviceRelatedData?.userRelatedData ?: return@transform
+
+        val status = CurrentDeviceLogic.handleDeviceAsCurrentDevice(
+            userAndDeviceRelatedData, borrowedCurrentDevice
+        )
+
+        emit(
+            ManageChildCurrentDevice.buildActiveUserContent(
+                userAndDeviceRelatedData.deviceRelatedData,
+                userRelatedData,
+                transition,
+                manageCurrentDeviceTransitionLive,
+                manageCurrentDeviceTransitionMutex,
+                logic,
+                api.activityCommand,
+                api.authentication,
+                currentDeviceLive,
+                manageCurrentDeviceLaunchFunction,
+                status
+            )
+        )
+    }.shareIn(viewModelScope, SharingStarted.Lazily, 1)
 
     val content: LiveData<LockscreenContent> = object: MediatorLiveData<LockscreenContent>() {
         private val updateRunnable = Runnable { update() }

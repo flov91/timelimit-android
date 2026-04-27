@@ -47,7 +47,6 @@ import io.timelimit.android.ui.manage.category.settings.networks.RequestWifiPerm
 import io.timelimit.android.ui.manage.child.category.create.CreateCategoryDialogFragment
 import io.timelimit.android.ui.manage.child.category.specialmode.SetCategorySpecialModeFragment
 import io.timelimit.android.ui.manage.child.category.specialmode.SpecialModeDialogMode
-import io.timelimit.android.ui.manage.child.primarydevice.UpdatePrimaryDeviceDialogFragment
 import io.timelimit.android.ui.payment.RequiresPurchaseDialogFragment
 import io.timelimit.android.ui.view.SelectTimeSpanViewListener
 import java.util.*
@@ -120,10 +119,6 @@ class LockActionFragment : Fragment() {
                 )
             }
 
-            override fun setThisDeviceAsCurrentDevice() = this@LockActionFragment.setThisDeviceAsCurrentDevice()
-
-            override fun setThisDeviceAsSecondaryCurrentDevice() = this@LockActionFragment.setThisDeviceAsSecondaryCurrentDevice()
-
             override fun requestLocationPermission() {
                 RequestWifiPermission.doRequest(this@LockActionFragment, LOCATION_REQUEST_CODE, auth.logic.platformIntegration)
             }
@@ -140,18 +135,6 @@ class LockActionFragment : Fragment() {
                 }
             }
         }
-    }
-
-    private fun setThisDeviceAsCurrentDevice() {
-        UpdatePrimaryDeviceDialogFragment
-                .newInstance(UpdatePrimaryDeviceDialogFragment.Request.Set)
-                .show(parentFragmentManager)
-    }
-
-    private fun setThisDeviceAsSecondaryCurrentDevice() {
-        UpdatePrimaryDeviceDialogFragment
-            .newInstance(UpdatePrimaryDeviceDialogFragment.Request.StartSecondary)
-            .show(parentFragmentManager)
     }
 
     private fun bindAddToCategoryOptions(userRelatedData: UserRelatedData, blockedPackageName: String) {
@@ -318,8 +301,6 @@ interface Handlers {
     fun disableTimeVerification()
     fun disableTemporarilyLockForCurrentCategory()
     fun disableTemporarilyLockForAllCategories()
-    fun setThisDeviceAsCurrentDevice()
-    fun setThisDeviceAsSecondaryCurrentDevice()
     fun requestLocationPermission()
     fun disableLimitsTemporarily()
 }

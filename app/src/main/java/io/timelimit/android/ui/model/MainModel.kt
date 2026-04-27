@@ -35,63 +35,17 @@ import kotlinx.coroutines.channels.ReceiveChannel
 import kotlinx.coroutines.flow.*
 
 class MainModel(application: Application): AndroidViewModel(application) {
-    val activityModel = ActivityViewModel(application)
     val logic = DefaultAppLogic.with(application)
-
-    private val activityCommandInternal = Channel<ActivityCommand>()
-    private val authenticationScreenClosed = MutableSharedFlow<Unit>(extraBufferCapacity = 1)
-    private val permissionsChanged = MutableSharedFlow<Unit>(extraBufferCapacity = 1)
-
-    private val authenticationModelApi = object: AuthenticationModelApi {
-        override val authenticatedParentOnly: Flow<AuthenticationModelApi.Parent?> =
-            activityModel.authenticatedUser.asFlow().map { pair ->
-                if (pair != null) AuthenticationModelApi.Parent(pair.second, pair.first)
-                else null
-            }
-
-        override val authenticatedParentOrCurrentChild: Flow<AuthenticationModelApi.ParentOrChild?> =
-            activityModel.authenticatedUserOrChild.asFlow().map { pair ->
-                if (pair != null) AuthenticationModelApi.ParentOrChild(pair.second, pair.first)
-                else null
-            }
-
-        override suspend fun doParentAuthentication(): AuthenticationModelApi.Parent? {
-            authenticatedParentOnly.firstOrNull()?.let { return it }
-
-            triggerAuthenticationScreen()
-
-            authenticationScreenClosed.firstOrNull()
-
-            return authenticatedParentOnly.firstOrNull()
-        }
-
-        override suspend fun doParentOrChildAuthentication(childId: String): AuthenticationModelApi.ParentOrChild? {
-            authenticatedParentOrCurrentChild.firstOrNull()?.let {
-                if (it.user.type == UserType.Parent || it.user.id == childId) return it
-            }
-
-            triggerAuthenticationScreen()
-
-            authenticationScreenClosed.firstOrNull()
-
-            return authenticatedParentOrCurrentChild.firstOrNull()
-        }
-
-        override fun triggerAuthenticationScreen() {
-            activityCommandInternal.trySend(ActivityCommand.ShowAuthenticationScreen)
-        }
-    }
-
-    val activityCommand: ReceiveChannel<ActivityCommand> = activityCommandInternal
+    val api = ApiModel(application)
     val state = MutableStateFlow(State.LaunchState as State)
     var fragmentIds = mutableSetOf<Int>()
 
     val screen: Flow<Screen> = state.splitConflated(
         Case.simple<_, _, State.LaunchState> { LaunchHandling.processLaunchState(state, logic) },
-        Case.simple<_, _, State.Overview> { OverviewHandling.processState(logic, scope, activityCommandInternal, authenticationModelApi, state) },
-        Case.simple<_, _, State.ManageChild> { state -> ManageChildHandling.processState(logic, activityCommandInternal, authenticationModelApi, state, updateMethod(::updateState)) },
-        Case.simple<_, _, State.ManageDevice> { state -> ManageDeviceHandling.processState(logic, activityCommandInternal, authenticationModelApi, state, updateMethod(::updateState)) },
-        Case.simple<_, _, State.Setup> { state -> SetupHandling.handle(logic, activityCommandInternal, permissionsChanged, state, updateMethod(::updateState)) },
+        Case.simple<_, _, State.Overview> { OverviewHandling.processState(logic, scope, api.activityCommand, api.authentication, state) },
+        Case.simple<_, _, State.ManageChild> { state -> ManageChildHandling.processState(logic, api.activityCommand, api.authentication, state, updateMethod(::updateState)) },
+        Case.simple<_, _, State.ManageDevice> { state -> ManageDeviceHandling.processState(logic, api.activityCommand, api.authentication, state, updateMethod(::updateState)) },
+        Case.simple<_, _, State.Setup> { state -> SetupHandling.handle(logic, api.activityCommand, api.permissionsChanged, state, updateMethod(::updateState)) },
         Case.simple<_, _, State.DeleteAccount> { AccountDeletion.handle(logic, scope, share(it), updateMethod(::updateState)) },
         Case.simple<_, _, FragmentState> { state ->
             state.transform {
@@ -104,14 +58,6 @@ class MainModel(application: Application): AndroidViewModel(application) {
 
     fun execute(command: UpdateStateCommand) {
         command.applyTo(state)
-    }
-
-    fun reportAuthenticationScreenClosed() {
-        authenticationScreenClosed.tryEmit(Unit)
-    }
-
-    fun reportPermissionsChanged() {
-        permissionsChanged.tryEmit(Unit)
     }
 
     private fun updateState(method: (State) -> State): Unit = state.update(method)

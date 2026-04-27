@@ -16,13 +16,18 @@
 
 package io.timelimit.android.ui.model.managechild
 
+import android.content.Context
 import androidx.compose.material.SnackbarHostState
 import androidx.lifecycle.asFlow
 import io.timelimit.android.R
 import io.timelimit.android.async.Threads
 import io.timelimit.android.coroutines.executeAndWait
+import io.timelimit.android.data.model.Device
 import io.timelimit.android.data.model.HintsToShow
 import io.timelimit.android.data.model.User
+import io.timelimit.android.data.model.derived.DeviceAndUserRelatedData
+import io.timelimit.android.data.model.derived.DeviceRelatedData
+import io.timelimit.android.data.model.derived.UserRelatedData
 import io.timelimit.android.extensions.tryWithLock
 import io.timelimit.android.logic.AppLogic
 import io.timelimit.android.logic.CurrentDeviceLogic
@@ -66,23 +71,10 @@ object ManageChildCurrentDevice {
         scope: CoroutineScope
     ): Flow<Screen> = flow {
         val snackbarHostState = SnackbarHostState()
-        var lastJob: Job? = null
         val transitionLiveMutex = Mutex()
         val transitionLive = MutableStateFlow(null as Content.ActiveUser.Transition?)
 
-        fun launch(action: suspend () -> Unit) {
-            lastJob?.cancel()
-
-            lastJob = scope.launch {
-                try {
-                    action()
-                } catch (ex: ErrorToastException) {
-                    snackbarHostState.showSnackbar(logic.context.getString(ex.messageId))
-                } catch (_: Exception) {
-                    snackbarHostState.showSnackbar(logic.context.getString(R.string.error_general))
-                }
-            }
-        }
+        val launch = buildLaunchFunction(scope, logic.context, snackbarHostState)
 
         val devicesLive = logic.database.device().getAllDevicesFlow()
 
@@ -101,243 +93,141 @@ object ManageChildCurrentDevice {
                 userLive,
                 IntroHandling.handle(logic, HintsToShow.CURRENT_DEVICE),
             ) { a, b, c -> Triple(a, b, c) },
-            transitionLive,
-            currentDeviceLive
-        ) { (state, backStack, userAndDeviceRelatedData), (borrowedCurrentDevice, user, intro), transition, currentDevice ->
-            val status = CurrentDeviceLogic.handleDeviceAsCurrentDevice(
-                userAndDeviceRelatedData,
-                borrowedCurrentDevice
+            transitionLive
+        ) { (state, backStack, userAndDeviceRelatedData), (borrowedCurrentDevice, user, intro), transition ->
+            val content = buildContent(
+                userAndDeviceRelatedData, borrowedCurrentDevice, user, transition, transitionLive, transitionLiveMutex,
+                logic, activityCommand, authentication, currentDeviceLive, launch
             )
 
-            val content = if (status is CurrentDeviceLogic.HandleAsCurrentDevice.Yes.LocalMode) {
-                Content.LocalMode
-            } else if (user.id == userAndDeviceRelatedData.userRelatedData?.user?.id) {
-                Content.ActiveUser(
-                    mode = when (status) {
-                        is CurrentDeviceLogic.HandleAsCurrentDevice.Yes.PrimaryDevice -> Content.ActiveUser.Mode.PrimaryDevice
-                        is CurrentDeviceLogic.HandleAsCurrentDevice.Yes.BorrowedCurrentDevice -> Content.ActiveUser.Mode.SecondaryDevice
-                        is CurrentDeviceLogic.HandleAsCurrentDevice.No -> Content.ActiveUser.Mode.OtherDevice
-                        CurrentDeviceLogic.HandleAsCurrentDevice.Yes.RelaxedCurrentDevice -> Content.ActiveUser.Mode.RelaxedPrimaryDevice
-                        CurrentDeviceLogic.HandleAsCurrentDevice.Yes.LocalMode -> {
-                            // case already handled above
+            Screen.ManageChildCurrentDeviceScreen(state, content, intro, backStack, snackbarHostState)
+        })
+    }
 
-                            throw IllegalStateException()
+    fun buildLaunchFunction(
+        scope: CoroutineScope,
+        context: Context,
+        snackbarHostState: SnackbarHostState
+    ): (suspend () -> Unit) -> Unit {
+        var lastJob: Job? = null
+
+        fun launch(action: suspend () -> Unit) {
+            lastJob?.cancel()
+
+            lastJob = scope.launch {
+                try {
+                    action()
+                } catch (ex: ErrorToastException) {
+                    snackbarHostState.showSnackbar(context.getString(ex.messageId))
+                } catch (_: Exception) {
+                    snackbarHostState.showSnackbar(context.getString(R.string.error_general))
+                }
+            }
+        }
+
+        return ::launch
+    }
+
+    private fun buildContent(
+        userAndDeviceRelatedData: DeviceAndUserRelatedData,
+        borrowedCurrentDevice: CurrentDeviceLogic.BorrowedCurrentDevice?,
+        user: User,
+        transition: Content.ActiveUser.Transition?,
+        transitionLive: MutableStateFlow<Content.ActiveUser.Transition?>,
+        transitionLiveMutex: Mutex,
+        logic: AppLogic,
+        activityCommand: SendChannel<ActivityCommand>,
+        authentication: AuthenticationModelApi,
+        currentDeviceLive: Flow<Device?>,
+        launch: (suspend () -> Unit) -> Unit
+    ): Content {
+        val status = CurrentDeviceLogic.handleDeviceAsCurrentDevice(
+            userAndDeviceRelatedData,
+            borrowedCurrentDevice
+        )
+
+        return if (status is CurrentDeviceLogic.HandleAsCurrentDevice.Yes.LocalMode) {
+            Content.LocalMode
+        } else if (user.id == userAndDeviceRelatedData.userRelatedData?.user?.id) {
+            buildActiveUserContent(
+                userAndDeviceRelatedData.deviceRelatedData, userAndDeviceRelatedData.userRelatedData,
+                transition, transitionLive, transitionLiveMutex, logic,
+                activityCommand, authentication, currentDeviceLive, launch, status
+            )
+        } else {
+            Content.InactiveUser(
+                relaxed = user.relaxPrimaryDevice,
+                toggle = {
+                    launch {
+                        authentication.doParentAuthentication()?.let { parent ->
+                            ApplyActionUtil.applyParentAction(
+                                SetRelaxPrimaryDeviceAction(
+                                    userId = user.id,
+                                    relax = it,
+                                ),
+                                parent.authentication,
+                                logic
+                            )
                         }
-                    },
-                    transition = transition,
-                    actions = Content.ActiveUser.Actions(
-                        makePrimary = {
-                            launch {
-                                transitionLiveMutex.tryWithLock {
-                                    logic.currentDeviceLogic.cancelBorrowRequest()
+                    }
+                }
+            )
+        }
+    }
 
-                                    val deRelaxAuthentication = if (userAndDeviceRelatedData.userRelatedData.user.relaxPrimaryDevice) {
-                                        authentication.doParentAuthentication()?.authentication ?: return@tryWithLock
-                                    } else null
+    fun buildActiveUserContent(
+        deviceRelatedData: DeviceRelatedData,
+        userRelatedData: UserRelatedData,
+        transition: Content.ActiveUser.Transition?,
+        transitionLive: MutableStateFlow<Content.ActiveUser.Transition?>,
+        transitionLiveMutex: Mutex,
+        logic: AppLogic,
+        activityCommand: SendChannel<ActivityCommand>,
+        authentication: AuthenticationModelApi,
+        currentDeviceLive: Flow<Device?>,
+        launch: (suspend () -> Unit) -> Unit,
+        status: CurrentDeviceLogic.HandleAsCurrentDevice
+    ): Content.ActiveUser {
+        val actions = Content.ActiveUser.Actions(
+            makePrimary = {
+                launch {
+                    transitionLiveMutex.tryWithLock {
+                        logic.currentDeviceLogic.cancelBorrowRequest()
 
-                                    transitionLive.value = Content.ActiveUser.Transition.ConvertToPrimary.SendingRequest
+                        val deRelaxAuthentication = if (userRelatedData.user.relaxPrimaryDevice) {
+                            authentication.doParentAuthentication()?.authentication ?: return@tryWithLock
+                        } else null
 
-                                    try {
-                                        val server = logic.serverLogic.getServerConfigCoroutine()
+                        transitionLive.value = Content.ActiveUser.Transition.ConvertToPrimary.SendingRequest
 
-                                        while (true) {
-                                            val response = try {
-                                                server.api.updatePrimaryDevice(
-                                                    UpdatePrimaryDeviceRequest(
-                                                        action = UpdatePrimaryDeviceRequestType.SetThisDevice,
-                                                        currentUserId = user.id,
-                                                        deviceAuthToken = server.deviceAuthToken
-                                                    )
-                                                )
-                                            } catch (_: IOException) {
-                                                throw ErrorToastException(R.string.error_network)
-                                            }
+                        try {
+                            val server = logic.serverLogic.getServerConfigCoroutine()
 
-                                            when (response.status) {
-                                                UpdatePrimaryDeviceResponseType.Success -> {
-                                                    transitionLive.value = Content.ActiveUser.Transition.ConvertToPrimary.WaitingForSync
-
-                                                    // the server does not trigger a sync in this case, so do it manually
-                                                    logic.syncUtil.requestImportantSyncAndWait()
-
-                                                    // check the result
-                                                    val updatedUser = logic.database.user().getUserByIdFlow(userAndDeviceRelatedData.userRelatedData.user.id).first()
-
-                                                    if (updatedUser == null || updatedUser.currentDevice != userAndDeviceRelatedData.deviceRelatedData.deviceEntry.id) {
-                                                        throw IllegalStateException()
-                                                    }
-
-                                                    // disable borrowing
-                                                    logic.currentDeviceLogic.dropBorrow()
-
-                                                    // disable relaxing if it was enabled
-                                                    deRelaxAuthentication?.let {
-                                                        ApplyActionUtil.applyParentAction(
-                                                            SetRelaxPrimaryDeviceAction(
-                                                                userId = user.id,
-                                                                relax = false
-                                                            ),
-                                                            it,
-                                                            logic
-                                                        )
-                                                    }
-
-                                                    // do not try again
-                                                    break
-                                                }
-                                                UpdatePrimaryDeviceResponseType.AssignedToOtherDevice -> {
-                                                    transitionLive.value = Content.ActiveUser.Transition.ConvertToPrimary.SendingSignOutRequest
-
-                                                    val currentDevice = currentDeviceLive.first() ?: throw IllegalStateException()
-
-                                                    server.api.requestSignOutAtPrimaryDevice(server.deviceAuthToken)
-
-                                                    transitionLive.value = Content.ActiveUser.Transition.ConvertToPrimary.WaitingForSignOutAtOtherDevice(currentDevice.name)
-
-                                                    withTimeoutOrNull(1000 * 10) {
-                                                        currentDeviceLive.filter { it == null }.first()
-                                                    }
-                                                }
-                                                UpdatePrimaryDeviceResponseType.RequiresFullVersion -> {
-                                                    activityCommand.trySend(ActivityCommand.ShowMissingPremiumDialog)
-
-                                                    break
-                                                }
-                                                UpdatePrimaryDeviceResponseType.UnknownError -> throw IllegalStateException()
-                                            }
-                                        }
-                                    } finally {
-                                        transitionLive.value = null
-                                    }
+                            while (true) {
+                                val response = try {
+                                    server.api.updatePrimaryDevice(
+                                        UpdatePrimaryDeviceRequest(
+                                            action = UpdatePrimaryDeviceRequestType.SetThisDevice,
+                                            currentUserId = userRelatedData.user.id,
+                                            deviceAuthToken = server.deviceAuthToken
+                                        )
+                                    )
+                                } catch (_: IOException) {
+                                    throw ErrorToastException(R.string.error_network)
                                 }
-                            }
-                        },
-                        makeSecondary = {
-                            launch {
-                                transitionLiveMutex.tryWithLock {
-                                    if (logic.fullVersion.shouldProvideFullVersionFunctions()) {
-                                        if (currentDevice == null) {
-                                            throw ErrorToastException(R.string.current_device_error_missing_primary)
-                                        } else if (currentDevice.id == userAndDeviceRelatedData.deviceRelatedData.deviceEntry.id) {
-                                            throw ErrorToastException(R.string.current_device_error_is_primary)
-                                        } else {
-                                            val deRelaxAuthentication = if (userAndDeviceRelatedData.userRelatedData.user.relaxPrimaryDevice) {
-                                                authentication.doParentAuthentication()?.authentication ?: return@tryWithLock
-                                            } else null
 
-                                            val (request, pingAction) = logic.currentDeviceLogic.requestBorrow(currentDevice.id)
+                                when (response.status) {
+                                    UpdatePrimaryDeviceResponseType.Success -> {
+                                        transitionLive.value = Content.ActiveUser.Transition.ConvertToPrimary.WaitingForSync
 
-                                            val sequenceNumber =
-                                                if (pingAction is ActionExecutionInfo.Enqueued) pingAction.sequenceNumber
-                                                else throw IllegalStateException()
+                                        // the server does not trigger a sync in this case, so do it manually
+                                        logic.syncUtil.requestImportantSyncAndWait()
 
-                                            transitionLive.value = Content.ActiveUser.Transition.ConvertToSecondary.SendingPing
+                                        // check the result
+                                        val updatedUser = logic.database.user().getUserByIdFlow(userRelatedData.user.id).first()
 
-                                            try {
-                                                val isPingPending =
-                                                    logic.database.pendingSyncAction()
-                                                        .getPendingSyncActionBySequenceNumberFlow(
-                                                            sequenceNumber
-                                                        ).map { it != null }
-
-                                                isPingPending.combine(logic.currentDeviceLogic.borrowedCurrentDevice) { a, b ->
-                                                    Pair(
-                                                        a,
-                                                        b
-                                                    )
-                                                }
-                                                    .collect { (pingPending, status) ->
-                                                        if (!pingPending) {
-                                                            // ping was sent
-                                                            transitionLive.value =
-                                                                Content.ActiveUser.Transition.ConvertToSecondary.WaitingForReply(
-                                                                    currentDevice.name
-                                                                )
-                                                        }
-
-                                                        if (status == request) {
-                                                            // waiting
-                                                        } else if (status?.deviceId == request.deviceId && status.since != null) {
-                                                            // disable relaxing if it was enabled
-                                                            deRelaxAuthentication?.let {
-                                                                ApplyActionUtil.applyParentAction(
-                                                                    SetRelaxPrimaryDeviceAction(
-                                                                        userId = user.id,
-                                                                        relax = false
-                                                                    ),
-                                                                    it,
-                                                                    logic
-                                                                )
-                                                            }
-
-                                                            // we are done
-                                                            throw DoneException()
-                                                        } else {
-                                                            // failure
-                                                            throw IllegalStateException()
-                                                        }
-                                                    }
-                                            } catch (_ : DoneException) {
-                                                // control flow workaround; nothing to do here
-                                            } finally {
-                                                transitionLive.value = null
-                                            }
-                                        }
-                                    } else {
-                                        activityCommand.trySend(ActivityCommand.ShowMissingPremiumDialog)
-                                    }
-                                }
-                            }
-                        },
-                        makeOther = {
-                            launch {
-                                transitionLiveMutex.tryWithLock {
-                                    logic.currentDeviceLogic.cancelBorrowRequest()
-
-                                    val deRelaxAuthentication = if (userAndDeviceRelatedData.userRelatedData.user.relaxPrimaryDevice) {
-                                        authentication.doParentAuthentication()?.authentication ?: return@tryWithLock
-                                    } else null
-
-                                    transitionLive.value = Content.ActiveUser.Transition.ConvertToOther.WaitingForSync
-
-                                    try {
-                                        // if not the current device, skip some steps
-                                        if (user.currentDevice == userAndDeviceRelatedData.deviceRelatedData.deviceEntry.id) {
-                                            logic.syncUtil.requestImportantSyncAndWait()
-
-                                            transitionLive.value =
-                                                Content.ActiveUser.Transition.ConvertToOther.SendingRequest
-
-                                            // send request
-                                            val response = try {
-                                                val server =
-                                                    logic.serverLogic.getServerConfigCoroutine()
-
-                                                server.api.updatePrimaryDevice(
-                                                    UpdatePrimaryDeviceRequest(
-                                                        action = UpdatePrimaryDeviceRequestType.UnsetThisDevice,
-                                                        currentUserId = user.id,
-                                                        deviceAuthToken = server.deviceAuthToken
-                                                    )
-                                                )
-                                            } catch (_: IOException) {
-                                                throw ErrorToastException(R.string.error_network)
-                                            }
-
-                                            if (response.status != UpdatePrimaryDeviceResponseType.Success) {
-                                                throw IllegalStateException()
-                                            }
-
-                                            // adjust in database
-                                            Threads.database.executeAndWait {
-                                                logic.database.runInTransaction {
-                                                    logic.database.user().updateUserSync(
-                                                        logic.database.user()
-                                                            .getUserByIdSync(user.id)!!
-                                                            .copy(currentDevice = "")
-                                                    )
-                                                }
-                                            }
+                                        if (updatedUser == null || updatedUser.currentDevice != deviceRelatedData.deviceEntry.id) {
+                                            throw IllegalStateException()
                                         }
 
                                         // disable borrowing
@@ -347,61 +237,229 @@ object ManageChildCurrentDevice {
                                         deRelaxAuthentication?.let {
                                             ApplyActionUtil.applyParentAction(
                                                 SetRelaxPrimaryDeviceAction(
-                                                    userId = user.id,
+                                                    userId = userRelatedData.user.id,
                                                     relax = false
                                                 ),
                                                 it,
                                                 logic
                                             )
                                         }
-                                    } finally {
-                                        transitionLive.value = null
+
+                                        // do not try again
+                                        break
                                     }
+                                    UpdatePrimaryDeviceResponseType.AssignedToOtherDevice -> {
+                                        transitionLive.value = Content.ActiveUser.Transition.ConvertToPrimary.SendingSignOutRequest
+
+                                        val currentDevice = currentDeviceLive.first() ?: throw IllegalStateException()
+
+                                        server.api.requestSignOutAtPrimaryDevice(server.deviceAuthToken)
+
+                                        transitionLive.value = Content.ActiveUser.Transition.ConvertToPrimary.WaitingForSignOutAtOtherDevice(currentDevice.name)
+
+                                        withTimeoutOrNull(1000 * 10) {
+                                            currentDeviceLive.filter { it == null }.first()
+                                        }
+                                    }
+                                    UpdatePrimaryDeviceResponseType.RequiresFullVersion -> {
+                                        activityCommand.trySend(ActivityCommand.ShowMissingPremiumDialog)
+
+                                        break
+                                    }
+                                    UpdatePrimaryDeviceResponseType.UnknownError -> throw IllegalStateException()
                                 }
                             }
-                        },
-                        makeRelaxed = {
-                            launch {
-                                if (logic.fullVersion.shouldProvideFullVersionFunctions()) {
-                                    authentication.doParentAuthentication()?.let {
-                                        ApplyActionUtil.applyParentAction(
-                                            SetRelaxPrimaryDeviceAction(
-                                                userId = user.id,
-                                                relax = true
-                                            ),
-                                            it.authentication,
-                                            logic
+                        } finally {
+                            transitionLive.value = null
+                        }
+                    }
+                }
+            },
+            makeSecondary = {
+                launch {
+                    transitionLiveMutex.tryWithLock {
+                        if (logic.fullVersion.shouldProvideFullVersionFunctions()) {
+                            val currentDevice = currentDeviceLive.first()
+
+                            if (currentDevice == null) {
+                                throw ErrorToastException(R.string.current_device_error_missing_primary)
+                            } else if (currentDevice.id == deviceRelatedData.deviceEntry.id) {
+                                throw ErrorToastException(R.string.current_device_error_is_primary)
+                            } else {
+                                val deRelaxAuthentication = if (userRelatedData.user.relaxPrimaryDevice) {
+                                    authentication.doParentAuthentication()?.authentication ?: return@tryWithLock
+                                } else null
+
+                                val (request, pingAction) = logic.currentDeviceLogic.requestBorrow(currentDevice.id)
+
+                                val sequenceNumber =
+                                    if (pingAction is ActionExecutionInfo.Enqueued) pingAction.sequenceNumber
+                                    else throw IllegalStateException()
+
+                                transitionLive.value = Content.ActiveUser.Transition.ConvertToSecondary.SendingPing
+
+                                try {
+                                    val isPingPending =
+                                        logic.database.pendingSyncAction()
+                                            .getPendingSyncActionBySequenceNumberFlow(
+                                                sequenceNumber
+                                            ).map { it != null }
+
+                                    isPingPending.combine(logic.currentDeviceLogic.borrowedCurrentDevice) { a, b ->
+                                        Pair(
+                                            a,
+                                            b
                                         )
                                     }
-                                } else {
-                                    activityCommand.trySend(ActivityCommand.ShowMissingPremiumDialog)
+                                        .collect { (pingPending, status) ->
+                                            if (!pingPending) {
+                                                // ping was sent
+                                                transitionLive.value =
+                                                    Content.ActiveUser.Transition.ConvertToSecondary.WaitingForReply(
+                                                        currentDevice.name
+                                                    )
+                                            }
+
+                                            if (status == request) {
+                                                // waiting
+                                            } else if (status?.deviceId == request.deviceId && status.since != null) {
+                                                // disable relaxing if it was enabled
+                                                deRelaxAuthentication?.let {
+                                                    ApplyActionUtil.applyParentAction(
+                                                        SetRelaxPrimaryDeviceAction(
+                                                            userId = userRelatedData.user.id,
+                                                            relax = false
+                                                        ),
+                                                        it,
+                                                        logic
+                                                    )
+                                                }
+
+                                                // we are done
+                                                throw DoneException()
+                                            } else {
+                                                // failure
+                                                throw IllegalStateException()
+                                            }
+                                        }
+                                } catch (_ : DoneException) {
+                                    // control flow workaround; nothing to do here
+                                } finally {
+                                    transitionLive.value = null
                                 }
                             }
-                        },
-                    )
-                )
-            } else {
-                Content.InactiveUser(
-                    relaxed = user.relaxPrimaryDevice,
-                    toggle = {
-                        launch {
-                            authentication.doParentAuthentication()?.let { parent ->
+                        } else {
+                            activityCommand.trySend(ActivityCommand.ShowMissingPremiumDialog)
+                        }
+                    }
+                }
+            },
+            makeOther = {
+                launch {
+                    transitionLiveMutex.tryWithLock {
+                        logic.currentDeviceLogic.cancelBorrowRequest()
+
+                        val deRelaxAuthentication = if (userRelatedData.user.relaxPrimaryDevice) {
+                            authentication.doParentAuthentication()?.authentication ?: return@tryWithLock
+                        } else null
+
+                        transitionLive.value = Content.ActiveUser.Transition.ConvertToOther.WaitingForSync
+
+                        try {
+                            // if not the current device, skip some steps
+                            if (userRelatedData.user.currentDevice == deviceRelatedData.deviceEntry.id) {
+                                logic.syncUtil.requestImportantSyncAndWait()
+
+                                transitionLive.value =
+                                    Content.ActiveUser.Transition.ConvertToOther.SendingRequest
+
+                                // send request
+                                val response = try {
+                                    val server =
+                                        logic.serverLogic.getServerConfigCoroutine()
+
+                                    server.api.updatePrimaryDevice(
+                                        UpdatePrimaryDeviceRequest(
+                                            action = UpdatePrimaryDeviceRequestType.UnsetThisDevice,
+                                            currentUserId = userRelatedData.user.id,
+                                            deviceAuthToken = server.deviceAuthToken
+                                        )
+                                    )
+                                } catch (_: IOException) {
+                                    throw ErrorToastException(R.string.error_network)
+                                }
+
+                                if (response.status != UpdatePrimaryDeviceResponseType.Success) {
+                                    throw IllegalStateException()
+                                }
+
+                                // adjust in database
+                                Threads.database.executeAndWait {
+                                    logic.database.runInTransaction {
+                                        logic.database.user().updateUserSync(
+                                            logic.database.user()
+                                                .getUserByIdSync(userRelatedData.user.id)!!
+                                                .copy(currentDevice = "")
+                                        )
+                                    }
+                                }
+                            }
+
+                            // disable borrowing
+                            logic.currentDeviceLogic.dropBorrow()
+
+                            // disable relaxing if it was enabled
+                            deRelaxAuthentication?.let {
                                 ApplyActionUtil.applyParentAction(
                                     SetRelaxPrimaryDeviceAction(
-                                        userId = user.id,
-                                        relax = it,
+                                        userId = userRelatedData.user.id,
+                                        relax = false
                                     ),
-                                    parent.authentication,
+                                    it,
                                     logic
                                 )
                             }
+                        } finally {
+                            transitionLive.value = null
                         }
                     }
-                )
-            }
+                }
+            },
+            makeRelaxed = {
+                launch {
+                    if (logic.fullVersion.shouldProvideFullVersionFunctions()) {
+                        authentication.doParentAuthentication()?.let {
+                            ApplyActionUtil.applyParentAction(
+                                SetRelaxPrimaryDeviceAction(
+                                    userId = userRelatedData.user.id,
+                                    relax = true
+                                ),
+                                it.authentication,
+                                logic
+                            )
+                        }
+                    } else {
+                        activityCommand.trySend(ActivityCommand.ShowMissingPremiumDialog)
+                    }
+                }
+            },
+        )
 
-            Screen.ManageChildCurrentDeviceScreen(state, content, intro, backStack, snackbarHostState)
-        })
+        return Content.ActiveUser(
+            mode = when (status) {
+                is CurrentDeviceLogic.HandleAsCurrentDevice.Yes.PrimaryDevice -> Content.ActiveUser.Mode.PrimaryDevice
+                is CurrentDeviceLogic.HandleAsCurrentDevice.Yes.BorrowedCurrentDevice -> Content.ActiveUser.Mode.SecondaryDevice
+                is CurrentDeviceLogic.HandleAsCurrentDevice.No -> Content.ActiveUser.Mode.OtherDevice
+                CurrentDeviceLogic.HandleAsCurrentDevice.Yes.RelaxedCurrentDevice -> Content.ActiveUser.Mode.RelaxedPrimaryDevice
+                CurrentDeviceLogic.HandleAsCurrentDevice.Yes.LocalMode -> {
+                    // case already handled above
+
+                    throw IllegalStateException()
+                }
+            },
+            transition = transition,
+            actions = actions
+        )
     }
 
     suspend fun unsetCurrentDeviceInBackground(logic: AppLogic) {

@@ -127,7 +127,7 @@ class MainActivity : AppCompatActivity(), ActivityViewModelHolder, U2fManager.De
     override val showPasswordRecovery: Boolean = true
 
     private val requestNotifyPermission = registerForActivityResult(ActivityResultContracts.RequestPermission()) { granted ->
-        if (granted) mainModel.reportPermissionsChanged()
+        if (granted) mainModel.api.reportPermissionsChanged()
     }
 
     override fun onCreate(savedInstanceState: Bundle?) {
@@ -155,7 +155,7 @@ class MainActivity : AppCompatActivity(), ActivityViewModelHolder, U2fManager.De
 
         lifecycleScope.launch {
             lifecycle.repeatOnLifecycle(Lifecycle.State.STARTED) {
-                for (message in mainModel.activityCommand) when (message) {
+                for (message in mainModel.api.activityCommand) when (message) {
                     ActivityCommand.ShowAddDeviceFragment -> AddDeviceFragment().show(supportFragmentManager)
                     ActivityCommand.ShowCanNotAddDevicesInLocalModeDialogFragment -> CanNotAddDevicesInLocalModeDialogFragment().show(supportFragmentManager)
                     ActivityCommand.ShowAuthenticationScreen -> showAuthenticationScreen()
@@ -206,7 +206,7 @@ class MainActivity : AppCompatActivity(), ActivityViewModelHolder, U2fManager.De
                     it - f.id
                 }
 
-                if (f is NewLoginFragment) mainModel.reportAuthenticationScreenClosed()
+                if (f is NewLoginFragment) mainModel.api.reportAuthenticationScreenClosed()
 
                 cleanupFragments()
             }
@@ -403,7 +403,7 @@ class MainActivity : AppCompatActivity(), ActivityViewModelHolder, U2fManager.De
         mainModel.execute(UpdateStateCommand.Reset)
     }
 
-    override fun getActivityViewModel(): ActivityViewModel = mainModel.activityModel
+    override fun getActivityViewModel(): ActivityViewModel = mainModel.api.activityModel
 
     override fun showAuthenticationScreen() {
         if (supportFragmentManager.findFragmentByTag(AUTH_DIALOG_TAG) == null) {
