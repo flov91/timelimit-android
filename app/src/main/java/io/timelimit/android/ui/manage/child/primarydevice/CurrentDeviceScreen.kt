@@ -18,6 +18,7 @@ package io.timelimit.android.ui.manage.child.primarydevice
 
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Column
+import androidx.compose.foundation.layout.ColumnScope
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.rememberScrollState
@@ -27,7 +28,9 @@ import androidx.compose.material.ExperimentalMaterialApi
 import androidx.compose.material.LinearProgressIndicator
 import androidx.compose.material.MaterialTheme
 import androidx.compose.material.Text
+import androidx.compose.material.TextButton
 import androidx.compose.runtime.Composable
+import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.text.style.TextAlign
@@ -52,13 +55,13 @@ fun CurrentDeviceScreen(
             Text(stringResource(R.string.current_device_description))
         }
 
-        CurrentDeviceContent(screen.content)
+        CurrentDeviceContent(screen.content, CurrentDeviceContentMode.Configuration)
     }
 }
 
 @OptIn(ExperimentalMaterialApi::class)
 @Composable
-fun CurrentDeviceContent(content: ManageChildCurrentDevice.Content, shortVersion: Boolean = false) {
+fun ColumnScope.CurrentDeviceContent(content: ManageChildCurrentDevice.Content, mode: CurrentDeviceContentMode) {
     when (content) {
         is ManageChildCurrentDevice.Content.LocalMode -> {
             Text(
@@ -76,13 +79,12 @@ fun CurrentDeviceContent(content: ManageChildCurrentDevice.Content, shortVersion
         }
         is ManageChildCurrentDevice.Content.ActiveUser -> {
             val actions = content.actions
-            val mode = content.mode
             val transition = content.transition
 
             Card(
                 onClick = actions.makePrimary,
                 backgroundColor =
-                    if (mode == ManageChildCurrentDevice.Content.ActiveUser.Mode.PrimaryDevice) MaterialTheme.colors.primary
+                    if (content.mode == ManageChildCurrentDevice.Content.ActiveUser.Mode.PrimaryDevice) MaterialTheme.colors.primary
                     else MaterialTheme.colors.surface
             ) {
                 Column (
@@ -123,7 +125,7 @@ fun CurrentDeviceContent(content: ManageChildCurrentDevice.Content, shortVersion
             Card(
                 onClick = actions.makeSecondary,
                 backgroundColor =
-                    if (mode == ManageChildCurrentDevice.Content.ActiveUser.Mode.SecondaryDevice) MaterialTheme.colors.primary
+                    if (content.mode == ManageChildCurrentDevice.Content.ActiveUser.Mode.SecondaryDevice) MaterialTheme.colors.primary
                     else MaterialTheme.colors.surface
             ) {
                 Column (Modifier.padding(8.dp)) {
@@ -152,11 +154,11 @@ fun CurrentDeviceContent(content: ManageChildCurrentDevice.Content, shortVersion
                 }
             }
 
-            if (!shortVersion) {
+            if (mode == CurrentDeviceContentMode.Configuration) {
                 Card(
                     onClick = actions.makeOther,
                     backgroundColor =
-                        if (mode == ManageChildCurrentDevice.Content.ActiveUser.Mode.OtherDevice) MaterialTheme.colors.primary
+                        if (content.mode == ManageChildCurrentDevice.Content.ActiveUser.Mode.OtherDevice) MaterialTheme.colors.primary
                         else MaterialTheme.colors.surface
                 ) {
                     Column(Modifier.padding(8.dp)) {
@@ -190,7 +192,7 @@ fun CurrentDeviceContent(content: ManageChildCurrentDevice.Content, shortVersion
                 Card(
                     onClick = actions.makeRelaxed,
                     backgroundColor =
-                        if (mode == ManageChildCurrentDevice.Content.ActiveUser.Mode.RelaxedPrimaryDevice) MaterialTheme.colors.primary
+                        if (content.mode == ManageChildCurrentDevice.Content.ActiveUser.Mode.RelaxedPrimaryDevice) MaterialTheme.colors.primary
                         else MaterialTheme.colors.surface
                 ) {
                     Column(Modifier.padding(8.dp)) {
@@ -203,6 +205,36 @@ fun CurrentDeviceContent(content: ManageChildCurrentDevice.Content, shortVersion
                     }
                 }
             }
+
+            when (mode) {
+                CurrentDeviceContentMode.Lockscreen -> {
+                    SwitchRow(
+                        label = stringResource(R.string.current_device_remember_checkbox),
+                        checked = content.updateRememberedChoice,
+                        onCheckedChange = content.actions.updateRememberChoice
+                    )
+                }
+                CurrentDeviceContentMode.Configuration -> {
+                    if (content.rememberedChoice != null) {
+                        Text(when(content.rememberedChoice) {
+                            ManageChildCurrentDevice.RememberedChoice.PrimaryDevice -> stringResource(R.string.current_device_remember_primary)
+                            ManageChildCurrentDevice.RememberedChoice.SecondaryDevice -> stringResource(R.string.current_device_remember_secondary)
+                        })
+
+                        TextButton(
+                            onClick = content.actions.resetRememberedChoice,
+                            modifier = Modifier.align(Alignment.End)
+                        ) {
+                            Text(stringResource(R.string.current_device_remember_reset))
+                        }
+                    }
+                }
+            }
         }
     }
+}
+
+enum class CurrentDeviceContentMode {
+    Configuration,
+    Lockscreen,
 }

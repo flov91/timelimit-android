@@ -30,6 +30,7 @@ import io.timelimit.android.extensions.parseBase64
 import io.timelimit.android.extensions.toJsonReader
 import io.timelimit.android.livedata.ignoreUnchanged
 import io.timelimit.android.sync.network.ServerDhKey
+import io.timelimit.android.ui.model.managechild.ManageChildCurrentDevice
 import io.timelimit.android.update.UpdateStatus
 import kotlinx.coroutines.flow.Flow
 import kotlinx.coroutines.flow.map
@@ -407,5 +408,17 @@ abstract class ConfigDao {
 
     fun setU2fListVersionSync(version: String?) {
         updateValueSync(ConfigurationItemType.U2fListVersion, version)
+    }
+
+    fun getRememberedCurrentDeviceChoiceFlow(): Flow<ManageChildCurrentDevice.RememberedChoice?> =
+        getValueOfKeyFlow(ConfigurationItemType.CurrentDeviceRememberedChoice).map { value ->
+            value?.let { ManageChildCurrentDevice.decodeRememberedChoice(it) }
+        }
+
+    fun setRememberedCurrentDeviceChoiceSync(value: ManageChildCurrentDevice.RememberedChoice?) {
+        updateValueSync(
+            ConfigurationItemType.CurrentDeviceRememberedChoice,
+            value?.let { ManageChildCurrentDevice.encodeRememberedChoice((it)) }
+        )
     }
 }

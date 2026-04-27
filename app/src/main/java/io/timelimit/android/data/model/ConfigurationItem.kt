@@ -106,7 +106,8 @@ enum class ConfigurationItemType {
     LastKeyResponseSequence,
     DhKey,
     DhKeyVersion,
-    U2fListVersion
+    U2fListVersion,
+    CurrentDeviceRememberedChoice,
 }
 
 object ConfigurationItemTypeUtil {
@@ -142,6 +143,7 @@ object ConfigurationItemTypeUtil {
     private const val DH_KEY = 31
     private const val DH_KEY_VERSION = 32
     private const val U2F_LIST_VERSION = 33
+    private const val CURRENT_DEVICE_REMEMBERED_CHOICE = 34
 
     val TYPES = listOf(
             ConfigurationItemType.OwnDeviceId,
@@ -175,7 +177,8 @@ object ConfigurationItemTypeUtil {
             ConfigurationItemType.LastKeyResponseSequence,
             ConfigurationItemType.DhKey,
             ConfigurationItemType.DhKeyVersion,
-            ConfigurationItemType.U2fListVersion
+            ConfigurationItemType.U2fListVersion,
+            ConfigurationItemType.CurrentDeviceRememberedChoice
     )
 
     fun serialize(value: ConfigurationItemType) = when(value) {
@@ -211,6 +214,7 @@ object ConfigurationItemTypeUtil {
         ConfigurationItemType.DhKey -> DH_KEY
         ConfigurationItemType.DhKeyVersion -> DH_KEY_VERSION
         ConfigurationItemType.U2fListVersion -> U2F_LIST_VERSION
+        ConfigurationItemType.CurrentDeviceRememberedChoice -> CURRENT_DEVICE_REMEMBERED_CHOICE
     }
 
     fun parse(value: Int) = when(value) {
@@ -246,6 +250,7 @@ object ConfigurationItemTypeUtil {
         DH_KEY -> ConfigurationItemType.DhKey
         DH_KEY_VERSION -> ConfigurationItemType.DhKeyVersion
         U2F_LIST_VERSION -> ConfigurationItemType.U2fListVersion
+        CURRENT_DEVICE_REMEMBERED_CHOICE -> ConfigurationItemType.CurrentDeviceRememberedChoice
         else -> throw IllegalArgumentException()
     }
 }

@@ -241,8 +241,6 @@ class LockActionFragment : Fragment() {
                 LockscreenContent.Close -> {
                     binding.reason = BlockingReason.None
                     binding.handlers = null
-
-                    requireActivity().finish()
                 }
                 is LockscreenContent.Blocked -> {
                     binding.reason = content.reason

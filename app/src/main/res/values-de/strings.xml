@@ -1359,6 +1359,10 @@
     <string name="current_device_status_sending_request">Sende Anfrage</string>
     <string name="current_device_status_waiting_for_device">Warte auf Reaktion vom Gerät %s</string>
     <string name="current_device_checkbox_relax">Die Nutzung von eingeschränkten Apps auch am nicht-aktuellen Gerät erlauben</string>
+    <string name="current_device_remember_checkbox">Auswahl für dieses Gerät merken</string>
+    <string name="current_device_remember_primary">Dieses Gerät wird bei Bedarf automatisch als primäres Gerät festgelegt, sofern möglich</string>
+    <string name="current_device_remember_secondary">Dieses Ger#t wird bei Bedarf automatisch als sekundäres Gerät gewählt, sofern möglich</string>
+    <string name="current_device_remember_reset">Automatik deaktivieren</string>
 
     <string name="primary_device_status_no_device">Es wurde kein aktives Gerät gewählt</string>
     <string name="primary_device_status_other_device">\"%s\" ist momentan das aktive Gerät</string>

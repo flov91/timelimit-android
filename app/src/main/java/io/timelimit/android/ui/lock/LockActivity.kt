@@ -77,6 +77,7 @@ import io.timelimit.android.ui.login.NewLoginFragment
 import io.timelimit.android.ui.main.ActivityViewModel
 import io.timelimit.android.ui.main.ActivityViewModelHolder
 import io.timelimit.android.ui.manage.child.primarydevice.CurrentDeviceContent
+import io.timelimit.android.ui.manage.child.primarydevice.CurrentDeviceContentMode
 import io.timelimit.android.ui.manage.device.add.AddDeviceFragment
 import io.timelimit.android.ui.model.ActivityCommand
 import io.timelimit.android.ui.overview.overview.CanNotAddDevicesInLocalModeDialogFragment
@@ -191,6 +192,16 @@ class LockActivity : AppCompatActivity(), ActivityViewModelHolder, U2fManager.De
             isTimeOver
         }.asFlow()
 
+        model.content.observe(this) {
+            if (it is LockscreenContent.Blocked && it.reason == BlockingReason.RequiresCurrentDevice) {
+                model.applyRememberedCurrentDeviceSelection()
+            }
+
+            if (it is LockscreenContent.Close) {
+                finish()
+            }
+        }
+
         setContent {
             val subtitle by subtitleLive.collectAsState(null)
             val showTasks by showTasksLive.collectAsState(false)
@@ -276,7 +287,7 @@ class LockActivity : AppCompatActivity(), ActivityViewModelHolder, U2fManager.De
                                                     .padding(8.dp),
                                                 verticalArrangement = Arrangement.spacedBy(8.dp)
                                             ) {
-                                                currentDevice?.let { CurrentDeviceContent(it, shortVersion = true) }
+                                                currentDevice?.let { CurrentDeviceContent(it, CurrentDeviceContentMode.Lockscreen) }
 
                                                 Card(
                                                     onClick = {

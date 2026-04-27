@@ -100,7 +100,7 @@ object ManageChildHandling {
         return stateLive.splitConflated(
             Case.simple<_, _, State.ManageChild.Apps> { processAppsState(it, subBackStackLive) },
             Case.simple<_, _, State.ManageChild.Advanced> { processAdvancedState(it, subBackStackLive) },
-            Case.simple<_, _, State.ManageChild.AdvancedCurrentDevice> { ManageChildCurrentDevice.processCurrentDeviceState(logic, activityCommand, authentication, it, subBackStackLive, userLive, scope) },
+            Case.simple<_, _, State.ManageChild.AdvancedCurrentDevice> { ManageChildCurrentDevice.processCurrentDeviceState(logic, activityCommand, authentication, it, subBackStackLive, userLive, scope, updateMethod(updateState)) },
             Case.simple<_, _, State.ManageChild.Contacts> { processContactsState(it, subBackStackLive) },
             Case.simple<_, _, State.ManageChild.UsageHistory> { processUsageHistoryState(logic, childId, share(it), updateMethod(updateState), subBackStackLive) },
             Case.simple<_, _, State.ManageChild.Tasks> { processTasksState(it, subBackStackLive) },

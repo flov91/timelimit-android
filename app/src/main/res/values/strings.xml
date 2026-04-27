@@ -1406,6 +1406,10 @@
     <string name="current_device_status_sending_request">Sending Request</string>
     <string name="current_device_status_waiting_for_device">Waiting for Reaction from Device %s</string>
     <string name="current_device_checkbox_relax">Allow using limited Apps at devices which are not the current device</string>
+    <string name="current_device_remember_checkbox">Remember selection for this device</string>
+    <string name="current_device_remember_primary">On demand, this device is selected as primary device if possible</string>
+    <string name="current_device_remember_secondary">On demand, this device is selected as secondary device if possible</string>
+    <string name="current_device_remember_reset">Disable automatic selection</string>
 
     <string name="primary_device_status_no_device">There is no current device selected</string>
     <string name="primary_device_status_other_device">\"%s\" is the current device</string>

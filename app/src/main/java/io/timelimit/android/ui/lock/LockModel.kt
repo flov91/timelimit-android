@@ -19,10 +19,11 @@ package io.timelimit.android.ui.lock
 import android.app.Application
 import android.database.sqlite.SQLiteConstraintException
 import android.graphics.drawable.Drawable
+import android.util.Log
 import androidx.compose.material.SnackbarHostState
 import androidx.lifecycle.*
+import io.timelimit.android.BuildConfig
 import io.timelimit.android.async.Threads
-import io.timelimit.android.data.model.Device
 import io.timelimit.android.data.model.TemporarilyAllowedApp
 import io.timelimit.android.data.model.UserType
 import io.timelimit.android.data.model.derived.DeviceAndUserRelatedData
@@ -34,16 +35,19 @@ import io.timelimit.android.logic.*
 import io.timelimit.android.logic.blockingreason.AppBaseHandling
 import io.timelimit.android.logic.blockingreason.CategoryHandlingCache
 import io.timelimit.android.logic.blockingreason.CategoryItselfHandling
-import io.timelimit.android.ui.model.ActivityCommand
 import io.timelimit.android.ui.model.ApiModel
 import io.timelimit.android.ui.model.managechild.ManageChildCurrentDevice
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.SharingStarted
 import kotlinx.coroutines.flow.combine
 import kotlinx.coroutines.flow.filterNotNull
+import kotlinx.coroutines.flow.first
 import kotlinx.coroutines.flow.shareIn
 import kotlinx.coroutines.flow.transform
+import kotlinx.coroutines.flow.update
+import kotlinx.coroutines.launch
 import kotlinx.coroutines.sync.Mutex
+import java.util.concurrent.atomic.AtomicBoolean
 
 class LockModel(application: Application): AndroidViewModel(application) {
     val api = ApiModel(application)
@@ -77,14 +81,22 @@ class LockModel(application: Application): AndroidViewModel(application) {
     val manageCurrentDeviceLaunchFunction = ManageChildCurrentDevice.buildLaunchFunction(viewModelScope, application, snackbarHostState)
     val manageCurrentDeviceTransitionLive = MutableStateFlow(null as ManageChildCurrentDevice.Content.ActiveUser.Transition?)
     val manageCurrentDeviceTransitionMutex = Mutex()
+    val manageCurrentDeviceState = MutableStateFlow(ManageChildCurrentDevice.State())
     val currentDeviceLive = logic.deviceUserEntry.asFlow().filterNotNull().combine(
         logic.database.device().getAllDevicesFlow()
     ) { user, devices -> devices.firstOrNull { it.id == user.currentDevice } }
     val manageCurrentDeviceContent = combine(
         deviceAndUserRelatedData.asFlow(),
         manageCurrentDeviceTransitionLive,
-        logic.currentDeviceLogic.borrowedCurrentDevice
-    ) { a, b, c  -> Triple(a, b, c) }.transform { (userAndDeviceRelatedData, transition, borrowedCurrentDevice) ->
+        combine(
+            logic.currentDeviceLogic.borrowedCurrentDevice,
+            manageCurrentDeviceState,
+            logic.database.config().getRememberedCurrentDeviceChoiceFlow()
+        ) { a, b, c -> Triple(a, b, c) }
+    ) { a, b, c  -> Triple(a, b, c) }.transform { params ->
+        val (userAndDeviceRelatedData, transition, params2) = params
+        val (borrowedCurrentDevice, state, rememberedChoice) = params2
+
         val userRelatedData = userAndDeviceRelatedData?.userRelatedData ?: return@transform
 
         val status = CurrentDeviceLogic.handleDeviceAsCurrentDevice(
@@ -103,10 +115,25 @@ class LockModel(application: Application): AndroidViewModel(application) {
                 api.authentication,
                 currentDeviceLive,
                 manageCurrentDeviceLaunchFunction,
-                status
+                status,
+                state,
+                manageCurrentDeviceState::update,
+                rememberedChoice
             )
         )
     }.shareIn(viewModelScope, SharingStarted.Lazily, 1)
+
+    private val applyRememberedCurrentDeviceSelectionLock = AtomicBoolean(false)
+
+    fun applyRememberedCurrentDeviceSelection() {
+        val updated = applyRememberedCurrentDeviceSelectionLock.compareAndSet(false, true)
+
+        if (!updated) return
+
+        viewModelScope.launch {
+            manageCurrentDeviceContent.first().actions.recallRememberedChoice()
+        }
+    }
 
     val content: LiveData<LockscreenContent> = object: MediatorLiveData<LockscreenContent>() {
         private val updateRunnable = Runnable { update() }
