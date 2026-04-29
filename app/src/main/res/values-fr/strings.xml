@@ -191,7 +191,7 @@
     <string name="category_settings_extra_time_switch_limit_to_day">Réinitialiser le temps additionnel après aujourd’hui</string>
     <string name="category_settings_delete_dialog">Voulez-vous supprimer la catégorie %s ?</string>
     <string name="category_settings_parent_category_title">Catégorie parente</string>
-    <string name="category_time_limit_rules_session_limit_pause">Interrompre la durée après la session</string>
+    <string name="category_time_limit_rules_session_limit_pause">Durée de pause après la session</string>
     <string name="category_settings_parent_category_intro">Quand la catégorie parente d’une catégorie est bloquée (car le temps est écoulé par exemple), alors la catégorie enfant est également bloquée. Le temps écoulé d’une catégorie enfant est également ajoutée à la catégorie parente.</string>
     <string name="category_settings_battery_limit_description">Cela permet de définir les niveaux de batterie minimum pour cette catégorie</string>
     <string name="category_time_limit_rules_about">Vous pouvez configurer ici les règles de limites de temps. Chaque règle décrit une limite. Les horaires sans règles sont illimités.</string>
@@ -205,8 +205,8 @@
     <string name="category_time_limit_rules">règles des limites de temps</string>
     <string name="category_time_limit_rules_applied_to_extra_time">est aussi appliqué au temps additionnel</string>
     <string name="category_time_limit_rules_ignore_on_extra_time">ne s’applique pas au temps additionnel</string>
-    <string name="category_time_limit_rules_time_area">seulement appliqué de %s à %s</string>
-    <string name="category_time_limit_rules_session_limit">%s s’arrête après %s d\'utilisation</string>
+    <string name="category_time_limit_rules_time_area">appliqué uniquement de %s à %s</string>
+    <string name="category_time_limit_rules_session_limit">%s de pause après %s d’utilisation</string>
     <string name="category_time_limit_rule_dialog_new">Créer la règle</string>
     <string name="category_time_limit_rule_dialog_edit">Éditer la règle</string>
     <string name="category_time_limit_rules_apply_to_extra_time">Appliquer au temps additionnel</string>
@@ -300,7 +300,7 @@
     <string name="diagnose_exf_mld">Augmenter l\'intervalle de la boucle principale</string>
     <string name="diagnose_exf_kcs">Rester connecté lorsque l\'écran est éteint</string>
     <string name="lock_reason_short_battery_limit">Limite de batterie atteinte</string>
-    <string name="lock_reason_short_session_duration">Limite de durée de session atteinte</string>
+    <string name="lock_reason_short_session_duration">Durée de session atteinte</string>
     <string name="lock_reason_short_missing_required_network">pas de réseau autorisé</string>
     <string name="lock_reason_short_missing_network_check_permission">absence de l\'autorisation d\'accès au réseau</string>
     <string name="lock_reason_short_forbidden_network">réseau interdit</string>
@@ -950,7 +950,7 @@
     <string name="usage_history_empty_title">Il n\'y a pas d\'historique d\'utilisation</string>
     <string name="usage_history_empty_text">L\'utilisation n\'est sauvegardée que lorsqu\'il y a des limites de temps et que les applications limitées sont utilisées</string>
     <string name="usage_history_time_area">de %s à %s</string>
-    <string name="usage_history_item_session_duration_limit">Limite de durée de session de %s avec %s de pause</string>
+    <string name="usage_history_item_session_duration_limit">Durée de session limitée à %s, suivie d\'une pause de %s</string>
     <string name="usage_history_item_last_usage">Dernière utilisation : %s</string>
     <string name="usage_history_filter_all_categories">Toutes les catégories</string>
     <string name="usage_stats_permission_required_and_missing_title">L\'accès aux statistiques d\'utilisation est requis</string>
