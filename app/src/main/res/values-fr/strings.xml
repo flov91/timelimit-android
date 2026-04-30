@@ -764,7 +764,7 @@
     <string name="overview_user_item_temporarily_disabled">Limites de temps temporairement désactivées</string>
     <string name="overview_user_item_temporarily_disabled_until">Limites de temps temporairement désactivées jusqu\'à %s</string>
     <string name="overview_user_item_role">Rôle</string>
-    <string name="overview_user_item_role_child">est restreint</string>
+    <string name="overview_user_item_role_child">Accès restreint</string>
     <string name="overview_user_item_role_parent">peut modifier les paramètres</string>
     <string name="overview_finish_setup_title">Terminer la configuration</string>
     <string name="overview_finish_setup_text">Vous pouvez configurer timelimit manuellement maintenant. Cependant, vous pouvez le faire plus facilement ici.</string>
