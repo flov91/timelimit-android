@@ -411,8 +411,8 @@
 
     <string name="category_settings_battery_limit_title">Battery limit</string>
     <string name="category_settings_battery_limit_description">This allows to set minimum battery levels for this category</string>
-    <string name="category_settings_battery_limit_charging">While charging, the battery must have at least %d\%%</string>
-    <string name="category_settings_battery_limit_mobile">While discharging, the battery must have at least %d\%%</string>
+    <string name="category_settings_battery_limit_charging">While charging, the battery must have at least %d%%</string>
+    <string name="category_settings_battery_limit_mobile">While discharging, the battery must have at least %d%%</string>
     <string name="category_settings_battery_limit_confirm_toast">The battery limit was saved</string>
 
     <string name="category_time_limit_rules">time limit rules</string>
@@ -624,7 +624,7 @@
     <string name="diagnose_bat_status">Status: %s</string>
     <string name="diagnose_bat_status_charging">Charging/ full</string>
     <string name="diagnose_bat_status_mobile">Not charging</string>
-    <string name="diagnose_bat_level">Level: %d\%%</string>
+    <string name="diagnose_bat_level">Level: %d%%</string>
 
     <string name="diagnose_don_title">Device Owner Organization Name</string>
     <string name="diagnose_don_auth">Sign in to change the name</string>
