@@ -92,7 +92,7 @@ fun DerReader.readLength(): Long {
 
     val lengthBytes = firstByte xor 128u
 
-    if (lengthBytes <= 1.toUByte()) {
+    if (lengthBytes == 0.toUByte()) {
         throw DerReaderValueOutOfBoundsException()
     }
 
@@ -110,6 +110,12 @@ fun DerReader.readLength(): Long {
 
     for (byte in lengthData) {
         result = result * 256 + byte.toUByte().toLong()
+    }
+
+    if (result < 128) {
+        // could have used single byte encoding
+
+        throw DerReaderValueOutOfBoundsException()
     }
 
     return result
