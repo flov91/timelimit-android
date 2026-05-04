@@ -790,9 +790,15 @@
     <string name="parent_mode_help_text">Vous avez choisi le mode clé parent. Cela vous permet d\'utiliser votre appareil comme clé parent en l\'ajoutant à l\'entrée utilisateur parent sur l\'autre appareil. Cela ne permet pas un contrôle à distance. Si vous souhaitez restreindre cet appareil, réinitialisez/réinstallez TimeLimit.</string>
     <string name="password_validator_empty">Le mot de passe ne doit pas être vide</string>
     <string name="password_validator_too_short">Le mot de passe doit avoir au moins <xliff:g example="5" id="number of chars">%d</xliff:g> caractères</string>
+    <string name="primary_device_title">Appareil actuel</string>
+    <string name="primary_device_description">L\'appareil actuel est l\'appareil sur lequel les applications limitées peuvent être utilisées si un enfant possède plusieurs appareils. Cela empêche un enfant d\'utiliser la limite de temps plusieurs fois si aucune synchronisation entre les appareils n\'est possible. Il ne peut y avoir qu\'un seul appareil actuel par enfant.</string>
+    <string name="primary_device_status_local_mode">Vous utilisez le mode local. Par conséquent, il n\'est pas nécessaire de sélectionner un appareil actuel.</string>
     <string name="primary_device_status_no_device">Aucun appareil actuel n\'est sélectionné</string>
     <string name="primary_device_status_other_device">\"%s\" est l\'appareil actuel</string>
     <string name="primary_device_status_this_device">Cet appareil est l\'appareil actuel</string>
+    <string name="primary_device_btn_assign_this">Définir cet appareil comme appareil actuel</string>
+    <string name="primary_device_btn_unassign_this">Retirer cet appareil comme appareil actuel</string>
+    <string name="primary_device_checkbox_relax">Autoriser l\'utilisation des applications limitées sur des appareils qui ne sont pas l\'appareil actuel</string>
     <string name="purchase_intro">Veuillez sélectionner une option</string>
     <string name="purchase_sla_intro">Si vous appréciez TimeLimit et souhaitez le payer, vous pouvez acheter une licence stay awesome ici. Cela ne déverrouille pas de fonctionnalités supplémentaires.</string>
     <string name="purchase_info_assigned_to_account">L\'achat est assigné à votre famille et est valable sur tous les appareils. La famille comprend tous les appareils qui sont associés à cet appareil maintenant et à l\'avenir. Pour les applications et produits intégrés proposés via Google Play, les frais de transaction représentent entre 15 % et 30 % du prix.</string>
