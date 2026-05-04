@@ -1363,6 +1363,7 @@
     <string name="current_device_remember_primary">Dieses Gerät wird bei Bedarf automatisch als primäres Gerät festgelegt, sofern möglich</string>
     <string name="current_device_remember_secondary">Dieses Ger#t wird bei Bedarf automatisch als sekundäres Gerät gewählt, sofern möglich</string>
     <string name="current_device_remember_reset">Automatik deaktivieren</string>
+    <string name="current_device_wrong_user">Es gibt hier mehr Optionen, sobald dieser Benutzer diesem Gerät zugeordnet ist.</string>
 
     <string name="primary_device_status_no_device">Es wurde kein aktives Gerät gewählt</string>
     <string name="primary_device_status_other_device">\"%s\" ist momentan das aktive Gerät</string>

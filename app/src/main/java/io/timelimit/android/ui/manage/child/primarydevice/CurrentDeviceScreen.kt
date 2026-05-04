@@ -76,6 +76,12 @@ fun ColumnScope.CurrentDeviceContent(content: ManageChildCurrentDevice.Content, 
                 checked = content.relaxed,
                 onCheckedChange = content.toggle
             )
+
+            Text(
+                stringResource(R.string.current_device_wrong_user),
+                modifier = Modifier.padding(8.dp),
+                style = MaterialTheme.typography.body2
+            )
         }
         is ManageChildCurrentDevice.Content.ActiveUser -> {
             val actions = content.actions
