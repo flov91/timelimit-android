@@ -1415,6 +1415,7 @@
     <string name="primary_device_status_no_device">There is no current device selected</string>
     <string name="primary_device_status_other_device">\"%s\" is the current device</string>
     <string name="primary_device_status_this_device">This device is the current device</string>
+    <string name="primary_device_status_other_user">This user is not assigned to this device</string>
 
     <string name="purchase_intro">Please select an option</string>
     <string name="purchase_sla_intro">

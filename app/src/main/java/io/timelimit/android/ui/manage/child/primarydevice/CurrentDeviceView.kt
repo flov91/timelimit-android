@@ -27,18 +27,17 @@ object CurrentDeviceView {
             logic: AppLogic,
             lifecycleOwner: LifecycleOwner
     ) {
-        val userEntryLive = logic.database.user().getUserByIdLive(childId)
         val deviceAndUserRelatedDataLive = logic.database.derivedDataDao().getUserAndDeviceRelatedDataLive()
         val allDevicesLive = logic.database.device().getAllDevicesLive()
 
-        mergeLiveData(userEntryLive, deviceAndUserRelatedDataLive, allDevicesLive)
-            .observe(lifecycleOwner) { (userEntry, deviceAndUserRelatedData, allDevices) ->
-                if (userEntry == null || deviceAndUserRelatedData == null || allDevices == null) return@observe
-
-                view.canAssignThisDevice = deviceAndUserRelatedData.userRelatedData?.user?.id == childId
+        mergeLiveData(deviceAndUserRelatedDataLive, allDevicesLive)
+            .observe(lifecycleOwner) { (deviceAndUserRelatedData, allDevices) ->
+                if (deviceAndUserRelatedData == null || allDevices == null) return@observe
 
                 if (deviceAndUserRelatedData.deviceRelatedData.isLocalMode) {
                     view.status = PrimaryDeviceStatus.LocalMode
+                } else if (deviceAndUserRelatedData.userRelatedData?.user?.id != childId) {
+                    view.status = PrimaryDeviceStatus.OtherUserSelected
                 } else {
                     val currentDeviceEntry = allDevices.find { device -> device.id == deviceAndUserRelatedData.userRelatedData?.user?.currentDevice }
 
@@ -59,5 +58,6 @@ enum class PrimaryDeviceStatus {
     LocalMode,
     NoDeviceSelected,
     OtherDeviceSelected,
-    ThisDeviceSelected
+    ThisDeviceSelected,
+    OtherUserSelected,
 }

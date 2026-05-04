@@ -1368,6 +1368,7 @@
     <string name="primary_device_status_no_device">Es wurde kein aktives Gerät gewählt</string>
     <string name="primary_device_status_other_device">\"%s\" ist momentan das aktive Gerät</string>
     <string name="primary_device_status_this_device">Dieses Gerät ist das aktive Gerät</string>
+    <string name="primary_device_status_other_user">Dieser Benutzer ist nicht diesem Gerät zugeordnet</string>
 
     <string name="purchase_intro">Wählen Sie eine Variante aus</string>
     <string name="purchase_sla_intro">

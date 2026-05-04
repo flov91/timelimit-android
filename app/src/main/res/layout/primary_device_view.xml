@@ -26,10 +26,6 @@
             name="status"
             type="io.timelimit.android.ui.manage.child.primarydevice.PrimaryDeviceStatus" />
 
-        <variable
-            name="canAssignThisDevice"
-            type="Boolean" />
-
         <import type="android.view.View" />
         <import type="io.timelimit.android.ui.manage.child.primarydevice.PrimaryDeviceStatus" />
     </data>
@@ -79,6 +75,13 @@
                 android:visibility="@{status == PrimaryDeviceStatus.ThisDeviceSelected ? View.VISIBLE : View.GONE}"
                 android:textAppearance="?android:textAppearanceMedium"
                 android:text="@string/primary_device_status_this_device"
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content" />
+
+            <TextView
+                android:visibility="@{status == PrimaryDeviceStatus.OtherUserSelected ? View.VISIBLE : View.GONE}"
+                android:textAppearance="?android:textAppearanceMedium"
+                android:text="@string/primary_device_status_other_user"
                 android:layout_width="match_parent"
                 android:layout_height="wrap_content" />
 
