@@ -46,9 +46,7 @@ fun <T> ByteArray.decodeInflatedDer(parser: (DerReader) -> T): T =
     InflaterInputStream(ByteArrayInputStream(this)).use {
         val reader = InputStreamDerReader.fromStream(it)
 
-        try {
-            parser(reader)
-        } finally {
+        parser(reader).also {
             if (!reader.isEof()) {
                 throw DerReaderUnexpectedFurtherData()
             }
