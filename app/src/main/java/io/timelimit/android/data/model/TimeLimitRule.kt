@@ -1,5 +1,5 @@
 /*
- * TimeLimit Copyright <C> 2019 - 2024 Jonas Lochmann
+ * TimeLimit Copyright <C> 2019 - 2026 Jonas Lochmann
  *
  * This program is free software: you can redistribute it and/or modify
  * it under the terms of the GNU General Public License as published by
@@ -193,7 +193,8 @@ data class TimeLimitRule(
                 startMinuteOfDay <= other.startMinuteOfDay &&
                 endMinuteOfDay >= other.endMinuteOfDay &&
                 (!other.sessionDurationLimitEnabled || (
-                        this.sessionDurationMilliseconds <= other.sessionDurationMilliseconds &&
+                        this.sessionDurationLimitEnabled &&
+                                this.sessionDurationMilliseconds <= other.sessionDurationMilliseconds &&
                                 this.sessionPauseMilliseconds >= other.sessionPauseMilliseconds
                         )) &&
                 (!this.perDay || other.perDay || other.dayMask.countOneBits() <= 1) &&
