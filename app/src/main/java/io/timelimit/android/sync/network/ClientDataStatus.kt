@@ -40,7 +40,7 @@ data class ClientDataStatus(
         private const val LAST_KEY_RESPONSE_SEQUENCE = "kr"
         private const val DH = "dh"
         private const val U2F = "u2f"
-        const val CLIENT_LEVEL_VALUE = 7
+        const val CLIENT_LEVEL_VALUE = 8
 
         val empty = ClientDataStatus(
             deviceListVersion = "",
