@@ -70,7 +70,11 @@ sealed class State (val previous: State?): Serializable {
         else previous?.find(predicate)
     fun first(): State = previous?.first() ?: this
     open fun matches(other: State) = this == other
-    object LaunchState: State(previous = null)
+    object LaunchState: State(previous = null) {
+        @Suppress("UNUSED_VARIABLE")
+        private fun readResolve(): Any = LaunchState
+    }
+
     data class Overview(
         val state: OverviewHandling.OverviewState = OverviewHandling.OverviewState.empty
     ): State(previous = null)
@@ -229,7 +233,10 @@ sealed class State (val previous: State?): Serializable {
         ): Sub(previousMain, Fragment::class.java, containerId = R.id.fragment_manage_device_user) {
             sealed class Overlay: Serializable {
                 data class EnableDefaultUserDialog(val userId: String): Overlay()
-                object AdjustDefaultUserTimeout: Overlay()
+                object AdjustDefaultUserTimeout: Overlay() {
+                    @Suppress("UNUSED_VARIABLE")
+                    private fun readResolve(): Any = LaunchState
+                }
             }
         }
         data class Permissions(val previousMain: Main, val currentDialog: SystemPermission? = null): Sub(previousMain, Fragment::class.java, containerId = R.id.fragment_manage_device_permissions) {
@@ -273,7 +280,10 @@ sealed class State (val previous: State?): Serializable {
             sealed class Dialog: Serializable
 
             data class SystemPermissionDialog(val permission: SystemPermission): Dialog()
-            object ParentKeyDialog: Dialog()
+            object ParentKeyDialog: Dialog() {
+                @Suppress("UNUSED_VARIABLE")
+                private fun readResolve(): Any = LaunchState
+            }
         }
         class LocalMode(previous: DevicePermissions): FragmentStateLegacy(previous = previous, fragmentClass = SetupLocalModeFragment::class.java, R.id.fragment_setup_local_mode)
         class ConnectedPrivacy(previousSelectMode: SelectMode): Setup(previousSelectMode)

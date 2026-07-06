@@ -79,9 +79,9 @@ object ManageChildCategoryList {
         val moveTo: (String) -> Unit
     )
 
-    sealed class CategorySpecialMode: Serializable {
+    sealed class CategorySpecialMode {
         object None: CategorySpecialMode()
-        sealed class NotNone: CategorySpecialMode()
+        sealed class NotNone: CategorySpecialMode(), Serializable
 
         data class TemporarilyBlocked(val endTime: Long?): NotNone()
         data class TemporarilyAllowed(val endTime: Long): NotNone()
