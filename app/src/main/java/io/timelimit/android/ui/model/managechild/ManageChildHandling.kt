@@ -15,22 +15,33 @@
  */
 package io.timelimit.android.ui.model.managechild
 
+import androidx.compose.material.SnackbarHostState
+import androidx.compose.material.icons.Icons
+import androidx.compose.material.icons.filled.DirectionsBike
+import androidx.compose.material.icons.filled.Phone
 import io.timelimit.android.R
+import io.timelimit.android.data.model.HintsToShow
 import io.timelimit.android.data.model.User
 import io.timelimit.android.data.model.UserType
 import io.timelimit.android.logic.AppLogic
 import io.timelimit.android.ui.model.ActivityCommand
 import io.timelimit.android.ui.model.AuthenticationModelApi
 import io.timelimit.android.ui.model.BackStackItem
+import io.timelimit.android.ui.model.Menu
 import io.timelimit.android.ui.model.Screen
 import io.timelimit.android.ui.model.State
 import io.timelimit.android.ui.model.Title
+import io.timelimit.android.ui.model.UpdateStateCommand
 import io.timelimit.android.ui.model.flow.Case
 import io.timelimit.android.ui.model.flow.splitConflated
+import io.timelimit.android.ui.model.intro.IntroHandling
+import kotlinx.coroutines.CoroutineScope
+import kotlinx.coroutines.ExperimentalCoroutinesApi
 import kotlinx.coroutines.channels.SendChannel
 import kotlinx.coroutines.flow.*
 
 object ManageChildHandling {
+    @OptIn(ExperimentalCoroutinesApi::class)
     fun processState(
         logic: AppLogic,
         activityCommand: SendChannel<ActivityCommand>,
@@ -57,7 +68,7 @@ object ManageChildHandling {
 
                 hasUserLive.transformLatest { hasUser ->
                     if (hasUser) emitAll(state3.splitConflated(
-                        Case.simple<_, _, State.ManageChild.Main> { processMainState(it, baseBackStackLive, foundUserLive) },
+                        Case.simple<_, _, State.ManageChild.Main> { processMainState(logic, activityCommand, authentication, it, baseBackStackLive, childId, foundUserLive, scope, updateMethod(updateState)) },
                         Case.simple<_, _, State.ManageChild.Sub> { processSubState(logic, activityCommand, authentication, share(it), baseBackStackLive, childId, foundUserLive, updateMethod(updateState)) },
                     ))
                     else updateState { it.previousOverview }
@@ -67,18 +78,61 @@ object ManageChildHandling {
     )
 
     private fun processMainState(
+        logic: AppLogic,
+        activityCommand: SendChannel<ActivityCommand>,
+        authentication: AuthenticationModelApi,
         stateLive: Flow<State.ManageChild.Main>,
         baseBackStackLive: Flow<List<BackStackItem>>,
-        userLive: Flow<User>
-    ): Flow<Screen> = combine(stateLive, baseBackStackLive, userLive) { state, backStack, user ->
-        Screen.ManageChildScreen(
-            state,
-            state.toolbarIcons,
-            state.toolbarOptions,
-            state,
-            user.name,
-            backStack
+        childId: String,
+        userLive: Flow<User>,
+        scope: CoroutineScope,
+        updateState: ((State.ManageChild.Main) -> State) -> Unit
+    ): Flow<Screen> = flow {
+        val snackbarHostState = SnackbarHostState()
+
+        val introLive = IntroHandling.handle(logic, HintsToShow.CATEGORIES_INTRODUCTION)
+
+        val nestedLive = ManageChildCategoryList.handle(
+            childId,
+            logic,
+            activityCommand,
+            snackbarHostState,
+            authentication,
+            scope,
+            open = { categoryId ->
+                updateState { oldState ->
+                    State.ManageChild.ManageCategory.Main(oldState, categoryId)
+                }
+            }
         )
+
+        emitAll(combine(stateLive, baseBackStackLive, userLive, introLive, nestedLive) { state, baseBackStack, user, intro, nested ->
+            Screen.ManageChildScreen(
+                state,
+                IntroHandling.toolbarIcons(intro) + listOf(
+                    Menu.Icon(
+                        Icons.Default.DirectionsBike,
+                        R.string.manage_child_tasks,
+                        UpdateStateCommand.ManageChild.Tasks
+                    ),
+                    Menu.Icon(
+                        Icons.Default.Phone,
+                        R.string.contacts_title_long,
+                        UpdateStateCommand.ManageChild.Contacts
+                    )
+                ),
+                listOf(
+                    Menu.Dropdown(R.string.child_apps_title, UpdateStateCommand.ManageChild.Apps),
+                    Menu.Dropdown(R.string.usage_history_title, UpdateStateCommand.ManageChild.UsageHistory),
+                    Menu.Dropdown(R.string.manage_child_tab_other, UpdateStateCommand.ManageChild.Advanced)
+                ),
+                intro,
+                user.name,
+                nested,
+                baseBackStack,
+                snackbarHostState
+            )
+        })
     }
 
     private fun processSubState(

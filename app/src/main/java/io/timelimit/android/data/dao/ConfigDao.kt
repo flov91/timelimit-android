@@ -1,5 +1,5 @@
 /*
- * TimeLimit Copyright <C> 2019 - 2023 Jonas Lochmann
+ * TimeLimit Copyright <C> 2019 - 2026 Jonas Lochmann
  *
  * This program is free software: you can redistribute it and/or modify
  * it under the terms of the GNU General Public License as published by
@@ -33,6 +33,7 @@ import io.timelimit.android.sync.network.ServerDhKey
 import io.timelimit.android.ui.model.managechild.ManageChildCurrentDevice
 import io.timelimit.android.update.UpdateStatus
 import kotlinx.coroutines.flow.Flow
+import kotlinx.coroutines.flow.distinctUntilChanged
 import kotlinx.coroutines.flow.map
 import java.io.StringWriter
 
@@ -255,17 +256,17 @@ abstract class ConfigDao {
     fun getEnableAlternativeDurationSelectionAsync() = getValueOfKeyAsync(ConfigurationItemType.EnableAlternativeDurationSelection).map { it == "1" }
     fun setEnableAlternativeDurationSelectionSync(enable: Boolean) = updateValueSync(ConfigurationItemType.EnableAlternativeDurationSelection, if (enable) "1" else "0")
 
-    protected fun getExperimentalFlagsLive(): LiveData<Long> {
-        return getValueOfKeyAsync(ConfigurationItemType.ExperimentalFlags).map {
-            if (it == null) {
-                0
-            } else {
-                it.toLong(16)
-            }
+    val experimentalFlags: LiveData<Long> by lazy {
+        getValueOfKeyAsync(ConfigurationItemType.ExperimentalFlags).map {
+            it?.toLong(16) ?: 0
         }
     }
 
-    val experimentalFlags: LiveData<Long> by lazy { getExperimentalFlagsLive() }
+    val experimentalFlagsFlow: Flow<Long> by lazy {
+        getValueOfKeyFlow(ConfigurationItemType.ExperimentalFlags).map {
+            it?.toLong(16) ?: 0
+        }
+    }
 
     fun getExperimentalFlagsSync(): Long {
         val v = getValueOfKeySync(ConfigurationItemType.ExperimentalFlags)
@@ -280,6 +281,10 @@ abstract class ConfigDao {
     fun isExperimentalFlagsSetAsync(flags: Long) = experimentalFlags.map {
         (it and flags) == flags
     }.ignoreUnchanged()
+
+    fun isExperimentalFlagsSetFlow(flags: Long) = experimentalFlagsFlow.map {
+        (it and flags) == flags
+    }.distinctUntilChanged()
 
     fun isExperimentalFlagsSetSync(flags: Long) = (getExperimentalFlagsSync() and flags) == flags
 

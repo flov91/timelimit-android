@@ -80,6 +80,9 @@ abstract class DeviceDao {
     @Query("SELECT * FROM device WHERE current_user_id = :userId")
     abstract fun getDevicesByUserId(userId: String): LiveData<List<Device>>
 
+    @Query("SELECT * FROM device WHERE current_user_id = :userId")
+    abstract fun getDevicesByUserIdFlow(userId: String): Flow<List<Device>>
+
     @Query("SELECT id FROM device WHERE current_user_id = :userId")
     abstract fun getDevicesIdByUserId(userId: String): LiveData<List<DeviceId>>
 

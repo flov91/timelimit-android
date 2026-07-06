@@ -39,6 +39,7 @@ import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.unit.IntSize
 import androidx.compose.ui.unit.dp
 import io.timelimit.android.R
+import io.timelimit.android.ui.ThemeRes
 import io.timelimit.android.ui.model.intro.IntroHandling
 
 @OptIn(ExperimentalMaterialApi::class)
@@ -46,6 +47,7 @@ import io.timelimit.android.ui.model.intro.IntroHandling
 fun IntroCard(
     intro: IntroHandling.Screen,
     padding: Boolean = true,
+    modifier: Modifier = Modifier,
     content: @Composable () -> Unit
 ) {
     val currentIntro = rememberUpdatedState(intro)
@@ -67,6 +69,7 @@ fun IntroCard(
         visible = intro is IntroHandling.Screen.Visible,
         enter = fadeIn() + expandIn(initialSize = { IntSize(it.width, 0) }),
         exit = shrinkOut(targetSize = { IntSize(it.width, 0) }) + fadeOut(),
+        modifier = modifier
     ) {
         SwipeToDismiss(state = state, background = {/* empty */}) {
             Card (
@@ -81,7 +84,7 @@ fun IntroCard(
 
                     Text(
                         stringResource(R.string.generic_swipe_to_dismiss),
-                        style = MaterialTheme.typography.subtitle2
+                        style = ThemeRes.cardSmall
                     )
                 }
             }

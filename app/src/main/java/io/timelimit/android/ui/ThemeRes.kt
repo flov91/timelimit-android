@@ -13,23 +13,20 @@
  * You should have received a copy of the GNU General Public License
  * along with this program. If not, see <https://www.gnu.org/licenses/>.
  */
+package io.timelimit.android.ui
 
-package io.timelimit.android.ui.manage.child.category
+import androidx.compose.material.MaterialTheme
+import androidx.compose.runtime.Composable
+import androidx.compose.ui.graphics.Color
+import androidx.compose.ui.platform.LocalResources
+import io.timelimit.android.R
 
-import android.content.Context
-import androidx.compose.ui.unit.dp
-import kotlin.math.roundToInt
+object ThemeRes {
+    val cardTitle @Composable get() = MaterialTheme.typography.h6
 
-object CategoryItemLeftPadding {
-    private const val MAX_PADDING_DP = 64.0
+    val cardSmall @Composable get() = MaterialTheme.typography.subtitle2
 
-    // level from 0 to N
-    //
-    // starts at zero
-    // gets closer and closer to one
-    private fun calculateFactor(level: Int): Double = 1f - 1f / (level.toDouble() + 1f)
+    val orangeBackground @Composable get() = Color(LocalResources.current.getColor(R.color.orange_background))
 
-    fun calculate(level: Int) = (MAX_PADDING_DP * calculateFactor(level)).dp
-
-    fun calculate(level: Int, context: Context) = (context.resources.displayMetrics.density * MAX_PADDING_DP * calculateFactor((level))).roundToInt()
+    val orangeBackgroundContent @Composable get() = Color.White
 }

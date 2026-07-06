@@ -24,6 +24,7 @@ import io.timelimit.android.ui.account.DeleteRegistrationScreen
 import io.timelimit.android.ui.authentication.AuthenticateByMailScreen
 import io.timelimit.android.ui.diagnose.deviceowner.DeviceOwnerScreen
 import io.timelimit.android.ui.manage.category.blocked_times.BlockedTimesScreen
+import io.timelimit.android.ui.manage.child.ManageChildScreen
 import io.timelimit.android.ui.manage.child.primarydevice.CurrentDeviceScreen
 import io.timelimit.android.ui.manage.child.usagehistory.UsageHistoryScreen
 import io.timelimit.android.ui.manage.device.manage.permission.ManageDevicePermissionScreen
@@ -69,5 +70,6 @@ fun ScreenMultiplexer(
         is Screen.ParentBaseConfiguration -> ParentBaseConfiguration(content = screen.content, modifier = modifier.padding(paddingValues))
         is Screen.ParentSetupConsent -> ParentSetupConsent(content = screen.content, errorDialog = screen.errorDialog, modifier = modifier.padding(paddingValues))
         is Screen.ManageChildCurrentDeviceScreen -> CurrentDeviceScreen(screen = screen, modifier = modifier.padding(paddingValues))
+        is Screen.ManageChildScreen -> ManageChildScreen(intro = screen.intro, screen = screen.content, modifier = modifier.padding(paddingValues))
     }
 }

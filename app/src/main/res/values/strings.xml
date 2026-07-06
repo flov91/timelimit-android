@@ -881,6 +881,9 @@
 
     <string name="manage_child_category_for_unassigned_apps">used for Apps without category</string>
 
+    <string name="manage_child_category_open">Open category</string>
+    <string name="manage_child_category_modify">Manage special mode for the category</string>
+
     <string name="manage_child_timezone_title">Timezone</string>
     <string name="manage_child_timezone_change_button">Change timezone</string>
     <string name="manage_child_timezone_search_hint">Search timezone</string>

@@ -1,5 +1,5 @@
 /*
- * TimeLimit Copyright <C> 2019 - 2023 Jonas Lochmann
+ * TimeLimit Copyright <C> 2019 - 2026 Jonas Lochmann
  *
  * This program is free software: you can redistribute it and/or modify
  * it under the terms of the GNU General Public License as published by
@@ -16,6 +16,7 @@
 package io.timelimit.android.ui.model
 
 import io.timelimit.android.integration.platform.SystemPermission
+import io.timelimit.android.ui.manage.child.category.specialmode.SpecialModeDialogMode
 
 sealed class ActivityCommand {
     object ShowCanNotAddDevicesInLocalModeDialogFragment: ActivityCommand()
@@ -25,4 +26,7 @@ sealed class ActivityCommand {
     class LaunchSystemSettings(val permission: SystemPermission): ActivityCommand()
     class TriggerUninstall(val packageName: String, val errorHandler: () -> Unit): ActivityCommand()
     object RequestNotifyPermission: ActivityCommand()
+    object ShowSyncConsentDialog: ActivityCommand()
+    data class ShowCreateCategoryDialog(val childId: String): ActivityCommand()
+    data class ShowCategorySpecialModeDialog(val childId: String, val categoryId: String, val mode: SpecialModeDialogMode): ActivityCommand()
 }

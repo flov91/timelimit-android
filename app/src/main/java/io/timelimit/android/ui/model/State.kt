@@ -16,9 +16,6 @@
 package io.timelimit.android.ui.model
 
 import android.os.Bundle
-import androidx.compose.material.icons.Icons
-import androidx.compose.material.icons.filled.DirectionsBike
-import androidx.compose.material.icons.filled.Phone
 import androidx.fragment.app.Fragment
 import io.timelimit.android.R
 import io.timelimit.android.integration.platform.SystemPermission
@@ -30,8 +27,6 @@ import io.timelimit.android.ui.diagnose.exitreason.DiagnoseExitReasonFragment
 import io.timelimit.android.ui.fragment.*
 import io.timelimit.android.ui.manage.category.ManageCategoryFragment
 import io.timelimit.android.ui.manage.category.ManageCategoryFragmentArgs
-import io.timelimit.android.ui.manage.child.ManageChildFragment
-import io.timelimit.android.ui.manage.child.ManageChildFragmentArgs
 import io.timelimit.android.ui.manage.device.manage.ManageDeviceFragment
 import io.timelimit.android.ui.manage.device.manage.ManageDeviceFragmentArgs
 import io.timelimit.android.ui.manage.device.manage.advanced.ManageDeviceAdvancedFragment
@@ -100,32 +95,11 @@ sealed class State (val previous: State?): Serializable {
             childId: String
         ): ManageChild(
             previous = previousOverview,
-            fragmentClass = ManageChildFragment::class.java,
+            fragmentClass = Fragment::class.java,
             childId = childId,
             previousOverview = previousOverview,
             containerId = R.id.fragment_manage_child
-        ) {
-            override val arguments get() = ManageChildFragmentArgs(childId = childId, fromRedirect = false).toBundle()
-
-            override val toolbarIcons: List<Menu.Icon> get() = listOf(
-                Menu.Icon(
-                    Icons.Default.DirectionsBike,
-                    R.string.manage_child_tasks,
-                    UpdateStateCommand.ManageChild.Tasks
-                ),
-                Menu.Icon(
-                    Icons.Default.Phone,
-                    R.string.contacts_title_long,
-                    UpdateStateCommand.ManageChild.Contacts
-                )
-            )
-
-            override val toolbarOptions: List<Menu.Dropdown> get() = listOf(
-                Menu.Dropdown(R.string.child_apps_title, UpdateStateCommand.ManageChild.Apps),
-                Menu.Dropdown(R.string.usage_history_title, UpdateStateCommand.ManageChild.UsageHistory),
-                Menu.Dropdown(R.string.manage_child_tab_other, UpdateStateCommand.ManageChild.Advanced)
-            )
-        }
+        )
 
         sealed class Sub(
             previous: State,

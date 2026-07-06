@@ -1,5 +1,5 @@
 /*
- * TimeLimit Copyright <C> 2019 - 2024 Jonas Lochmann
+ * TimeLimit Copyright <C> 2019 - 2026 Jonas Lochmann
  *
  * This program is free software: you can redistribute it and/or modify
  * it under the terms of the GNU General Public License as published by
@@ -59,12 +59,15 @@ import io.timelimit.android.logic.DefaultAppLogic
 import io.timelimit.android.u2f.U2fManager
 import io.timelimit.android.u2f.protocol.U2FDevice
 import io.timelimit.android.ui.animation.Transition
+import io.timelimit.android.ui.consent.SyncAppListConsentDialogFragment
 import io.timelimit.android.ui.login.AuthTokenLoginProcessor
 import io.timelimit.android.ui.login.NewLoginFragment
 import io.timelimit.android.ui.main.ActivityViewModel
 import io.timelimit.android.ui.main.ActivityViewModelHolder
 import io.timelimit.android.ui.main.AuthenticatedUser
 import io.timelimit.android.ui.main.FragmentWithCustomTitle
+import io.timelimit.android.ui.manage.child.category.create.CreateCategoryDialogFragment
+import io.timelimit.android.ui.manage.child.category.specialmode.SetCategorySpecialModeFragment
 import io.timelimit.android.ui.manage.device.add.AddDeviceFragment
 import io.timelimit.android.ui.model.*
 import io.timelimit.android.ui.overview.overview.CanNotAddDevicesInLocalModeDialogFragment
@@ -178,6 +181,14 @@ class MainActivity : AppCompatActivity(), ActivityViewModelHolder, U2fManager.De
                         message.errorHandler()
                     }
                     ActivityCommand.RequestNotifyPermission -> requestNotifyPermission.launch(Manifest.permission.POST_NOTIFICATIONS)
+                    ActivityCommand.ShowSyncConsentDialog -> SyncAppListConsentDialogFragment.newInstance().show(supportFragmentManager)
+                    is ActivityCommand.ShowCreateCategoryDialog -> CreateCategoryDialogFragment.newInstance(childId = message.childId)
+                        .show(supportFragmentManager)
+                    is ActivityCommand.ShowCategorySpecialModeDialog -> SetCategorySpecialModeFragment.newInstance(
+                        childId = message.childId,
+                        categoryId = message.categoryId,
+                        mode = message.mode
+                    ).show(supportFragmentManager)
                 }
             }
         }

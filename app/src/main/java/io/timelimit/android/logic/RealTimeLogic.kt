@@ -1,5 +1,5 @@
 /*
- * TimeLimit Copyright <C> 2019 - 2023 Jonas Lochmann
+ * TimeLimit Copyright <C> 2019 - 2026 Jonas Lochmann
  *
  * This program is free software: you can redistribute it and/or modify
  * it under the terms of the GNU General Public License as published by
@@ -22,6 +22,9 @@ import io.timelimit.android.async.Threads
 import io.timelimit.android.coroutines.runAsync
 import io.timelimit.android.data.model.NetworkTime
 import io.timelimit.android.livedata.ignoreUnchanged
+import kotlinx.coroutines.flow.MutableStateFlow
+import kotlinx.coroutines.flow.StateFlow
+import kotlinx.coroutines.flow.update
 import kotlinx.coroutines.sync.Mutex
 import java.io.IOException
 
@@ -36,6 +39,10 @@ class RealTimeLogic(private val appLogic: AppLogic) {
         it != null &&
                 (it.networkTime == NetworkTime.Enabled || it.networkTime == NetworkTime.IfPossible)
     }.ignoreUnchanged()
+
+    private val timeModificationCounterFlowMutable = MutableStateFlow<Long>(0)
+
+    val timeModificationCounterFlow: StateFlow<Long> = timeModificationCounterFlowMutable
 
     init {
         deviceEntry.ignoreUnchanged().observeForever {
@@ -86,6 +93,8 @@ class RealTimeLogic(private val appLogic: AppLogic) {
     }
 
     fun callTimeModificationListeners() = synchronized(timeModificationListeners) {
+        timeModificationCounterFlowMutable.update { it + 1 }
+
         timeModificationListeners.forEach { it() }
     }
 
