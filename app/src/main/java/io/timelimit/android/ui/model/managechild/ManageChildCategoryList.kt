@@ -41,6 +41,7 @@ import kotlinx.coroutines.flow.Flow
 import kotlinx.coroutines.flow.combine
 import kotlinx.coroutines.flow.emitAll
 import kotlinx.coroutines.flow.filterNotNull
+import kotlinx.coroutines.flow.first
 import kotlinx.coroutines.flow.flow
 import kotlinx.coroutines.flow.map
 import kotlinx.coroutines.flow.transformLatest
@@ -78,10 +79,12 @@ object ManageChildCategoryList {
         val moveTo: (String) -> Unit
     )
 
-    sealed class CategorySpecialMode {
+    sealed class CategorySpecialMode: Serializable {
         object None: CategorySpecialMode()
-        data class TemporarilyBlocked(val endTime: Long?): CategorySpecialMode()
-        data class TemporarilyAllowed(val endTime: Long): CategorySpecialMode()
+        sealed class NotNone: CategorySpecialMode()
+
+        data class TemporarilyBlocked(val endTime: Long?): NotNone()
+        data class TemporarilyAllowed(val endTime: Long): NotNone()
     }
 
     @OptIn(ExperimentalCoroutinesApi::class)
@@ -92,7 +95,9 @@ object ManageChildCategoryList {
         snackbarHostState: SnackbarHostState,
         authentication: AuthenticationModelApi,
         scope: CoroutineScope,
-        open: (String) -> Unit
+        lastSpecialMode: Flow<CategorySpecialMode.NotNone?>,
+        open: (String) -> Unit,
+        updateLastSpecialMode: (CategorySpecialMode.NotNone?) -> Unit
     ): Flow<Screen> = flow {
         val mutex = Mutex()
 
@@ -108,7 +113,17 @@ object ManageChildCategoryList {
 
         val showSyncConsentBannerLive = logic.syncAppsLogic.shouldAskForConsent.asFlow()
         val showManipulationWarningLive = showManipulationWarning(logic, childId)
-        val categoryItemsLive = getCategoryItems(logic, authentication, childId, open, ::launch, activityCommand)
+
+        val categoryItemsLive = getCategoryItems(
+            logic,
+            authentication,
+            childId,
+            lastSpecialMode,
+            open,
+            ::launch,
+            activityCommand,
+            dropLastSpecialMode = { updateLastSpecialMode(null) }
+        )
 
         val appListSyncConsent = Screen.AppListSyncConsent(
             open = {
@@ -155,9 +170,11 @@ object ManageChildCategoryList {
         logic: AppLogic,
         authentication: AuthenticationModelApi,
         childId: String,
+        lastSpecialMode: Flow<CategorySpecialMode.NotNone?>,
         open: (String) -> Unit,
         launch: (suspend () -> Unit) -> Unit,
-        activityCommand: SendChannel<ActivityCommand>
+        activityCommand: SendChannel<ActivityCommand>,
+        dropLastSpecialMode: () -> Unit
     ): Flow<List<CategoryItem>> = flow {
         val categoryHandlingCache = CategoryHandlingCache()
         val realTime = RealTime.newInstance()
@@ -249,12 +266,41 @@ object ManageChildCategoryList {
                                     }
 
                                     if (mode is CategorySpecialMode.None) {
-                                        activityCommand.send(ActivityCommand.ShowCategorySpecialModeDialog(
-                                            childId = childId,
-                                            categoryId = category.category.id,
-                                            mode = if (user.type == UserType.Parent) SpecialModeDialogMode.Regular else SpecialModeDialogMode.SelfLimitAdd
-                                        ))
+                                        val lastSpecialMode = lastSpecialMode.first()
+
+                                        val lastSpecialModeTimestamp = when (lastSpecialMode) {
+                                            null -> null
+                                            is CategorySpecialMode.TemporarilyAllowed -> lastSpecialMode.endTime
+                                            is CategorySpecialMode.TemporarilyBlocked -> lastSpecialMode.endTime
+                                        }
+
+                                        val lastSpecialModeNotPassed = lastSpecialModeTimestamp != null && lastSpecialModeTimestamp > logic.timeApi.getCurrentTimeInMillis()
+
+                                        if (lastSpecialModeNotPassed) {
+                                            val lastSpecialModeAction = when (lastSpecialMode) {
+                                                null -> throw IllegalStateException()
+                                                is CategorySpecialMode.TemporarilyAllowed -> UpdateCategoryDisableLimitsAction(
+                                                    categoryId = category.category.id,
+                                                    endTime = lastSpecialMode.endTime,
+                                                )
+                                                is CategorySpecialMode.TemporarilyBlocked -> UpdateCategoryTemporarilyBlockedAction(
+                                                    categoryId = category.category.id,
+                                                    endTime = lastSpecialMode.endTime,
+                                                    blocked = true
+                                                )
+                                            }
+
+                                            ApplyActionUtil.applyParentAction(lastSpecialModeAction, auth, logic)
+                                        } else {
+                                            activityCommand.send(ActivityCommand.ShowCategorySpecialModeDialog(
+                                                childId = childId,
+                                                categoryId = category.category.id,
+                                                mode = if (user.type == UserType.Parent) SpecialModeDialogMode.Regular else SpecialModeDialogMode.SelfLimitAdd
+                                            ))
+                                        }
                                     } else {
+                                        dropLastSpecialMode()
+
                                         if (user.type == UserType.Parent) {
                                             val disableActions = listOf(
                                                 UpdateCategoryTemporarilyBlockedAction(

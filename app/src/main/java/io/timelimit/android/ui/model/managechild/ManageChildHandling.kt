@@ -68,7 +68,7 @@ object ManageChildHandling {
 
                 hasUserLive.transformLatest { hasUser ->
                     if (hasUser) emitAll(state3.splitConflated(
-                        Case.simple<_, _, State.ManageChild.Main> { processMainState(logic, activityCommand, authentication, it, baseBackStackLive, childId, foundUserLive, scope, updateMethod(updateState)) },
+                        Case.simple<_, _, State.ManageChild.Main> { processMainState(logic, activityCommand, authentication, share(it), baseBackStackLive, childId, foundUserLive, scope, updateMethod(updateState)) },
                         Case.simple<_, _, State.ManageChild.Sub> { processSubState(logic, activityCommand, authentication, share(it), baseBackStackLive, childId, foundUserLive, updateMethod(updateState)) },
                     ))
                     else updateState { it.previousOverview }
@@ -81,7 +81,7 @@ object ManageChildHandling {
         logic: AppLogic,
         activityCommand: SendChannel<ActivityCommand>,
         authentication: AuthenticationModelApi,
-        stateLive: Flow<State.ManageChild.Main>,
+        stateLive: SharedFlow<State.ManageChild.Main>,
         baseBackStackLive: Flow<List<BackStackItem>>,
         childId: String,
         userLive: Flow<User>,
@@ -99,9 +99,15 @@ object ManageChildHandling {
             snackbarHostState,
             authentication,
             scope,
+            stateLive.map { it.lastSpecialMode },
             open = { categoryId ->
                 updateState { oldState ->
                     State.ManageChild.ManageCategory.Main(oldState, categoryId)
+                }
+            },
+            updateLastSpecialMode = { lastSpecialMode ->
+                updateState { oldState ->
+                    oldState.copy(lastSpecialMode = lastSpecialMode)
                 }
             }
         )

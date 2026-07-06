@@ -1,5 +1,5 @@
 /*
- * TimeLimit Copyright <C> 2019 - 2024 Jonas Lochmann
+ * TimeLimit Copyright <C> 2019 - 2026 Jonas Lochmann
  *
  * This program is free software: you can redistribute it and/or modify
  * it under the terms of the GNU General Public License as published by
@@ -26,6 +26,7 @@ import io.timelimit.android.logic.DefaultAppLogic
 import io.timelimit.android.sync.actions.UpdateCategoryDisableLimitsAction
 import io.timelimit.android.sync.actions.UpdateCategoryTemporarilyBlockedAction
 import io.timelimit.android.ui.main.ActivityViewModel
+import io.timelimit.android.ui.model.managechild.ManageChildCategoryList
 import java.time.LocalDate
 
 class SetCategorySpecialModeModel(application: Application): AndroidViewModel(application) {
@@ -150,7 +151,7 @@ class SetCategorySpecialModeModel(application: Application): AndroidViewModel(ap
         false
     }
 
-    fun applySelection(selection: SpecialModeOption, auth: ActivityViewModel) {
+    fun applySelection(selection: SpecialModeOption, auth: ActivityViewModel, callback: (ManageChildCategoryList.CategorySpecialMode.NotNone) -> Unit) {
         val content = content.value
         val screen = content?.screen
         val specialMode = specialMode.value ?: return
@@ -185,6 +186,8 @@ class SetCategorySpecialModeModel(application: Application): AndroidViewModel(ap
                                 allowAsChild = specialMode == SpecialModeDialogMode.SelfLimitAdd
                         )
 
+                        callback(ManageChildCategoryList.CategorySpecialMode.TemporarilyBlocked(endTime))
+
                         requestClose.value = true
                     }
                     Type.DisableLimits -> {
@@ -200,6 +203,8 @@ class SetCategorySpecialModeModel(application: Application): AndroidViewModel(ap
                                 )
                         )
 
+                        callback(ManageChildCategoryList.CategorySpecialMode.TemporarilyAllowed(endTime))
+
                         requestClose.value = true
                     }
                 }.let {/* require handling all paths */ }
@@ -214,6 +219,8 @@ class SetCategorySpecialModeModel(application: Application): AndroidViewModel(ap
                                 allowAsChild = false
                         )
 
+                        callback(ManageChildCategoryList.CategorySpecialMode.TemporarilyBlocked(null))
+
                         requestClose.value = true
                     }
                     Type.DisableLimits -> throw IllegalArgumentException()
@@ -222,9 +229,10 @@ class SetCategorySpecialModeModel(application: Application): AndroidViewModel(ap
         }
     }
 
-    fun applySelection(timeInMillis: Long, auth: ActivityViewModel) = applySelection(
-            selection = SpecialModeOption.Duration.FixedEndTime(timeInMillis),
-            auth = auth
+    fun applySelection(timeInMillis: Long, auth: ActivityViewModel, callback: (ManageChildCategoryList.CategorySpecialMode.NotNone) -> Unit) = applySelection(
+        selection = SpecialModeOption.Duration.FixedEndTime(timeInMillis),
+        auth = auth,
+        callback = callback
     )
 
     fun init(childId: String, categoryId: String, mode: SpecialModeDialogMode) {

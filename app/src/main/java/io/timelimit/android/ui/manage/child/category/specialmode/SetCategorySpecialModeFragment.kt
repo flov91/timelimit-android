@@ -1,5 +1,5 @@
 /*
- * TimeLimit Copyright <C> 2019 - 2024 Jonas Lochmann
+ * TimeLimit Copyright <C> 2019 - 2026 Jonas Lochmann
  *
  * This program is free software: you can redistribute it and/or modify
  * it under the terms of the GNU General Public License as published by
@@ -33,6 +33,9 @@ import io.timelimit.android.extensions.showSafe
 import io.timelimit.android.extensions.toInstant
 import io.timelimit.android.ui.main.ActivityViewModel
 import io.timelimit.android.ui.main.getActivityViewModel
+import io.timelimit.android.ui.model.UpdateStateCommand
+import io.timelimit.android.ui.model.executeIfPossible
+import io.timelimit.android.ui.model.managechild.ManageChildCategoryList
 import io.timelimit.android.ui.payment.RequiresPurchaseDialogFragment
 import java.time.Instant
 import java.time.LocalDate
@@ -163,7 +166,7 @@ class SetCategorySpecialModeFragment: DialogFragment() {
 
         specialModeOptionAdapter.listener = object: SpecialModeOptionListener {
             override fun onItemClicked(item: SpecialModeOption) {
-                model.applySelection(item, auth)
+                model.applySelection(item, auth, callback = ::callback)
             }
         }
 
@@ -190,7 +193,7 @@ class SetCategorySpecialModeFragment: DialogFragment() {
 
                     if (isEnabled) {
                         binding.confirmTimePickerButton.setOnClickListener {
-                            model.applySelection(timeInMillis = currentSelectedTime, auth = auth)
+                            model.applySelection(timeInMillis = currentSelectedTime, auth = auth, callback = ::callback)
                         }
                     }
                 } else binding.confirmTimePickerButton.isEnabled = false
@@ -224,7 +227,7 @@ class SetCategorySpecialModeFragment: DialogFragment() {
                     binding.timeOfDayDatePickerButton.isEnabled = isClockEnabled
 
                     if (isConfirmEnabled) binding.confirmDatePickerButton.setOnClickListener {
-                        model.applySelection(timeInMillis = currentStartOfDayTime, auth = auth)
+                        model.applySelection(timeInMillis = currentStartOfDayTime, auth = auth, callback = ::callback)
                     }
 
                     if (isClockEnabled) binding.timeOfDayDatePickerButton.setOnClickListener {
@@ -242,6 +245,10 @@ class SetCategorySpecialModeFragment: DialogFragment() {
         }
 
         return binding.root
+    }
+
+    private fun callback(categorySpecialMode: ManageChildCategoryList.CategorySpecialMode.NotNone) {
+        requireActivity().executeIfPossible(UpdateStateCommand.ManageChild.RememberSpecialMode(categorySpecialMode))
     }
 
     fun show(fragmentManager: FragmentManager) = showSafe(fragmentManager, DIALOG_TAG)

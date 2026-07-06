@@ -1,5 +1,5 @@
 /*
- * TimeLimit Copyright <C> 2019 - 2023 Jonas Lochmann
+ * TimeLimit Copyright <C> 2019 - 2026 Jonas Lochmann
  *
  * This program is free software: you can redistribute it and/or modify
  * it under the terms of the GNU General Public License as published by
@@ -18,6 +18,7 @@ package io.timelimit.android.ui.model
 import android.util.Log
 import io.timelimit.android.BuildConfig
 import io.timelimit.android.ui.model.main.OverviewHandling
+import io.timelimit.android.ui.model.managechild.ManageChildCategoryList
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.update
 
@@ -226,6 +227,12 @@ sealed class UpdateStateCommand {
         object LeaveChild: UpdateStateCommand() {
             override fun transform(state: State): State? =
                 if (state is State.ManageChild) state.previousOverview
+                else null
+        }
+
+        data class RememberSpecialMode(val specialMode: ManageChildCategoryList.CategorySpecialMode.NotNone): UpdateStateCommand() {
+            override fun transform(state: State): State? =
+                if (state is State.ManageChild.Main) state.copy(lastSpecialMode = specialMode)
                 else null
         }
     }

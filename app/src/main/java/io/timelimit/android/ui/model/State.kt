@@ -48,6 +48,7 @@ import io.timelimit.android.ui.model.managedevice.DeviceOwnerHandling
 import io.timelimit.android.ui.model.mailauthentication.MailAuthentication
 import io.timelimit.android.ui.model.main.OverviewHandling
 import io.timelimit.android.ui.model.managechild.ManageCategoryBlockedTimes
+import io.timelimit.android.ui.model.managechild.ManageChildCategoryList
 import io.timelimit.android.ui.model.managechild.ManageChildCurrentDevice
 import io.timelimit.android.ui.model.managechild.ManageChildUsageHistory
 import io.timelimit.android.ui.model.setup.SetupParentHandling
@@ -92,14 +93,17 @@ sealed class State (val previous: State?): Serializable {
     ): FragmentStateLegacy(previous, fragmentClass, containerId) {
         class Main(
             previousOverview: Overview,
-            childId: String
+            childId: String,
+            val lastSpecialMode: ManageChildCategoryList.CategorySpecialMode.NotNone? = null
         ): ManageChild(
             previous = previousOverview,
             fragmentClass = Fragment::class.java,
             childId = childId,
             previousOverview = previousOverview,
             containerId = R.id.fragment_manage_child
-        )
+        ) {
+            fun copy(lastSpecialMode: ManageChildCategoryList.CategorySpecialMode.NotNone? = this.lastSpecialMode) = Main(previousOverview, childId, lastSpecialMode)
+        }
 
         sealed class Sub(
             previous: State,
