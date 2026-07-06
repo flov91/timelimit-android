@@ -1,5 +1,5 @@
 /*
- * TimeLimit Copyright <C> 2019 - 2023 Jonas Lochmann
+ * TimeLimit Copyright <C> 2019 - 2026 Jonas Lochmann
  *
  * This program is free software: you can redistribute it and/or modify
  * it under the terms of the GNU General Public License as published by
@@ -16,7 +16,7 @@
 package io.timelimit.android.ui.model.intro
 
 import androidx.compose.material.icons.Icons
-import androidx.compose.material.icons.outlined.Info
+import androidx.compose.material.icons.automirrored.outlined.HelpOutline
 import androidx.lifecycle.asFlow
 import io.timelimit.android.R
 import io.timelimit.android.async.Threads
@@ -60,7 +60,7 @@ object IntroHandling {
     }
 
     fun toolbarIcons(intro: Screen) = if (intro is Screen.Hidden) listOf(Menu.Icon(
-        Icons.Outlined.Info,
+        Icons.AutoMirrored.Outlined.HelpOutline,
         R.string.generic_help,
         handler = intro.show
     )) else emptyList()
