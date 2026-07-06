@@ -341,18 +341,6 @@ sealed class UpdateStateCommand {
                 if (state is State.Setup.SetupHelpInfo) State.Setup.SelectMode(state)
                 else null
         }
-
-        object DevicePermissions: UpdateStateCommand() {
-            override fun transform(state: State): State? =
-                if (state is State.Setup.SelectMode) State.Setup.DevicePermissions(state)
-                else null
-        }
-
-        object Connected: UpdateStateCommand() {
-            override fun transform(state: State): State? =
-                if (state is State.Setup.SelectMode) State.Setup.ConnectedPrivacy(state)
-                else null
-        }
     }
 
     class RecoverPassword(val parentId: String): UpdateStateCommand() {
