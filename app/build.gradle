@@ -95,24 +95,6 @@ android {
         }
     }
 
-    variantFilter { variant ->
-        def dim = variant.flavors.collectEntries {
-            [(it.productFlavor.dimension): it.productFlavor.name]
-        }
-
-        if (dim.channel == 'storeVersion' && dim.api == 'noGoogleApi') {
-            variant.setIgnore(true)
-        }
-
-        if (dim.channel == 'directVersion' && dim.api == 'googleApi') {
-            variant.setIgnore(true)
-        }
-
-        if (dim.server == 'noServer' && dim.api == 'googleApi') {
-            variant.setIgnore(true)
-        }
-    }
-
     lint {
         disable 'GoogleAppIndexingWarning'
         baseline file("lint-baseline.xml")
