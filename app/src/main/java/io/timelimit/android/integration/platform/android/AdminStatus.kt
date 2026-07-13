@@ -1,5 +1,5 @@
 /*
- * TimeLimit Copyright <C> 2019 Jonas Lochmann
+ * TimeLimit Copyright <C> 2019 - 2026 Jonas Lochmann
  *
  * This program is free software: you can redistribute it and/or modify
  * it under the terms of the GNU General Public License as published by
@@ -18,36 +18,18 @@ package io.timelimit.android.integration.platform.android
 import android.app.admin.DevicePolicyManager
 import android.content.ComponentName
 import android.content.Context
-import android.os.Build
-import io.timelimit.android.BuildConfig
 import io.timelimit.android.integration.platform.ProtectionLevel
 
 object AdminStatus {
     fun getAdminStatus(context: Context, policyManager: DevicePolicyManager): ProtectionLevel {
         val component = ComponentName(context, AdminReceiver::class.java)
 
-        return if (BuildConfig.storeCompilant) {
-            if (policyManager.isAdminActive(component)) {
-                ProtectionLevel.SimpleDeviceAdmin
-            } else {
-                ProtectionLevel.None
-            }
+        return if (policyManager.isDeviceOwnerApp(context.packageName)) {
+            ProtectionLevel.DeviceOwner
+        } else if (policyManager.isAdminActive(component)) {
+            ProtectionLevel.SimpleDeviceAdmin
         } else {
-            if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.LOLLIPOP) {
-                if (policyManager.isDeviceOwnerApp(context.packageName)) {
-                    ProtectionLevel.DeviceOwner
-                } else if (policyManager.isAdminActive(component)) {
-                    ProtectionLevel.SimpleDeviceAdmin
-                } else {
-                    ProtectionLevel.None
-                }
-            } else /* if below Lollipop */ {
-                if (policyManager.isAdminActive(component)) {
-                    ProtectionLevel.PasswordDeviceAdmin
-                } else {
-                    ProtectionLevel.None
-                }
-            }
+            ProtectionLevel.None
         }
     }
 }

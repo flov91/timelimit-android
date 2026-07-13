@@ -1,5 +1,5 @@
 /*
- * TimeLimit Copyright <C> 2019 - 2022 Jonas Lochmann
+ * TimeLimit Copyright <C> 2019 - 2026 Jonas Lochmann
  *
  * This program is free software: you can redistribute it and/or modify
  * it under the terms of the GNU General Public License as published by
@@ -16,12 +16,9 @@
 package io.timelimit.android.ui.payment
 
 import android.app.Application
-import android.util.Base64
 import androidx.lifecycle.AndroidViewModel
 import androidx.lifecycle.MutableLiveData
-import io.timelimit.android.BuildConfig
 import io.timelimit.android.coroutines.runAsync
-import io.timelimit.android.extensions.BillingNotSupportedException
 import io.timelimit.android.livedata.castDown
 import io.timelimit.android.logic.AppLogic
 import io.timelimit.android.logic.DefaultAppLogic
@@ -36,13 +33,11 @@ class PurchaseModel(application: Application): AndroidViewModel(application) {
     private val logic: AppLogic by lazy { DefaultAppLogic.with(application) }
     private val statusInternal = MutableLiveData<Status>()
     private val lock = Mutex()
-    private var activityPurchaseModel: ActivityPurchaseModel? = null
     private var auth: ActivityViewModel? = null
 
     val status = statusInternal.castDown()
 
-    fun init(activityPurchaseModel: ActivityPurchaseModel, auth: ActivityViewModel) {
-        this.activityPurchaseModel = activityPurchaseModel
+    fun init(auth: ActivityViewModel) {
         this.auth = auth
 
         retry()
@@ -54,16 +49,15 @@ class PurchaseModel(application: Application): AndroidViewModel(application) {
             this.status.value is Status.WaitingForAuth ||
             this.status.value == null
         ) {
-            val activityPurchaseModel = activityPurchaseModel
             val auth = auth
 
-            if (activityPurchaseModel != null && auth != null) {
-                prepare(activityPurchaseModel, auth)
+            if (auth != null) {
+                prepare(auth)
             }
         }
     }
 
-    private fun prepare(activityPurchaseModel: ActivityPurchaseModel, auth: ActivityViewModel) {
+    private fun prepare(auth: ActivityViewModel) {
         runAsync {
             lock.withLock {
                 try {
@@ -74,7 +68,7 @@ class PurchaseModel(application: Application): AndroidViewModel(application) {
                     suspend fun canDoPurchase() = if (server.hasAuthToken) server.api.canDoPurchase(server.deviceAuthToken)
                     else CanDoPurchaseStatus.NoForUnknownReason
 
-                    statusInternal.value = if (!BuildConfig.storeCompilant) when (canDoPurchase()) {
+                    statusInternal.value = when (canDoPurchase()) {
                         is CanDoPurchaseStatus.Yes -> if (auth.isParentAuthenticated()) {
                             try {
                                 val authData = ApplyDirectCallAuthentication.from(
@@ -94,28 +88,7 @@ class PurchaseModel(application: Application): AndroidViewModel(application) {
                         } else Status.WaitingForAuth
                         CanDoPurchaseStatus.NotDueToOldPurchase -> Status.Error.Unrecoverable.ExistingPaymentError
                         CanDoPurchaseStatus.NoForUnknownReason -> Status.Error.Unrecoverable.ServerRejectedError
-                    } else {
-                        val canDoPurchase = canDoPurchase()
-
-                        if (canDoPurchase is CanDoPurchaseStatus.Yes) {
-                            if (canDoPurchase.publicKey?.contentEquals(Base64.decode(BuildConfig.googlePlayKey, 0)) == false) {
-                                Status.Error.Unrecoverable.ServerClientCombinationUnsupported
-                            } else {
-                                val skus = activityPurchaseModel.queryProducts(PurchaseIds.BUY_SKUS)
-
-                                Status.ReadyRegular(
-                                        monthPrice = skus.find { it.productId == PurchaseIds.SKU_MONTH }?.oneTimePurchaseOfferDetails?.formattedPrice.toString(),
-                                        yearPrice = skus.find { it.productId == PurchaseIds.SKU_YEAR }?.oneTimePurchaseOfferDetails?.formattedPrice.toString()
-                                )
-                            }
-                        } else if (canDoPurchase == CanDoPurchaseStatus.NotDueToOldPurchase) {
-                            Status.Error.Unrecoverable.ExistingPaymentError
-                        } else {
-                            Status.Error.Unrecoverable.ServerRejectedError
-                        }
                     }
-                } catch (ex: BillingNotSupportedException) {
-                    Status.Error.Unrecoverable.BillingNotSupportedByDevice
                 } catch (ex: Exception) {
                     Status.Error.Recoverable.NetworkError(ex)
                 }
@@ -129,13 +102,11 @@ class PurchaseModel(application: Application): AndroidViewModel(application) {
                 data class NetworkError(val exception: Exception): Recoverable()
             }
             sealed class Unrecoverable: Error() {
-                object BillingNotSupportedByDevice: Unrecoverable()
                 object ExistingPaymentError: Unrecoverable()
                 object ServerRejectedError: Unrecoverable()
                 object ServerClientCombinationUnsupported: Unrecoverable()
             }
         }
-        class ReadyRegular(val monthPrice: String, val yearPrice: String): Status()
         class ReadyToken(val token: String): Status()
         object Preparing: Status()
         object WaitingForAuth: Status()

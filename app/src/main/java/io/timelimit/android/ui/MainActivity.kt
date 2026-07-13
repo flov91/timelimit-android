@@ -71,7 +71,6 @@ import io.timelimit.android.ui.manage.child.category.specialmode.SetCategorySpec
 import io.timelimit.android.ui.manage.device.add.AddDeviceFragment
 import io.timelimit.android.ui.model.*
 import io.timelimit.android.ui.overview.overview.CanNotAddDevicesInLocalModeDialogFragment
-import io.timelimit.android.ui.payment.ActivityPurchaseModel
 import io.timelimit.android.ui.payment.RequiresPurchaseDialogFragment
 import io.timelimit.android.ui.util.SyncStatusModel
 import kotlinx.coroutines.flow.MutableStateFlow
@@ -125,7 +124,6 @@ class MainActivity : AppCompatActivity(), ActivityViewModelHolder, U2fManager.De
     private val syncModel: SyncStatusModel by lazy {
         ViewModelProviders.of(this).get(SyncStatusModel::class.java)
     }
-    val purchaseModel: ActivityPurchaseModel by viewModels()
     override var ignoreStop: Boolean = false
     override val showPasswordRecovery: Boolean = true
 
@@ -192,9 +190,6 @@ class MainActivity : AppCompatActivity(), ActivityViewModelHolder, U2fManager.De
                 }
             }
         }
-
-        // init the purchaseModel
-        purchaseModel.getApplication<Application>()
 
         // init if not yet done
         DefaultAppLogic.with(this)
@@ -357,8 +352,6 @@ class MainActivity : AppCompatActivity(), ActivityViewModelHolder, U2fManager.De
     override fun onStart() {
         super.onStart()
 
-        purchaseModel.queryAndProcessPurchasesAsync()
-
         IsAppInForeground.reportStart()
 
         syncModel.handleStart()
@@ -372,12 +365,6 @@ class MainActivity : AppCompatActivity(), ActivityViewModelHolder, U2fManager.De
         }
 
         IsAppInForeground.reportStop()
-    }
-
-    override fun onDestroy() {
-        super.onDestroy()
-
-        purchaseModel.forgetActivityCheckout()
     }
 
     private fun handleParameters(intent: Intent?): Boolean {

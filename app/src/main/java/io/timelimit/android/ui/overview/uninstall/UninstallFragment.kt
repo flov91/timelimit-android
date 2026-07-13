@@ -1,5 +1,5 @@
 /*
- * TimeLimit Copyright <C> 2019 - 2022 Jonas Lochmann
+ * TimeLimit Copyright <C> 2019 - 2026 Jonas Lochmann
  *
  * This program is free software: you can redistribute it and/or modify
  * it under the terms of the GNU General Public License as published by
@@ -21,7 +21,6 @@ import android.view.View
 import android.view.ViewGroup
 import androidx.fragment.app.Fragment
 import androidx.lifecycle.LiveData
-import io.timelimit.android.BuildConfig
 import io.timelimit.android.R
 import io.timelimit.android.databinding.FragmentUninstallBinding
 import io.timelimit.android.livedata.liveDataFromNonNullValue
@@ -55,7 +54,7 @@ class UninstallFragment : Fragment(), FragmentWithCustomTitle {
         binding.checkConfirm.setOnCheckedChangeListener { _, isChecked -> binding.uninstall.isEnabled = isChecked }
 
         binding.uninstall.setOnClickListener {
-            if (BuildConfig.storeCompilant || auth.requestAuthenticationOrReturnTrue()) {
+            if (auth.requestAuthenticationOrReturnTrue()) {
                 DefaultAppLogic.with(requireContext()).appSetupLogic.resetAppCompletely()
             } else {
                 showBackdoorButton = true
@@ -74,7 +73,7 @@ class UninstallFragment : Fragment(), FragmentWithCustomTitle {
                 fragment = this,
                 shouldHighlight = activity.getActivityViewModel().shouldHighlightAuthenticationButton,
                 authenticatedUser = activity.getActivityViewModel().authenticatedUser,
-                doesSupportAuth = liveDataFromNonNullValue(!BuildConfig.storeCompilant)
+                doesSupportAuth = liveDataFromNonNullValue(false)
         )
 
         binding.fab.setOnClickListener { activity.showAuthenticationScreen() }

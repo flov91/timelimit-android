@@ -14,7 +14,6 @@
 -->
 <layout xmlns:android="http://schemas.android.com/apk/res/android"
     xmlns:tools="http://schemas.android.com/tools"
-    xmlns:app="http://schemas.android.com/apk/res-auto"
     tools:context="io.timelimit.android.ui.payment.PurchaseFragment">
 
     <data>
@@ -35,10 +34,6 @@
             type="boolean" />
 
         <variable
-            name="priceData"
-            type="io.timelimit.android.ui.payment.PurchaseModel.Status.ReadyRegular" />
-
-        <variable
             name="purchaseToken"
             type="String" />
 
@@ -49,84 +44,6 @@
         android:id="@+id/flipper"
         android:layout_width="match_parent"
         android:layout_height="match_parent">
-
-        <RelativeLayout
-            android:layout_width="match_parent"
-            android:layout_height="match_parent">
-            <LinearLayout
-                android:padding="8dp"
-                android:orientation="vertical"
-                android:layout_width="match_parent"
-                android:layout_height="wrap_content">
-
-                <TextView
-                    android:textAppearance="?android:textAppearanceMedium"
-                    android:text="@string/purchase_intro"
-                    android:layout_width="match_parent"
-                    android:layout_height="wrap_content" />
-
-                <androidx.cardview.widget.CardView
-                    android:onClick="@{() -> handlers.buyForOneMonth()}"
-                    android:foreground="?selectableItemBackground"
-                    app:cardUseCompatPadding="true"
-                    android:layout_width="match_parent"
-                    android:layout_height="wrap_content">
-                    <LinearLayout
-                        android:padding="8dp"
-                        android:orientation="vertical"
-                        android:layout_width="match_parent"
-                        android:layout_height="wrap_content">
-                        <TextView
-                            android:textAppearance="?android:textAppearanceLarge"
-                            android:text="@string/purchase_one_month"
-                            android:layout_width="match_parent"
-                            android:layout_height="wrap_content" />
-
-                        <TextView
-                            android:text="@{priceData.monthPrice}"
-                            tools:text="1,00 €"
-                            android:textAppearance="?android:textAppearanceMedium"
-                            android:layout_width="match_parent"
-                            android:layout_height="wrap_content" />
-                    </LinearLayout>
-                </androidx.cardview.widget.CardView>
-
-                <androidx.cardview.widget.CardView
-                    android:onClick="@{() -> handlers.buyForOneYear()}"
-                    android:foreground="?selectableItemBackground"
-                    app:cardUseCompatPadding="true"
-                    android:layout_width="match_parent"
-                    android:layout_height="wrap_content">
-                    <LinearLayout
-                        android:padding="8dp"
-                        android:orientation="vertical"
-                        android:layout_width="match_parent"
-                        android:layout_height="wrap_content">
-                        <TextView
-                            android:textAppearance="?android:textAppearanceLarge"
-                            android:text="@string/purchase_one_year"
-                            android:layout_width="match_parent"
-                            android:layout_height="wrap_content" />
-
-                        <TextView
-                            android:text="@{priceData.yearPrice}"
-                            tools:text="10,00 €"
-                            android:textAppearance="?android:textAppearanceMedium"
-                            android:layout_width="match_parent"
-                            android:layout_height="wrap_content" />
-                    </LinearLayout>
-                </androidx.cardview.widget.CardView>
-
-            </LinearLayout>
-
-            <TextView
-                android:textAppearance="?android:textAppearanceSmall"
-                android:padding="8dp"
-                android:layout_alignParentBottom="true"
-                android:text="@string/purchase_info_assigned_to_account"
-                android:layout_width="match_parent"
-                android:layout_height="wrap_content" />
-        </RelativeLayout>
 
         <RelativeLayout
             android:layout_width="match_parent"
@@ -172,33 +89,6 @@
         </RelativeLayout>
 
         <include layout="@layout/circular_progress_indicator" />
-
-        <RelativeLayout
-            android:layout_width="match_parent"
-            android:layout_height="match_parent">
-            <LinearLayout
-                android:padding="8dp"
-                android:orientation="vertical"
-                android:layout_centerVertical="true"
-                android:layout_width="match_parent"
-                android:layout_height="wrap_content">
-
-                <TextView
-                    android:textAppearance="?android:textAppearanceLarge"
-                    android:text="@string/purchase_done_title"
-                    android:gravity="center_horizontal"
-                    android:layout_width="match_parent"
-                    android:layout_height="wrap_content" />
-
-                <TextView
-                    android:textAppearance="?android:textAppearanceMedium"
-                    android:text="@string/purchase_done_text"
-                    android:gravity="center_horizontal"
-                    android:layout_width="match_parent"
-                    android:layout_height="wrap_content" />
-
-            </LinearLayout>
-        </RelativeLayout>
 
         <RelativeLayout
             android:layout_width="match_parent"

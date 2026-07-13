@@ -1,5 +1,5 @@
 /*
- * TimeLimit Copyright <C> 2019 - 2022 Jonas Lochmann
+ * TimeLimit Copyright <C> 2019 - 2026 Jonas Lochmann
  *
  * This program is free software: you can redistribute it and/or modify
  * it under the terms of the GNU General Public License as published by
@@ -24,7 +24,6 @@ import android.os.Build
 import android.provider.ContactsContract
 import android.provider.Settings
 import android.provider.Telephony
-import io.timelimit.android.BuildConfig
 import io.timelimit.android.data.model.App
 import io.timelimit.android.data.model.AppActivity
 import io.timelimit.android.data.model.AppRecommendation
@@ -98,10 +97,6 @@ object AndroidIntegrationApps {
         }
         // add contacts
         add(map = result, packageName = Intent(Intent.ACTION_PICK, ContactsContract.Contacts.CONTENT_URI).resolveActivity(packageManager)?.packageName, deviceId = deviceId, recommendation = AppRecommendation.Whitelist, context = context)
-        // add google play
-        if (BuildConfig.storeCompilant) {
-            add(map = result, packageName = "com.android.vending", deviceId = deviceId, recommendation = AppRecommendation.Whitelist, context = context)
-        }
         // add all apps with launcher icon
         add(map = result, resolveInfoList = packageManager.queryIntentActivities(mainIntent, 0), deviceId = deviceId, recommendation = AppRecommendation.None, context = context)
 
@@ -115,13 +110,7 @@ object AndroidIntegrationApps {
                 continue
             }
 
-            if (when (ignoreConfig) {
-                null -> false
-                AndroidIntegrationApps.IgnoredAppHandling.Ignore -> true
-                AndroidIntegrationApps.IgnoredAppHandling.IgnoreOnStoreOtherwiseWhitelistAndDontDisable -> BuildConfig.storeCompilant
-            }) {
-                continue
-            }
+            if (ignoreConfig == IgnoredAppHandling.Ignore) continue
 
             result[packageName] = App(
                     deviceId = deviceId,
@@ -165,10 +154,6 @@ object AndroidIntegrationApps {
             val packageName = info.activityInfo.applicationInfo.packageName
             val ignoreConfig = ignoredApps[packageName]
 
-            if (ignoreConfig != null && BuildConfig.storeCompilant) {
-                continue
-            }
-
             if (!map.containsKey(packageName)) {
                 map[packageName] = App(
                         deviceId = deviceId,
@@ -192,10 +177,6 @@ object AndroidIntegrationApps {
         }
 
         val ignoreConfig = ignoredApps[packageName]
-
-        if (ignoreConfig != null && BuildConfig.storeCompilant) {
-            return
-        }
 
         if (map.containsKey(packageName)) {
             return

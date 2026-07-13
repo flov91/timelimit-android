@@ -1,5 +1,5 @@
 /*
- * TimeLimit Copyright <C> 2019 - 2024 Jonas Lochmann
+ * TimeLimit Copyright <C> 2019 - 2026 Jonas Lochmann
  *
  * This program is free software: you can redistribute it and/or modify
  * it under the terms of the GNU General Public License as published by
@@ -19,14 +19,11 @@ import android.app.AppOpsManager
 import android.app.admin.DevicePolicyManager
 import android.content.Context
 import androidx.core.content.getSystemService
-import io.timelimit.android.BuildConfig
 
 object RunInBackgroundPermission {
     private const val OP = "android:run_any_in_background"
 
     fun trySelfGrant(context: Context): Boolean {
-        if (BuildConfig.storeCompilant) return false
-
         val devicePolicyManager = context.getSystemService<DevicePolicyManager>() ?: return false
 
         if (!devicePolicyManager.isDeviceOwnerApp(context.packageName)) return false

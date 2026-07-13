@@ -1,5 +1,5 @@
 /*
- * TimeLimit Copyright <C> 2019 - 2022 Jonas Lochmann
+ * TimeLimit Copyright <C> 2019 - 2026 Jonas Lochmann
  *
  * This program is free software: you can redistribute it and/or modify
  * it under the terms of the GNU General Public License as published by
@@ -23,7 +23,6 @@ import androidx.fragment.app.Fragment
 import androidx.fragment.app.FragmentManager
 import androidx.lifecycle.LiveData
 import androidx.lifecycle.Observer
-import io.timelimit.android.BuildConfig
 import io.timelimit.android.R
 import io.timelimit.android.async.Threads
 import io.timelimit.android.data.Database
@@ -120,13 +119,13 @@ data class DiagnoseExperimentalFlagItem(
                         label = R.string.diagnose_exf_slb,
                         enableFlags = ExperimentalFlags.SYSTEM_LEVEL_BLOCKING,
                         disableFlags = ExperimentalFlags.SYSTEM_LEVEL_BLOCKING,
-                        enable = { !BuildConfig.storeCompilant }
+                        enable = { true }
                 ),
                 DiagnoseExperimentalFlagItem(
                         label = R.string.diagnose_exf_nas,
                         enableFlags = ExperimentalFlags.NETWORKTIME_AT_SYSTEMLEVEL,
                         disableFlags = ExperimentalFlags.NETWORKTIME_AT_SYSTEMLEVEL,
-                        enable = { !BuildConfig.storeCompilant }
+                        enable = { true }
                 ),
                 DiagnoseExperimentalFlagItem(
                         label = R.string.diagnose_exf_isc,

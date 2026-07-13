@@ -1,5 +1,5 @@
 /*
- * TimeLimit Copyright <C> 2019 - 2022 Jonas Lochmann
+ * TimeLimit Copyright <C> 2019 - 2026 Jonas Lochmann
  *
  * This program is free software: you can redistribute it and/or modify
  * it under the terms of the GNU General Public License as published by
@@ -112,13 +112,7 @@ sealed class AppBaseHandling {
                 return PauseLogic
             } else if (
                     (foregroundAppPackageName == BuildConfig.APPLICATION_ID) ||
-                    (foregroundAppPackageName != null && isSystemImageApp && AndroidIntegrationApps.ignoredApps[foregroundAppPackageName].let {
-                        when (it) {
-                            null -> false
-                            AndroidIntegrationApps.IgnoredAppHandling.Ignore -> true
-                            AndroidIntegrationApps.IgnoredAppHandling.IgnoreOnStoreOtherwiseWhitelistAndDontDisable -> BuildConfig.storeCompilant
-                        }
-                    })
+                    (foregroundAppPackageName != null && isSystemImageApp && AndroidIntegrationApps.ignoredApps[foregroundAppPackageName] == AndroidIntegrationApps.IgnoredAppHandling.Ignore)
             ) {
                 return Whitelist.App
             } else if (

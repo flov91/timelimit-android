@@ -1,5 +1,5 @@
 /*
- * TimeLimit Copyright <C> 2019 - 2024 Jonas Lochmann
+ * TimeLimit Copyright <C> 2019 - 2026 Jonas Lochmann
  *
  * This program is free software: you can redistribute it and/or modify
  * it under the terms of the GNU General Public License as published by
@@ -73,19 +73,7 @@ class AndroidIntegration(context: Context): PlatformIntegration(maximumProtectio
     companion object {
         private const val LOG_TAG = "AndroidIntegration"
 
-        val maximumProtectionLevel: ProtectionLevel
-
-        init {
-            if (BuildConfig.storeCompilant) {
-                maximumProtectionLevel = ProtectionLevel.SimpleDeviceAdmin
-            } else {
-                if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.LOLLIPOP) {
-                    maximumProtectionLevel = ProtectionLevel.DeviceOwner
-                } else {
-                    maximumProtectionLevel = ProtectionLevel.PasswordDeviceAdmin
-                }
-            }
-        }
+        val maximumProtectionLevel: ProtectionLevel = ProtectionLevel.DeviceOwner
     }
 
     private val context = context.applicationContext
@@ -220,20 +208,18 @@ class AndroidIntegration(context: Context): PlatformIntegration(maximumProtectio
             Log.d(LOG_TAG, "set password")
         }
 
-        if (!BuildConfig.storeCompilant) {
-            if (Build.VERSION.SDK_INT < Build.VERSION_CODES.LOLLIPOP) {
-                try {
-                    if (password.isBlank()) {
-                        return policyManager.resetPassword("", 0)
-                    } else if (policyManager.resetPassword(password, DevicePolicyManager.RESET_PASSWORD_REQUIRE_ENTRY)) {
-                        policyManager.lockNow()
+        if (Build.VERSION.SDK_INT < Build.VERSION_CODES.LOLLIPOP) {
+            try {
+                if (password.isBlank()) {
+                    return policyManager.resetPassword("", 0)
+                } else if (policyManager.resetPassword(password, DevicePolicyManager.RESET_PASSWORD_REQUIRE_ENTRY)) {
+                    policyManager.lockNow()
 
-                        return true
-                    }
-                } catch (ex: SecurityException) {
-                    if (BuildConfig.DEBUG) {
-                        Log.w(LOG_TAG, "error setting password", ex)
-                    }
+                    return true
+                }
+            } catch (ex: SecurityException) {
+                if (BuildConfig.DEBUG) {
+                    Log.w(LOG_TAG, "error setting password", ex)
                 }
             }
         }
@@ -480,7 +466,6 @@ class AndroidIntegration(context: Context): PlatformIntegration(maximumProtectio
     override fun setSuspendedApps(packageNames: List<String>, suspend: Boolean): List<String> {
         if (
                 (getCurrentProtectionLevel() == ProtectionLevel.DeviceOwner) &&
-                (!BuildConfig.storeCompilant) &&
                 (Build.VERSION.SDK_INT >= Build.VERSION_CODES.N)
         ) {
             val failedApps = policyManager.setPackagesSuspended(
@@ -498,8 +483,7 @@ class AndroidIntegration(context: Context): PlatformIntegration(maximumProtectio
     override fun setEnableSystemLockdown(enableLockdown: Boolean): Boolean {
         return if (
                 Build.VERSION.SDK_INT >= Build.VERSION_CODES.LOLLIPOP &&
-                policyManager.isDeviceOwnerApp(context.packageName) &&
-                (!BuildConfig.storeCompilant)
+                policyManager.isDeviceOwnerApp(context.packageName)
         ) {
             if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.O) {
                 policyManager.setBackupServiceEnabled(deviceAdmin, true)
@@ -599,8 +583,7 @@ class AndroidIntegration(context: Context): PlatformIntegration(maximumProtectio
     override fun setBlockedFeatures(features: Set<String>): Boolean {
         return if (
             Build.VERSION.SDK_INT >= Build.VERSION_CODES.LOLLIPOP &&
-            policyManager.isDeviceOwnerApp(context.packageName) &&
-            (!BuildConfig.storeCompilant)
+            policyManager.isDeviceOwnerApp(context.packageName)
         ) AndroidFeatures.applyBlockedFeatures(features, policyManager, deviceAdmin)
         else false
     }
@@ -608,8 +591,7 @@ class AndroidIntegration(context: Context): PlatformIntegration(maximumProtectio
     override fun getFeatures(): List<PlatformFeature> {
         return if (
             Build.VERSION.SDK_INT >= Build.VERSION_CODES.LOLLIPOP &&
-            policyManager.isDeviceOwnerApp(context.packageName) &&
-            (!BuildConfig.storeCompilant)
+            policyManager.isDeviceOwnerApp(context.packageName)
         ) AndroidFeatures.getFeaturesAssumingDeviceOwnerGranted(context)
         else emptyList()
     }
@@ -667,26 +649,22 @@ class AndroidIntegration(context: Context): PlatformIntegration(maximumProtectio
         )
 
         if (enable) {
-            if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.LOLLIPOP && (!BuildConfig.storeCompilant)) {
-                if (policyManager.isDeviceOwnerApp(context.packageName)) {
-                    policyManager.addPersistentPreferredActivity(
-                            deviceAdmin,
-                            IntentFilter(Intent.ACTION_MAIN).apply {
-                                addCategory(Intent.CATEGORY_HOME)
-                                addCategory(Intent.CATEGORY_DEFAULT)
-                            },
-                            homescreen
-                    )
-                }
+            if (policyManager.isDeviceOwnerApp(context.packageName)) {
+                policyManager.addPersistentPreferredActivity(
+                    deviceAdmin,
+                    IntentFilter(Intent.ACTION_MAIN).apply {
+                        addCategory(Intent.CATEGORY_HOME)
+                        addCategory(Intent.CATEGORY_DEFAULT)
+                    },
+                    homescreen
+                )
             }
         }
     }
 
     override fun setForceNetworkTime(enable: Boolean) {
-        if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.LOLLIPOP && (!BuildConfig.storeCompilant)) {
-            if (policyManager.isDeviceOwnerApp(context.packageName)) {
-                policyManager.setAutoTimeRequired(deviceAdmin, enable)
-            }
+        if (policyManager.isDeviceOwnerApp(context.packageName)) {
+            policyManager.setAutoTimeRequired(deviceAdmin, enable)
         }
     }
 
@@ -727,7 +705,6 @@ class AndroidIntegration(context: Context): PlatformIntegration(maximumProtectio
                     PermissionInfoConfirmDialog.newInstance(SystemPermission.DeviceAdmin)
                         .show(activity.supportFragmentManager)
                 } else if (
-                    InformAboutDeviceOwnerDialogFragment.shouldShow &&
                     confirmationLevel != SystemPermissionConfirmationLevel.Suggestion
                 ) {
                     InformAboutDeviceOwnerDialogFragment().show(activity.supportFragmentManager)

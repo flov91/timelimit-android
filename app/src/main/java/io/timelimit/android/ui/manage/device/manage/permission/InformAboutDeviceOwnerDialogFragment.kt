@@ -1,5 +1,5 @@
 /*
- * TimeLimit Copyright <C> 2019 - 2021 Jonas Lochmann
+ * TimeLimit Copyright <C> 2019 - 2026 Jonas Lochmann
  *
  * This program is free software: you can redistribute it and/or modify
  * it under the terms of the GNU General Public License as published by
@@ -16,12 +16,10 @@
 package io.timelimit.android.ui.manage.device.manage.permission
 
 import android.app.Dialog
-import android.os.Build
 import android.os.Bundle
 import androidx.appcompat.app.AlertDialog
 import androidx.fragment.app.DialogFragment
 import androidx.fragment.app.FragmentManager
-import io.timelimit.android.BuildConfig
 import io.timelimit.android.R
 import io.timelimit.android.extensions.showSafe
 import io.timelimit.android.integration.platform.SystemPermission
@@ -31,9 +29,6 @@ import io.timelimit.android.logic.DefaultAppLogic
 class InformAboutDeviceOwnerDialogFragment: DialogFragment() {
     companion object {
         private const val TAG = "dod"
-
-        val shouldShow = (!BuildConfig.storeCompilant) &&
-                (Build.VERSION.SDK_INT >= Build.VERSION_CODES.LOLLIPOP)
     }
 
     override fun onCreateDialog(savedInstanceState: Bundle?): Dialog = AlertDialog.Builder(requireContext(), theme)

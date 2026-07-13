@@ -1,5 +1,5 @@
 /*
- * TimeLimit Copyright <C> 2019 - 2023 Jonas Lochmann
+ * TimeLimit Copyright <C> 2019 - 2026 Jonas Lochmann
  *
  * This program is free software: you can redistribute it and/or modify
  * it under the terms of the GNU General Public License as published by
@@ -29,7 +29,7 @@ import io.timelimit.android.livedata.*
 class AnnoyLogic (val appLogic: AppLogic) {
     // config
     companion object {
-        private const val ENABLE = !BuildConfig.storeCompilant
+        private const val ENABLE = true
         private const val LOG_TAG = "AnnoyLogic"
 
         private const val TEMP_UNBLOCK_DURATION = 1000 * 45L

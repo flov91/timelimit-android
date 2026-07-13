@@ -1,5 +1,5 @@
 /*
- * TimeLimit Copyright <C> 2019 - 2024 Jonas Lochmann
+ * TimeLimit Copyright <C> 2019 - 2026 Jonas Lochmann
  *
  * This program is free software: you can redistribute it and/or modify
  * it under the terms of the GNU General Public License as published by
@@ -53,7 +53,7 @@ object UpdateIntegration {
     const val CONFIG_URL = BuildConfig.updateServer
 
     fun doesSupportUpdates(context: Context): Boolean {
-        if (CONFIG_URL.isEmpty() || BuildConfig.storeCompilant) {
+        if (CONFIG_URL.isEmpty()) {
             return false
         }
 
