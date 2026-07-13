@@ -61,10 +61,6 @@ android {
             applicationIdSuffix ".direct"
         }
 
-        googleApi {
-            dimension 'api'
-            applicationIdSuffix ".google"
-        }
         noGoogleApi {
             dimension 'api'
             applicationIdSuffix ".aosp"
