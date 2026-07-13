@@ -1811,8 +1811,7 @@
 
     <string name="app_name" translatable="false">TimeLimit</string>
 
-    <string name="admin_description_google">This allows TimeLimit to detect if it was stopped.</string>
-    <string name="admin_description_direct">This allows TimeLimit to prevent it from being disabled.</string>
+    <string name="admin_description">This allows TimeLimit to detect if it was stopped.</string>
 
     <string name="admin_disable_warning">Do you want to disable the device admin?</string>
 

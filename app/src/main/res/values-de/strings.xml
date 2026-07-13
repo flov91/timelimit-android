@@ -1757,8 +1757,7 @@
 
     <string name="wiazrd_next">Weiter</string>
 
-    <string name="admin_description_google">Dies ermöglicht es TimeLimit zu erkennen, wann es beendet wurde</string>
-    <string name="admin_description_direct">Dies ermöglicht es TimeLimit zu verhindern, ausgeschaltet zu werden</string>
+    <string name="admin_description">Dies ermöglicht es TimeLimit zu erkennen, wann es beendet wurde</string>
 
     <string name="admin_disable_warning">Soll der Geräteadministrator wirklich deaktiviert werden?</string>
 
