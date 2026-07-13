@@ -31,16 +31,33 @@ object AboutHandling {
     ): Flow<Screen> = state.transform {
         fragmentIds.add(it.containerId)
 
-        emit(Screen.FragmentScreen(
-            it as State, it.toolbarIcons, it.toolbarOptions, it,
-            listOf(
+        val baseBackStack = listOf(
+            BackStackItem(
+                Title.StringResource(R.string.main_tab_overview),
+                action = {
+                    updateState { it.previousOverview }
+                }
+            )
+        )
+
+        val finalBackStack = when (it) {
+            is State.About.Main -> baseBackStack
+            is State.About.Sub -> baseBackStack + listOf(
                 BackStackItem(
-                    Title.StringResource(R.string.main_tab_overview),
+                    Title.StringResource(R.string.main_tab_about),
                     action = {
-                        updateState { it.previousOverview }
+                        updateState {
+                            if (it is State.About.Sub) it.previousAbout
+                            else it
+                        }
                     }
                 )
             )
+        }
+
+        emit(Screen.FragmentScreen(
+            it, it.toolbarIcons, it.toolbarOptions, it,
+            finalBackStack
         ))
     }
 }

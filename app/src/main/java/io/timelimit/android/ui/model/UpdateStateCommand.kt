@@ -49,7 +49,7 @@ sealed class UpdateStateCommand {
     object Overview {
         object LaunchAbout: UpdateStateCommand() {
             override fun transform(state: State): State? =
-                if (state is State.Overview) State.About(state)
+                if (state is State.Overview) State.About.Main(state)
                 else null
         }
         object AddUser: UpdateStateCommand() {
@@ -109,19 +109,19 @@ sealed class UpdateStateCommand {
     object About {
         object Diagnose: UpdateStateCommand() {
             override fun transform(state: State): State? =
-                if (state is State.About) State.DiagnoseScreen.Main(state)
+                if (state is State.About.Main) State.DiagnoseScreen.Main(state)
                 else null
         }
 
         object Purchase: UpdateStateCommand() {
             override fun transform(state: State): State? =
-                if (state is State.About) State.Purchase.Purchase(state)
+                if (state is State.About.Main) State.About.Purchase(state)
                 else null
         }
 
         object StayAwesome: UpdateStateCommand() {
             override fun transform(state: State): State? =
-                if (state is State.About) State.Purchase.StayAwesome(state)
+                if (state is State.About.Main) State.About.StayAwesome(state)
                 else null
         }
     }

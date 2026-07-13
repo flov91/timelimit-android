@@ -78,11 +78,31 @@ sealed class State (val previous: State?): Serializable {
     data class Overview(
         val state: OverviewHandling.OverviewState = OverviewHandling.OverviewState.empty
     ): State(previous = null)
-    class About(val previousOverview: Overview): FragmentStateLegacy(
-        previous = previousOverview,
-        fragmentClass = AboutFragmentWrapped::class.java,
-        containerId = R.id.fragment_about
-    )
+    sealed class About(
+        previous: State,
+        fragmentClass: Class<out Fragment>,
+        containerId: Int
+    ): FragmentStateLegacy(previous, fragmentClass, containerId) {
+        abstract val previousOverview: Overview
+
+        class Main(override val previousOverview: Overview): About(
+            previous = previousOverview,
+            fragmentClass = AboutFragmentWrapped::class.java,
+            containerId = R.id.fragment_about
+        )
+
+        sealed class Sub(
+            previous: State,
+            fragmentClass: Class<out Fragment>,
+            containerId: Int
+        ): About(previous, fragmentClass, containerId) {
+            abstract val previousAbout: Main
+            override val previousOverview: Overview get() = previousAbout.previousOverview
+        }
+
+        class Purchase(override val previousAbout: Main): Sub(previousAbout, PurchaseFragment::class.java, R.id.fragment_purchase)
+        class StayAwesome(override val previousAbout: Main): Sub(previousAbout, StayAwesomeFragment::class.java, R.id.fragment_stay_awesome)
+    }
     class AddUser(previous: Overview): FragmentStateLegacy(
         previous = previous,
         fragmentClass = AddUserFragment::class.java,
@@ -327,8 +347,4 @@ sealed class State (val previous: State?): Serializable {
         }
     }
     class ParentMode: FragmentStateLegacy(previous = null, fragmentClass = ParentModeFragment::class.java, R.id.fragment_setup_parent_mode)
-    object Purchase {
-        class Purchase(previous: About): FragmentStateLegacy(previous, PurchaseFragment::class.java, R.id.fragment_purchase)
-        class StayAwesome(previous: About): FragmentStateLegacy(previous, StayAwesomeFragment::class.java, R.id.fragment_stay_awesome)
-    }
 }

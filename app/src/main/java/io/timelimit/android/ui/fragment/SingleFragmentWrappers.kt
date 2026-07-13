@@ -1,5 +1,5 @@
 /*
- * TimeLimit Copyright <C> 2019 - 2023 Jonas Lochmann
+ * TimeLimit Copyright <C> 2019 - 2026 Jonas Lochmann
  *
  * This program is free software: you can redistribute it and/or modify
  * it under the terms of the GNU General Public License as published by
@@ -17,14 +17,22 @@
 package io.timelimit.android.ui.fragment
 
 import androidx.fragment.app.Fragment
+import androidx.lifecycle.LiveData
+import io.timelimit.android.R
+import io.timelimit.android.livedata.liveDataFromNullableValue
+import io.timelimit.android.ui.main.FragmentWithCustomTitle
 import io.timelimit.android.ui.model.UpdateStateCommand
 import io.timelimit.android.ui.model.execute
 import io.timelimit.android.ui.overview.about.AboutFragment
 import io.timelimit.android.ui.overview.about.AboutFragmentParentHandlers
 
-class AboutFragmentWrapped: SingleFragmentWrapper(), AboutFragmentParentHandlers {
+class AboutFragmentWrapped: SingleFragmentWrapper(), AboutFragmentParentHandlers, FragmentWithCustomTitle {
     override val showAuthButton: Boolean = false
     override fun createChildFragment(): Fragment = AboutFragment()
+
+    override fun getCustomTitle(): LiveData<String?> = liveDataFromNullableValue(
+        getString(R.string.main_tab_about)
+    )
 
     override fun onShowDiagnoseScreen() {
         requireActivity().execute(UpdateStateCommand.About.Diagnose)
