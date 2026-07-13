@@ -78,8 +78,8 @@ sealed class State (val previous: State?): Serializable {
     data class Overview(
         val state: OverviewHandling.OverviewState = OverviewHandling.OverviewState.empty
     ): State(previous = null)
-    class About(previous: Overview): FragmentStateLegacy(
-        previous = previous,
+    class About(val previousOverview: Overview): FragmentStateLegacy(
+        previous = previousOverview,
         fragmentClass = AboutFragmentWrapped::class.java,
         containerId = R.id.fragment_about
     )

@@ -42,8 +42,9 @@ sealed class Screen(
         state: State,
         toolbarIcons: List<Menu.Icon>,
         toolbarOptions: List<Menu.Dropdown>,
-        val fragment: FragmentState
-    ): Screen(state, toolbarIcons, toolbarOptions)
+        val fragment: FragmentState,
+        override val backStack: List<BackStackItem> = emptyList()
+    ): Screen(state, toolbarIcons, toolbarOptions), ScreenWithBackStack
 
     class OverviewScreen(
         state: State,

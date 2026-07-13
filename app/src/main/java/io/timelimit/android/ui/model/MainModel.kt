@@ -26,6 +26,7 @@ import io.timelimit.android.ui.model.account.AccountDeletion
 import io.timelimit.android.ui.model.flow.Case
 import io.timelimit.android.ui.model.flow.splitConflated
 import io.timelimit.android.ui.model.launch.LaunchHandling
+import io.timelimit.android.ui.model.main.AboutHandling
 import io.timelimit.android.ui.model.main.OverviewHandling
 import io.timelimit.android.ui.model.managechild.ManageChildHandling
 import io.timelimit.android.ui.model.managedevice.ManageDeviceHandling
@@ -47,6 +48,7 @@ class MainModel(application: Application): AndroidViewModel(application) {
         Case.simple<_, _, State.ManageDevice> { state -> ManageDeviceHandling.processState(logic, api.activityCommand, api.authentication, state, updateMethod(::updateState)) },
         Case.simple<_, _, State.Setup> { state -> SetupHandling.handle(logic, api.activityCommand, api.permissionsChanged, state, updateMethod(::updateState)) },
         Case.simple<_, _, State.DeleteAccount> { AccountDeletion.handle(logic, scope, share(it), updateMethod(::updateState)) },
+        Case.simple<_, _, State.About> { state -> AboutHandling.handle(state, updateMethod(::updateState), fragmentIds) },
         Case.simple<_, _, FragmentState> { state ->
             state.transform {
                 fragmentIds.add(it.containerId)
