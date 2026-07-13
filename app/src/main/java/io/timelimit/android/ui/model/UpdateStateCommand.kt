@@ -109,7 +109,7 @@ sealed class UpdateStateCommand {
     object About {
         object Diagnose: UpdateStateCommand() {
             override fun transform(state: State): State? =
-                if (state is State.About.Main) State.DiagnoseScreen.Main(state)
+                if (state is State.About.Main) State.About.DiagnoseScreen.Main(state)
                 else null
         }
 
@@ -290,42 +290,42 @@ sealed class UpdateStateCommand {
     object Diagnose {
         object Battery: UpdateStateCommand() {
             override fun transform(state: State): State? =
-                if (state is State.DiagnoseScreen.Main) State.DiagnoseScreen.Battery(state)
+                if (state is State.About.DiagnoseScreen.Main) State.About.DiagnoseScreen.Battery(state)
                 else null
         }
         object Clock: UpdateStateCommand() {
             override fun transform(state: State): State? =
-                if (state is State.DiagnoseScreen.Main) State.DiagnoseScreen.Clock(state)
+                if (state is State.About.DiagnoseScreen.Main) State.About.DiagnoseScreen.Clock(state)
                 else null
         }
         object Connection: UpdateStateCommand() {
             override fun transform(state: State): State? =
-                if (state is State.DiagnoseScreen.Main) State.DiagnoseScreen.Connection(state)
+                if (state is State.About.DiagnoseScreen.Main) State.About.DiagnoseScreen.Connection(state)
                 else null
         }
         object Crypto: UpdateStateCommand() {
             override fun transform(state: State): State? =
-                if (state is State.DiagnoseScreen.Main) State.DiagnoseScreen.Crypto(state)
+                if (state is State.About.DiagnoseScreen.Main) State.About.DiagnoseScreen.Crypto(state)
                 else null
         }
         object ExperimentalFlags: UpdateStateCommand() {
             override fun transform(state: State): State? =
-                if (state is State.DiagnoseScreen.Main) State.DiagnoseScreen.ExperimentalFlags(state)
+                if (state is State.About.DiagnoseScreen.Main) State.About.DiagnoseScreen.ExperimentalFlags(state)
                 else null
         }
         object ExitReasons: UpdateStateCommand() {
             override fun transform(state: State): State? =
-                if (state is State.DiagnoseScreen.Main) State.DiagnoseScreen.ExitReasons(state)
+                if (state is State.About.DiagnoseScreen.Main) State.About.DiagnoseScreen.ExitReasons(state)
                 else null
         }
         object ForegroundApp: UpdateStateCommand() {
             override fun transform(state: State): State? =
-                if (state is State.DiagnoseScreen.Main) State.DiagnoseScreen.ForegroundApp(state)
+                if (state is State.About.DiagnoseScreen.Main) State.About.DiagnoseScreen.ForegroundApp(state)
                 else null
         }
         object Sync: UpdateStateCommand() {
             override fun transform(state: State): State? =
-                if (state is State.DiagnoseScreen.Main) State.DiagnoseScreen.Sync(state)
+                if (state is State.About.DiagnoseScreen.Main) State.About.DiagnoseScreen.Sync(state)
                 else null
         }
     }

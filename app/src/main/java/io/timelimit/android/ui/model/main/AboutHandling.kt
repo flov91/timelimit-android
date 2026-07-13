@@ -42,17 +42,33 @@ object AboutHandling {
 
         val finalBackStack = when (it) {
             is State.About.Main -> baseBackStack
-            is State.About.Sub -> baseBackStack + listOf(
-                BackStackItem(
-                    Title.StringResource(R.string.main_tab_about),
-                    action = {
-                        updateState {
-                            if (it is State.About.Sub) it.previousAbout
-                            else it
+            is State.About.Sub -> {
+                val baseBackStack = baseBackStack + listOf(
+                    BackStackItem(
+                        Title.StringResource(R.string.main_tab_about),
+                        action = {
+                            updateState {
+                                if (it is State.About.Sub) it.previousAbout
+                                else it
+                            }
                         }
-                    }
+                    )
                 )
-            )
+
+                if (it is State.About.DiagnoseScreen.Sub) {
+                    baseBackStack + listOf(
+                        BackStackItem(
+                            Title.StringResource(R.string.about_diagnose_title),
+                            action = {
+                                updateState {
+                                    if (it is State.About.DiagnoseScreen.Sub) it.previousMain
+                                    else it
+                                }
+                            }
+                        )
+                    )
+                } else baseBackStack
+            }
         }
 
         emit(Screen.FragmentScreen(

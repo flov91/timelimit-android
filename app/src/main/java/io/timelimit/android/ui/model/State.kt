@@ -102,6 +102,31 @@ sealed class State (val previous: State?): Serializable {
 
         class Purchase(override val previousAbout: Main): Sub(previousAbout, PurchaseFragment::class.java, R.id.fragment_purchase)
         class StayAwesome(override val previousAbout: Main): Sub(previousAbout, StayAwesomeFragment::class.java, R.id.fragment_stay_awesome)
+
+        sealed class DiagnoseScreen(
+            previous: State,
+            fragmentClass: Class<out Fragment>,
+            containerId: Int
+        ): Sub(previous, fragmentClass, containerId) {
+            class Main(override val previousAbout: About.Main): DiagnoseScreen(previousAbout, DiagnoseMainFragment::class.java, R.id.fragment_diagnose_main)
+
+            sealed class Sub(
+                val previousMain: Main,
+                fragmentClass: Class<out Fragment>,
+                containerId: Int
+            ): DiagnoseScreen(previousMain, fragmentClass, containerId) {
+                override val previousAbout: About.Main get() = previousMain.previousAbout
+            }
+
+            class Battery(previous: Main): Sub(previous, DiagnoseBatteryFragment::class.java, R.id.fragment_diagnose_battery)
+            class Clock(previous: Main): Sub(previous, DiagnoseClockFragment::class.java, R.id.fragment_diagnose_clock)
+            class Connection(previous: Main): Sub(previous, DiagnoseConnectionFragment::class.java, R.id.fragment_diagnose_connection)
+            class ExperimentalFlags(previous: Main): Sub(previous, DiagnoseExperimentalFlagFragment::class.java, R.id.fragment_diagnose_experimental_flag)
+            class ExitReasons(previous: Main): Sub(previous, DiagnoseExitReasonFragment::class.java, R.id.fragment_diagnose_exit_reason)
+            class Crypto(previous: Main): Sub(previous, DiagnoseCryptoFragment::class.java, R.id.fragment_diagnose_crypto)
+            class ForegroundApp(previous: Main): Sub(previous, DiagnoseForegroundAppFragment::class.java, R.id.fragment_diagnose_foreground_app)
+            class Sync(previous: Main): Sub(previous, DiagnoseSyncFragment::class.java, R.id.fragment_diagnose_sync)
+        }
     }
     class AddUser(previous: Overview): FragmentStateLegacy(
         previous = previous,
@@ -278,17 +303,6 @@ sealed class State (val previous: State?): Serializable {
         val content: AccountDeletion.MyState = AccountDeletion.MyState.Preparing()
     ): State(previousOverview)
     class Uninstall(previous: Overview): FragmentStateLegacy(previous = previous, fragmentClass = UninstallFragment::class.java, R.id.fragment_uninstall)
-    object DiagnoseScreen {
-        class Main(previous: About): FragmentStateLegacy(previous, DiagnoseMainFragment::class.java, R.id.fragment_diagnose_main)
-        class Battery(previous: Main): FragmentStateLegacy(previous, DiagnoseBatteryFragment::class.java, R.id.fragment_diagnose_battery)
-        class Clock(previous: Main): FragmentStateLegacy(previous, DiagnoseClockFragment::class.java, R.id.fragment_diagnose_clock)
-        class Connection(previous: Main): FragmentStateLegacy(previous, DiagnoseConnectionFragment::class.java, R.id.fragment_diagnose_connection)
-        class ExperimentalFlags(previous: Main): FragmentStateLegacy(previous, DiagnoseExperimentalFlagFragment::class.java, R.id.fragment_diagnose_experimental_flag)
-        class ExitReasons(previous: Main): FragmentStateLegacy(previous, DiagnoseExitReasonFragment::class.java, R.id.fragment_diagnose_exit_reason)
-        class Crypto(previous: Main): FragmentStateLegacy(previous, DiagnoseCryptoFragment::class.java, R.id.fragment_diagnose_crypto)
-        class ForegroundApp(previous: Main): FragmentStateLegacy(previous, DiagnoseForegroundAppFragment::class.java, R.id.fragment_diagnose_foreground_app)
-        class Sync(previous: Main): FragmentStateLegacy(previous, DiagnoseSyncFragment::class.java, R.id.fragment_diagnose_sync)
-    }
     sealed class Setup(previous: State): State(previous) {
         class SetupTerms: FragmentStateLegacy(previous = null, fragmentClass = SetupTermsFragment::class.java, R.id.fragment_setup_terms)
         class SetupHelpInfo(previous: SetupTerms): FragmentStateLegacy(previous = previous, fragmentClass = SetupHelpInfoFragment::class.java, R.id.fragment_setup_help_info)

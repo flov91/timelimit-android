@@ -102,7 +102,7 @@ class DiagnoseExperimentalFlagFragment : Fragment(), FragmentWithCustomTitle {
         return binding.root
     }
 
-    override fun getCustomTitle(): LiveData<String?> = liveDataFromNullableValue("${getString(R.string.diagnose_exf_title)} < ${getString(R.string.about_diagnose_title)} < ${getString(R.string.main_tab_overview)}")
+    override fun getCustomTitle(): LiveData<String?> = liveDataFromNullableValue(getString(R.string.diagnose_exf_title))
 }
 
 data class DiagnoseExperimentalFlagItem(
