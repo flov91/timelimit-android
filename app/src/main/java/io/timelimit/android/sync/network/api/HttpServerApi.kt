@@ -1,5 +1,5 @@
 /*
- * TimeLimit Copyright <C> 2019 - 2024 Jonas Lochmann
+ * TimeLimit Copyright <C> 2019 - 2026 Jonas Lochmann
  *
  * This program is free software: you can redistribute it and/or modify
  * it under the terms of the GNU General Public License as published by
@@ -483,7 +483,6 @@ class HttpServerApi(private val endpointWithoutSlashAtEnd: String): ServerApi {
             writer.beginObject()
 
             writer.name(DEVICE_AUTH_TOKEN).value(deviceAuthToken)
-            writer.name("type").value("googleplay")
 
             writer.endObject()
         }.use { response ->
