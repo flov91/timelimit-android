@@ -1,5 +1,5 @@
 /*
- * TimeLimit Copyright <C> 2019 - 2023 Jonas Lochmann
+ * TimeLimit Copyright <C> 2019 - 2026 Jonas Lochmann
  *
  * This program is free software: you can redistribute it and/or modify
  * it under the terms of the GNU General Public License as published by
@@ -18,12 +18,10 @@ package io.timelimit.android.ui.login
 import android.content.ActivityNotFoundException
 import android.content.Context
 import android.content.Intent
-import android.os.Build
 import android.os.Bundle
 import android.view.LayoutInflater
 import android.view.View
 import android.view.ViewGroup
-import android.view.WindowManager
 import android.view.inputmethod.InputMethodManager
 import android.widget.Toast
 import androidx.activity.OnBackPressedCallback
@@ -106,21 +104,6 @@ class NewLoginFragment: DialogFragment() {
                 }
             })
         }
-
-        override fun onAttachedToWindow() {
-            super.onAttachedToWindow()
-
-            if (Build.VERSION.SDK_INT < Build.VERSION_CODES.LOLLIPOP) {
-                if (arguments?.getBoolean(SHOW_ON_LOCKSCREEN, false) == true) {
-                    window!!.addFlags(
-                            WindowManager.LayoutParams.FLAG_TURN_SCREEN_ON
-                                    or WindowManager.LayoutParams.FLAG_SHOW_WHEN_LOCKED
-                                    or WindowManager.LayoutParams.FLAG_KEEP_SCREEN_ON
-                                    or WindowManager.LayoutParams.FLAG_DISMISS_KEYGUARD
-                    )
-                }
-            }
-        }
     }
 
     override fun onSaveInstanceState(outState: Bundle) {
@@ -167,9 +150,7 @@ class NewLoginFragment: DialogFragment() {
                     inputMethodManager.showSoftInput(password, 0)
                 }
 
-                if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.LOLLIPOP) {
-                    password.showSoftInputOnFocus = !showCustomKeyboard
-                }
+                password.showSoftInputOnFocus = !showCustomKeyboard
             }
 
             fun go() {

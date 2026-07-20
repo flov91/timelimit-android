@@ -1,5 +1,5 @@
 /*
- * TimeLimit Copyright <C> 2019 - 2024 Jonas Lochmann
+ * TimeLimit Copyright <C> 2019 - 2026 Jonas Lochmann
  *
  * This program is free software: you can redistribute it and/or modify
  * it under the terms of the GNU General Public License as published by
@@ -51,183 +51,161 @@ object NotificationChannels {
     const val EXTRA_TIME_STARTED = "extra time started"
 
     private fun createAppStatusChannel(notificationManager: NotificationManager, context: Context) {
-        if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.O) {
-            notificationManager.createNotificationChannel(
-                    NotificationChannel(
-                            APP_STATUS,
-                            context.getString(R.string.notification_channel_app_status_title),
-                            NotificationManager.IMPORTANCE_LOW
-                    ).apply {
-                        description = context.getString(R.string.notification_channel_app_status_description)
-                        enableLights(false)
-                        setSound(null, null)
-                        enableVibration(false)
-                        setShowBadge(false)
-                        lockscreenVisibility = NotificationCompat.VISIBILITY_SECRET
-                    }
-            )
-        }
+        notificationManager.createNotificationChannel(
+            NotificationChannel(
+                APP_STATUS,
+                context.getString(R.string.notification_channel_app_status_title),
+                NotificationManager.IMPORTANCE_LOW
+            ).apply {
+                description = context.getString(R.string.notification_channel_app_status_description)
+                enableLights(false)
+                setSound(null, null)
+                enableVibration(false)
+                setShowBadge(false)
+                lockscreenVisibility = NotificationCompat.VISIBILITY_SECRET
+            }
+        )
     }
 
     private fun createBlockedNotificationChannel(notificationManager: NotificationManager, context: Context) {
-        if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.O) {
-            notificationManager.createNotificationChannel(
-                    NotificationChannel(
-                            NotificationChannels.BLOCKED_NOTIFICATIONS_NOTIFICATION,
-                            context.getString(R.string.notification_channel_blocked_notification_title),
-                            NotificationManager.IMPORTANCE_DEFAULT
-                    ).apply {
-                        description = context.getString(R.string.notification_channel_blocked_notification_text)
-                    }
-            )
-        }
+        notificationManager.createNotificationChannel(
+            NotificationChannel(
+                BLOCKED_NOTIFICATIONS_NOTIFICATION,
+                context.getString(R.string.notification_channel_blocked_notification_title),
+                NotificationManager.IMPORTANCE_DEFAULT
+            ).apply {
+                description = context.getString(R.string.notification_channel_blocked_notification_text)
+            }
+        )
     }
 
     private fun createManipulationNotificationChannel(notificationManager: NotificationManager, context: Context) {
-        if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.O) {
-            notificationManager.createNotificationChannel(
-                    NotificationChannel(
-                            NotificationChannels.MANIPULATION_WARNING,
-                            context.getString(R.string.notification_channel_manipulation_title),
-                            NotificationManager.IMPORTANCE_HIGH
-                    ).apply {
-                        description = context.getString(R.string.notification_channel_manipulation_text)
-                    }
-            )
-        }
+        notificationManager.createNotificationChannel(
+            NotificationChannel(
+                MANIPULATION_WARNING,
+                context.getString(R.string.notification_channel_manipulation_title),
+                NotificationManager.IMPORTANCE_HIGH
+            ).apply {
+                description = context.getString(R.string.notification_channel_manipulation_text)
+            }
+        )
     }
 
     private fun createUpdateNotificationChannel(notificationManager: NotificationManager, context: Context) {
-        if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.O) {
-            notificationManager.createNotificationChannel(
-                    NotificationChannel(
-                            NotificationChannels.UPDATE_NOTIFICATION,
-                            context.getString(R.string.notification_channel_update_title),
-                            NotificationManager.IMPORTANCE_DEFAULT
-                    ).apply {
-                        description = context.getString(R.string.notification_channel_update_text)
-                        enableLights(false)
-                        setSound(null, null)
-                        enableVibration(false)
-                    }
-            )
-        }
+        notificationManager.createNotificationChannel(
+            NotificationChannel(
+                UPDATE_NOTIFICATION,
+                context.getString(R.string.notification_channel_update_title),
+                NotificationManager.IMPORTANCE_DEFAULT
+            ).apply {
+                description = context.getString(R.string.notification_channel_update_text)
+                enableLights(false)
+                setSound(null, null)
+                enableVibration(false)
+            }
+        )
     }
 
     private fun createTimeWarningsNotificationChannel(notificationManager: NotificationManager, context: Context) {
-        if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.O) {
-            notificationManager.createNotificationChannel(
-                    NotificationChannel(
-                            NotificationChannels.TIME_WARNING,
-                            context.getString(R.string.notification_channel_time_warning_title),
-                            NotificationManager.IMPORTANCE_HIGH
-                    ).apply {
-                        description = context.getString(R.string.notification_channel_time_warning_text)
-                    }
-            )
-        }
+        notificationManager.createNotificationChannel(
+            NotificationChannel(
+                TIME_WARNING,
+                context.getString(R.string.notification_channel_time_warning_title),
+                NotificationManager.IMPORTANCE_HIGH
+            ).apply {
+                description = context.getString(R.string.notification_channel_time_warning_text)
+            }
+        )
     }
 
     private fun createPremiumExpiresChannel(notificationManager: NotificationManager, context: Context) {
-        if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.O) {
-            notificationManager.createNotificationChannel(
-                    NotificationChannel(
-                            NotificationChannels.PREMIUM_EXPIRES_NOTIFICATION,
-                            context.getString(R.string.notification_channel_premium_expires_title),
-                            NotificationManager.IMPORTANCE_DEFAULT
-                    ).apply {
-                        description = context.getString(R.string.notification_channel_premium_expires_text)
-                        enableLights(false)
-                        setSound(null, null)
-                        enableVibration(false)
-                    }
-            )
-        }
+        notificationManager.createNotificationChannel(
+            NotificationChannel(
+                PREMIUM_EXPIRES_NOTIFICATION,
+                context.getString(R.string.notification_channel_premium_expires_title),
+                NotificationManager.IMPORTANCE_DEFAULT
+            ).apply {
+                description = context.getString(R.string.notification_channel_premium_expires_text)
+                enableLights(false)
+                setSound(null, null)
+                enableVibration(false)
+            }
+        )
     }
 
     private fun createBackgroundSyncChannel(notificationManager: NotificationManager, context: Context) {
-        if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.O) {
-            notificationManager.createNotificationChannel(
-                    NotificationChannel(
-                            BACKGROUND_SYNC_NOTIFICATION,
-                            context.getString(R.string.notification_channel_background_sync_title),
-                            NotificationManager.IMPORTANCE_LOW
-                    ).apply {
-                        description = context.getString(R.string.notification_channel_background_sync_text)
-                        enableLights(false)
-                        setSound(null, null)
-                        enableVibration(false)
-                        setShowBadge(false)
-                        lockscreenVisibility = NotificationCompat.VISIBILITY_SECRET
-                    }
-            )
-        }
+        notificationManager.createNotificationChannel(
+            NotificationChannel(
+                BACKGROUND_SYNC_NOTIFICATION,
+                context.getString(R.string.notification_channel_background_sync_title),
+                NotificationManager.IMPORTANCE_LOW
+            ).apply {
+                description = context.getString(R.string.notification_channel_background_sync_text)
+                enableLights(false)
+                setSound(null, null)
+                enableVibration(false)
+                setShowBadge(false)
+                lockscreenVisibility = NotificationCompat.VISIBILITY_SECRET
+            }
+        )
     }
 
     private fun createTempAllowedAppChannel(notificationManager: NotificationManager, context: Context) {
-        if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.O) {
-            notificationManager.createNotificationChannel(
-                NotificationChannel(
-                    TEMP_ALLOWED_APP,
-                    context.getString(R.string.notification_channel_apps_temporarily_allowed_title),
-                    NotificationManager.IMPORTANCE_LOW
-                ).apply {
-                    description = context.getString(R.string.notification_channel_apps_temporarily_allowed_text)
-                    enableLights(false)
-                    setSound(null, null)
-                    enableVibration(false)
-                    setShowBadge(false)
-                    lockscreenVisibility = NotificationCompat.VISIBILITY_SECRET
-                }
-            )
-        }
+        notificationManager.createNotificationChannel(
+            NotificationChannel(
+                TEMP_ALLOWED_APP,
+                context.getString(R.string.notification_channel_apps_temporarily_allowed_title),
+                NotificationManager.IMPORTANCE_LOW
+            ).apply {
+                description = context.getString(R.string.notification_channel_apps_temporarily_allowed_text)
+                enableLights(false)
+                setSound(null, null)
+                enableVibration(false)
+                setShowBadge(false)
+                lockscreenVisibility = NotificationCompat.VISIBILITY_SECRET
+            }
+        )
     }
 
     private fun createAppResetChannel(notificationManager: NotificationManager, context: Context) {
-        if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.O) {
-            notificationManager.createNotificationChannel(
-                NotificationChannel(
-                    APP_RESET,
-                    context.getString(R.string.notification_channel_reset_title),
-                    NotificationManager.IMPORTANCE_DEFAULT
-                ).apply {
-                    description = context.getString(R.string.notification_channel_reset_text)
-                }
-            )
-        }
+        notificationManager.createNotificationChannel(
+            NotificationChannel(
+                APP_RESET,
+                context.getString(R.string.notification_channel_reset_title),
+                NotificationManager.IMPORTANCE_DEFAULT
+            ).apply {
+                description = context.getString(R.string.notification_channel_reset_text)
+            }
+        )
     }
 
     private fun createNewDeviceChannel(notificationManager: NotificationManager, context: Context) {
-        if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.O) {
-            notificationManager.createNotificationChannel(
-                NotificationChannel(
-                    NEW_DEVICE,
-                    context.getString(R.string.notification_channel_new_device_title),
-                    NotificationManager.IMPORTANCE_LOW
-                ).apply {
-                    description = context.getString(R.string.notification_channel_new_device_description)
-                    enableLights(false)
-                    setSound(null, null)
-                    enableVibration(false)
-                    setShowBadge(true)
-                    lockscreenVisibility = NotificationCompat.VISIBILITY_SECRET
-                }
-            )
-        }
+        notificationManager.createNotificationChannel(
+            NotificationChannel(
+                NEW_DEVICE,
+                context.getString(R.string.notification_channel_new_device_title),
+                NotificationManager.IMPORTANCE_LOW
+            ).apply {
+                description = context.getString(R.string.notification_channel_new_device_description)
+                enableLights(false)
+                setSound(null, null)
+                enableVibration(false)
+                setShowBadge(true)
+                lockscreenVisibility = NotificationCompat.VISIBILITY_SECRET
+            }
+        )
     }
 
     private fun createExtraTimeStartedNotificationChannel(notificationManager: NotificationManager, context: Context) {
-        if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.O) {
-            notificationManager.createNotificationChannel(
-                NotificationChannel(
-                    EXTRA_TIME_STARTED,
-                    context.getString(R.string.notification_channel_extra_time_started_title),
-                    NotificationManager.IMPORTANCE_HIGH
-                ).apply {
-                    description = context.getString(R.string.notification_channel_extra_time_started_description)
-                }
-            )
-        }
+        notificationManager.createNotificationChannel(
+            NotificationChannel(
+                EXTRA_TIME_STARTED,
+                context.getString(R.string.notification_channel_extra_time_started_title),
+                NotificationManager.IMPORTANCE_HIGH
+            ).apply {
+                description = context.getString(R.string.notification_channel_extra_time_started_description)
+            }
+        )
     }
 
     fun createNotificationChannels(notificationManager: NotificationManager, context: Context) {
@@ -257,17 +235,11 @@ object PendingIntentIds {
     const val OPEN_MAIN_APP_WITH_ERROR = 9
     val DYNAMIC_NOTIFICATION_RANGE = 100..10000
 
-    val PENDING_INTENT_FLAGS = if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.M) {
+    const val PENDING_INTENT_FLAGS =
         PendingIntent.FLAG_UPDATE_CURRENT or PendingIntent.FLAG_IMMUTABLE
-    } else {
-        PendingIntent.FLAG_UPDATE_CURRENT
-    }
 
-    val PENDING_INTENT_FLAG_CANCEL_CURRENT = if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.M) {
+    const val PENDING_INTENT_FLAG_CANCEL_CURRENT =
         PendingIntent.FLAG_CANCEL_CURRENT or PendingIntent.FLAG_IMMUTABLE
-    } else {
-        PendingIntent.FLAG_CANCEL_CURRENT
-    }
 
     val PENDING_INTENT_FLAGS_ALLOW_MUTATION = if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.S) {
         PendingIntent.FLAG_UPDATE_CURRENT or PendingIntent.FLAG_MUTABLE

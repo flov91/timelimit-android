@@ -1,5 +1,5 @@
 /*
- * TimeLimit Copyright <C> 2019 - 2022 Jonas Lochmann
+ * TimeLimit Copyright <C> 2019 - 2026 Jonas Lochmann
  *
  * This program is free software: you can redistribute it and/or modify
  * it under the terms of the GNU General Public License as published by
@@ -25,7 +25,6 @@ import android.content.IntentFilter
 import android.content.pm.PackageInstaller
 import android.os.Build
 import android.util.Log
-import androidx.annotation.RequiresApi
 import androidx.lifecycle.AndroidViewModel
 import androidx.lifecycle.MutableLiveData
 import io.timelimit.android.BuildConfig
@@ -40,7 +39,6 @@ import io.timelimit.android.update.UpdateIntegration
 import java.io.IOException
 import java.security.MessageDigest
 
-@RequiresApi(Build.VERSION_CODES.LOLLIPOP)
 class InstallUpdateDialogModel(application: Application): AndroidViewModel(application) {
     companion object {
         private const val LOG_TAG = "InstallUpdateModel"
@@ -59,10 +57,6 @@ class InstallUpdateDialogModel(application: Application): AndroidViewModel(appli
             statusInternal.postValue(Status.Working)
 
             try {
-                if (Build.VERSION.SDK_INT <= Build.VERSION_CODES.LOLLIPOP) {
-                    throw IllegalStateException()
-                }
-
                 val status = DefaultAppLogic.with(application).database.config().getUpdateStatusSync()!!
                 val installer = application.packageManager.packageInstaller
 

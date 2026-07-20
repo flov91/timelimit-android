@@ -16,7 +16,6 @@
 package io.timelimit.android.integration.platform.android
 
 import android.Manifest
-import android.annotation.TargetApi
 import android.app.ActivityManager
 import android.app.Application
 import android.app.NotificationManager
@@ -149,13 +148,11 @@ class AndroidIntegration(context: Context): PlatformIntegration(maximumProtectio
     }
 
     override fun getMusicPlaybackPackage(): String? {
-        if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.LOLLIPOP) {
-            if (getNotificationAccessPermissionStatus() == NewPermissionStatus.Granted) {
-                val manager = context.getSystemService(Context.MEDIA_SESSION_SERVICE) as MediaSessionManager
-                val sessions = manager.getActiveSessions(ComponentName(context, NotificationListener::class.java))
+        if (getNotificationAccessPermissionStatus() == NewPermissionStatus.Granted) {
+            val manager = context.getSystemService(Context.MEDIA_SESSION_SERVICE) as MediaSessionManager
+            val sessions = manager.getActiveSessions(ComponentName(context, NotificationListener::class.java))
 
-                return sessions.find { isPlaying(it) }?.packageName
-            }
+            return sessions.find { isPlaying(it) }?.packageName
         }
 
         return null
@@ -168,16 +165,12 @@ class AndroidIntegration(context: Context): PlatformIntegration(maximumProtectio
     override fun getDrawOverOtherAppsPermissionStatus(strictChecking: Boolean): RuntimePermissionStatus = overlay.getOverlayPermissionStatus(strictChecking)
 
     override fun getNotificationAccessPermissionStatus(): NewPermissionStatus {
-        if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.LOLLIPOP) {
-            if (activityManager.isLowRamDevice) {
-                return NewPermissionStatus.NotSupported
-            } else if (NotificationManagerCompat.getEnabledListenerPackages(context).contains(context.packageName)) {
-                return NewPermissionStatus.Granted
-            } else {
-                return NewPermissionStatus.NotGranted
-            }
-        } else {
+        if (activityManager.isLowRamDevice) {
             return NewPermissionStatus.NotSupported
+        } else if (NotificationManagerCompat.getEnabledListenerPackages(context).contains(context.packageName)) {
+            return NewPermissionStatus.Granted
+        } else {
+            return NewPermissionStatus.NotGranted
         }
     }
 
@@ -208,19 +201,17 @@ class AndroidIntegration(context: Context): PlatformIntegration(maximumProtectio
             Log.d(LOG_TAG, "set password")
         }
 
-        if (Build.VERSION.SDK_INT < Build.VERSION_CODES.LOLLIPOP) {
-            try {
-                if (password.isBlank()) {
-                    return policyManager.resetPassword("", 0)
-                } else if (policyManager.resetPassword(password, DevicePolicyManager.RESET_PASSWORD_REQUIRE_ENTRY)) {
-                    policyManager.lockNow()
+        try {
+            if (password.isBlank()) {
+                return policyManager.resetPassword("", 0)
+            } else if (policyManager.resetPassword(password, DevicePolicyManager.RESET_PASSWORD_REQUIRE_ENTRY)) {
+                policyManager.lockNow()
 
-                    return true
-                }
-            } catch (ex: SecurityException) {
-                if (BuildConfig.DEBUG) {
-                    Log.w(LOG_TAG, "error setting password", ex)
-                }
+                return true
+            }
+        } catch (ex: SecurityException) {
+            if (BuildConfig.DEBUG) {
+                Log.w(LOG_TAG, "error setting password", ex)
             }
         }
 
@@ -256,84 +247,82 @@ class AndroidIntegration(context: Context): PlatformIntegration(maximumProtectio
     }
 
     override suspend fun muteAudioIfPossible(packageName: String): Boolean {
-        if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.LOLLIPOP) {
-            if (getNotificationAccessPermissionStatus() == NewPermissionStatus.Granted) {
-                muteAudioMutex.withLock {
-                    if (BuildConfig.DEBUG) {
-                        Log.d(LOG_TAG, "muteAudioIfPossible($packageName)")
-                    }
-
-                    val manager = context.getSystemService(Context.MEDIA_SESSION_SERVICE) as MediaSessionManager
-
-                    fun getAppSessions(): List<MediaController> {
-                        return manager.getActiveSessions(ComponentName(context, NotificationListener::class.java))
-                                .filter { it.packageName == packageName }
-                    }
-
-                    fun dispatchKey(sessions: List<MediaController>, key: Int) {
-                        sessions.forEach {
-                            it.dispatchMediaButtonEvent(KeyEvent(
-                                    KeyEvent.ACTION_DOWN,
-                                    key
-                            ))
-                            it.dispatchMediaButtonEvent(KeyEvent(
-                                    KeyEvent.ACTION_UP,
-                                    key
-                            ))
-                        }
-                    }
-
-                    kotlin.run {
-                        val sessions = getAppSessions()
-
-                        if (sessions.find { isPlaying(it) } == null) return true
-
-                        if (BuildConfig.DEBUG) { Log.d(LOG_TAG, "try KEYCODE_MEDIA_STOP") }
-                        dispatchKey(sessions, KeyEvent.KEYCODE_MEDIA_STOP)
-                    }
-
-                    delay(100)
-
-                    kotlin.run {
-                        val sessions = getAppSessions()
-
-                        if (sessions.find { isPlaying(it) } == null) return true
-
-                        if (BuildConfig.DEBUG) { Log.d(LOG_TAG, "try KEYCODE_HEADSETHOOK") }
-                        dispatchKey(sessions, KeyEvent.KEYCODE_HEADSETHOOK)
-                    }
-
-                    delay(500)
-
-                    kotlin.run {
-                        val sessions = getAppSessions()
-
-                        if (sessions.find { isPlaying(it) } == null) return true
-
-                        val audioManager = context.getSystemService(Context.AUDIO_SERVICE) as AudioManager
-
-                        val listener = AudioManager.OnAudioFocusChangeListener {/* ignored */}
-
-                        if (BuildConfig.DEBUG) { Log.d(LOG_TAG, "try audio focus") }
-                        if (
-                                audioManager.requestAudioFocus(listener, AudioManager.STREAM_MUSIC, AudioManager.AUDIOFOCUS_GAIN)
-                                == AudioManager.AUDIOFOCUS_REQUEST_GRANTED
-                        ) {
-                            if (BuildConfig.DEBUG) { Log.d(LOG_TAG, "got audio focus") }
-                            delay(100)
-
-                            audioManager.abandonAudioFocus(listener)
-                        }
-                    }
-
-                    kotlin.run {
-                        val sessions = getAppSessions()
-
-                        if (sessions.find { isPlaying(it) } == null) return true
-                    }
-
-                    if (BuildConfig.DEBUG) { Log.d(LOG_TAG, "playback still running") }
+        if (getNotificationAccessPermissionStatus() == NewPermissionStatus.Granted) {
+            muteAudioMutex.withLock {
+                if (BuildConfig.DEBUG) {
+                    Log.d(LOG_TAG, "muteAudioIfPossible($packageName)")
                 }
+
+                val manager = context.getSystemService(Context.MEDIA_SESSION_SERVICE) as MediaSessionManager
+
+                fun getAppSessions(): List<MediaController> {
+                    return manager.getActiveSessions(ComponentName(context, NotificationListener::class.java))
+                        .filter { it.packageName == packageName }
+                }
+
+                fun dispatchKey(sessions: List<MediaController>, key: Int) {
+                    sessions.forEach {
+                        it.dispatchMediaButtonEvent(KeyEvent(
+                            KeyEvent.ACTION_DOWN,
+                            key
+                        ))
+                        it.dispatchMediaButtonEvent(KeyEvent(
+                            KeyEvent.ACTION_UP,
+                            key
+                        ))
+                    }
+                }
+
+                kotlin.run {
+                    val sessions = getAppSessions()
+
+                    if (sessions.find { isPlaying(it) } == null) return true
+
+                    if (BuildConfig.DEBUG) { Log.d(LOG_TAG, "try KEYCODE_MEDIA_STOP") }
+                    dispatchKey(sessions, KeyEvent.KEYCODE_MEDIA_STOP)
+                }
+
+                delay(100)
+
+                kotlin.run {
+                    val sessions = getAppSessions()
+
+                    if (sessions.find { isPlaying(it) } == null) return true
+
+                    if (BuildConfig.DEBUG) { Log.d(LOG_TAG, "try KEYCODE_HEADSETHOOK") }
+                    dispatchKey(sessions, KeyEvent.KEYCODE_HEADSETHOOK)
+                }
+
+                delay(500)
+
+                kotlin.run {
+                    val sessions = getAppSessions()
+
+                    if (sessions.find { isPlaying(it) } == null) return true
+
+                    val audioManager = context.getSystemService(Context.AUDIO_SERVICE) as AudioManager
+
+                    val listener = AudioManager.OnAudioFocusChangeListener {/* ignored */}
+
+                    if (BuildConfig.DEBUG) { Log.d(LOG_TAG, "try audio focus") }
+                    if (
+                        audioManager.requestAudioFocus(listener, AudioManager.STREAM_MUSIC, AudioManager.AUDIOFOCUS_GAIN)
+                        == AudioManager.AUDIOFOCUS_REQUEST_GRANTED
+                    ) {
+                        if (BuildConfig.DEBUG) { Log.d(LOG_TAG, "got audio focus") }
+                        delay(100)
+
+                        audioManager.abandonAudioFocus(listener)
+                    }
+                }
+
+                kotlin.run {
+                    val sessions = getAppSessions()
+
+                    if (sessions.find { isPlaying(it) } == null) return true
+                }
+
+                if (BuildConfig.DEBUG) { Log.d(LOG_TAG, "playback still running") }
             }
         }
 
@@ -350,11 +339,7 @@ class AndroidIntegration(context: Context): PlatformIntegration(maximumProtectio
     }
 
     override fun isScreenOn(): Boolean {
-        if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.KITKAT_WATCH) {
-            return powerManager.isInteractive
-        } else {
-            return powerManager.isScreenOn
-        }
+        return powerManager.isInteractive
     }
 
     override fun setShowNotificationToRevokeTemporarilyAllowedApps(show: Boolean) {
@@ -450,11 +435,9 @@ class AndroidIntegration(context: Context): PlatformIntegration(maximumProtectio
     }
 
     override fun disableDeviceAdmin() {
-        if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.LOLLIPOP) {
-            if (policyManager.isDeviceOwnerApp(context.packageName)) {
-                setEnableSystemLockdown(false)
-                policyManager.clearDeviceOwnerApp(context.packageName)
-            }
+        if (policyManager.isDeviceOwnerApp(context.packageName)) {
+            setEnableSystemLockdown(false)
+            policyManager.clearDeviceOwnerApp(context.packageName)
         }
 
         if (policyManager.isAdminActive(deviceAdmin)) {
@@ -462,12 +445,8 @@ class AndroidIntegration(context: Context): PlatformIntegration(maximumProtectio
         }
     }
 
-    @TargetApi(Build.VERSION_CODES.N)
     override fun setSuspendedApps(packageNames: List<String>, suspend: Boolean): List<String> {
-        if (
-                (getCurrentProtectionLevel() == ProtectionLevel.DeviceOwner) &&
-                (Build.VERSION.SDK_INT >= Build.VERSION_CODES.N)
-        ) {
+        if (getCurrentProtectionLevel() == ProtectionLevel.DeviceOwner) {
             val failedApps = policyManager.setPackagesSuspended(
                     deviceAdmin,
                     packageNames.toTypedArray(),
@@ -481,21 +460,14 @@ class AndroidIntegration(context: Context): PlatformIntegration(maximumProtectio
     }
 
     override fun setEnableSystemLockdown(enableLockdown: Boolean): Boolean {
-        return if (
-                Build.VERSION.SDK_INT >= Build.VERSION_CODES.LOLLIPOP &&
-                policyManager.isDeviceOwnerApp(context.packageName)
-        ) {
-            if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.O) {
-                policyManager.setBackupServiceEnabled(deviceAdmin, true)
-            }
+        return if (policyManager.isDeviceOwnerApp(context.packageName)) {
+            policyManager.setBackupServiceEnabled(deviceAdmin, true)
 
             if (enableLockdown) {
                 // disable problematic features
                 policyManager.addUserRestriction(deviceAdmin, UserManager.DISALLOW_FACTORY_RESET)
 
-                if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.M) {
-                    policyManager.addUserRestriction(deviceAdmin, UserManager.DISALLOW_SAFE_BOOT)
-                }
+                policyManager.addUserRestriction(deviceAdmin, UserManager.DISALLOW_SAFE_BOOT)
 
                 policyManager.getPermissionGrantState(
                     deviceAdmin,
@@ -542,9 +514,7 @@ class AndroidIntegration(context: Context): PlatformIntegration(maximumProtectio
                 // enable problematic features
                 policyManager.clearUserRestriction(deviceAdmin, UserManager.DISALLOW_FACTORY_RESET)
 
-                if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.M) {
-                    policyManager.clearUserRestriction(deviceAdmin, UserManager.DISALLOW_SAFE_BOOT)
-                }
+                policyManager.clearUserRestriction(deviceAdmin, UserManager.DISALLOW_SAFE_BOOT)
 
                 policyManager.setPermissionGrantState(
                     deviceAdmin,
@@ -581,33 +551,18 @@ class AndroidIntegration(context: Context): PlatformIntegration(maximumProtectio
     }
 
     override fun setBlockedFeatures(features: Set<String>): Boolean {
-        return if (
-            Build.VERSION.SDK_INT >= Build.VERSION_CODES.LOLLIPOP &&
-            policyManager.isDeviceOwnerApp(context.packageName)
-        ) AndroidFeatures.applyBlockedFeatures(features, policyManager, deviceAdmin)
+        return if (policyManager.isDeviceOwnerApp(context.packageName)) AndroidFeatures.applyBlockedFeatures(features, policyManager, deviceAdmin)
         else false
     }
 
     override fun getFeatures(): List<PlatformFeature> {
-        return if (
-            Build.VERSION.SDK_INT >= Build.VERSION_CODES.LOLLIPOP &&
-            policyManager.isDeviceOwnerApp(context.packageName)
-        ) AndroidFeatures.getFeaturesAssumingDeviceOwnerGranted(context)
+        return if (policyManager.isDeviceOwnerApp(context.packageName)) AndroidFeatures.getFeaturesAssumingDeviceOwnerGranted(context)
         else emptyList()
     }
 
     private fun enableSystemApps() {
-        if (Build.VERSION.SDK_INT < Build.VERSION_CODES.LOLLIPOP) {
-            return
-        }
-
         // disabled system apps (all apps - enabled apps)
-        val allApps = context.packageManager.getInstalledApplications(
-                if (Build.VERSION.SDK_INT < Build.VERSION_CODES.N_MR1)
-                    PackageManager.GET_UNINSTALLED_PACKAGES
-                else
-                    PackageManager.MATCH_UNINSTALLED_PACKAGES
-        )
+        val allApps = context.packageManager.getInstalledApplications(PackageManager.MATCH_UNINSTALLED_PACKAGES)
         val enabledAppsPackages = context.packageManager.getInstalledApplications(0).map { it.packageName }.toSet()
 
         allApps
@@ -623,14 +578,10 @@ class AndroidIntegration(context: Context): PlatformIntegration(maximumProtectio
     }
 
     override fun setLockTaskPackages(packageNames: List<String>): Boolean {
-        return if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.LOLLIPOP) {
-            if (policyManager.isDeviceOwnerApp(context.packageName)) {
-                policyManager.setLockTaskPackages(deviceAdmin, packageNames.toTypedArray())
+        return if (policyManager.isDeviceOwnerApp(context.packageName)) {
+            policyManager.setLockTaskPackages(deviceAdmin, packageNames.toTypedArray())
 
-                true
-            } else {
-                false
-            }
+            true
         } else {
             false
         }
@@ -734,7 +685,7 @@ class AndroidIntegration(context: Context): PlatformIntegration(maximumProtectio
 
             true
         }
-        SystemPermission.UsageStats -> if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.LOLLIPOP) {
+        SystemPermission.UsageStats ->
             if (
                 foregroundAppHelper.getPermissionStatus() == RuntimePermissionStatus.NotGranted &&
                 confirmationLevel == SystemPermissionConfirmationLevel.None
@@ -776,11 +727,6 @@ class AndroidIntegration(context: Context): PlatformIntegration(maximumProtectio
                     }
                 }
             }
-        } else {
-            Toast.makeText(context, R.string.error_general, Toast.LENGTH_SHORT).show()
-
-            false
-        }
         SystemPermission.Notification -> if (
             getNotificationAccessPermissionStatus() == NewPermissionStatus.NotGranted &&
             confirmationLevel == SystemPermissionConfirmationLevel.None
@@ -803,7 +749,7 @@ class AndroidIntegration(context: Context): PlatformIntegration(maximumProtectio
                 false
             }
         }
-        SystemPermission.Overlay -> if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.M) {
+        SystemPermission.Overlay ->
             if (
                 overlay.getOverlayPermissionStatus(true) == RuntimePermissionStatus.NotGranted &&
                 confirmationLevel == SystemPermissionConfirmationLevel.None
@@ -828,11 +774,6 @@ class AndroidIntegration(context: Context): PlatformIntegration(maximumProtectio
                     false
                 }
             }
-        } else {
-            Toast.makeText(context, R.string.error_general, Toast.LENGTH_SHORT).show()
-
-            false
-        }
         SystemPermission.AccessibilityService -> if (
             !isAccessibilityServiceEnabled() &&
             confirmationLevel == SystemPermissionConfirmationLevel.None

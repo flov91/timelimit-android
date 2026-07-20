@@ -1,5 +1,5 @@
 /*
- * TimeLimit Copyright <C> 2019 - 2022 Jonas Lochmann
+ * TimeLimit Copyright <C> 2019 - 2026 Jonas Lochmann
  *
  * This program is free software: you can redistribute it and/or modify
  * it under the terms of the GNU General Public License as published by
@@ -15,9 +15,7 @@
  */
 package io.timelimit.android.integration.platform.android.foregroundapp
 
-import android.annotation.TargetApi
 import android.content.Context
-import android.os.Build
 import android.util.SparseArray
 import androidx.core.util.size
 import io.timelimit.android.coroutines.executeAndWait
@@ -26,7 +24,6 @@ import io.timelimit.android.integration.platform.RuntimePermissionStatus
 import io.timelimit.android.integration.platform.android.foregroundapp.usagestats.DirectUsageStatsReader
 import io.timelimit.android.integration.platform.android.foregroundapp.usagestats.UsageStatsConstants
 
-@TargetApi(Build.VERSION_CODES.Q)
 class InstanceIdForegroundAppHelper(context: Context): UsageStatsForegroundAppHelper(context) {
     companion object {
         const val START_QUERY_INTERVAL = 1000 * 60 * 60 * 24 * 3 // 3 days

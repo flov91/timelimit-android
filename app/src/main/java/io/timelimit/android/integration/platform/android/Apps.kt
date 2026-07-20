@@ -20,7 +20,6 @@ import android.content.Intent
 import android.content.pm.PackageManager
 import android.content.pm.ResolveInfo
 import android.graphics.drawable.Drawable
-import android.os.Build
 import android.provider.ContactsContract
 import android.provider.Settings
 import android.provider.Telephony
@@ -86,14 +85,12 @@ object AndroidIntegrationApps {
         // add dialer
         add(map = result, packageName = Intent(Intent.ACTION_DIAL).resolveActivity(packageManager)?.packageName, deviceId = deviceId, recommendation = AppRecommendation.Whitelist, context = context)
         // add SMS
-        if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.KITKAT) {
+        run {
             val smsApp: String? = Telephony.Sms.getDefaultSmsPackage(context)
 
             if (smsApp != null) {
                 add(map = result, packageName = smsApp, deviceId = deviceId, recommendation = AppRecommendation.Whitelist, context = context)
             }
-        } else {
-            add(map = result, packageName = Intent(android.content.Intent.ACTION_VIEW).setType("vnd.android-dir/mms-sms").resolveActivity(packageManager)?.packageName, deviceId = deviceId, recommendation = AppRecommendation.Whitelist, context = context)
         }
         // add contacts
         add(map = result, packageName = Intent(Intent.ACTION_PICK, ContactsContract.Contacts.CONTENT_URI).resolveActivity(packageManager)?.packageName, deviceId = deviceId, recommendation = AppRecommendation.Whitelist, context = context)

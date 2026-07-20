@@ -1,5 +1,5 @@
 /*
- * TimeLimit Copyright <C> 2019 - 2024 Jonas Lochmann
+ * TimeLimit Copyright <C> 2019 - 2026 Jonas Lochmann
  *
  * This program is free software: you can redistribute it and/or modify
  * it under the terms of the GNU General Public License as published by
@@ -15,7 +15,6 @@
  */
 package io.timelimit.android.integration.platform.android.foregroundapp
 
-import android.annotation.TargetApi
 import android.app.usage.UsageEvents
 import android.content.ComponentName
 import android.content.Context
@@ -28,7 +27,6 @@ import io.timelimit.android.data.model.ExperimentalFlags
 import io.timelimit.android.integration.platform.ForegroundApp
 import io.timelimit.android.integration.platform.RuntimePermissionStatus
 
-@TargetApi(Build.VERSION_CODES.LOLLIPOP)
 class LollipopForegroundAppHelper(context: Context) : UsageStatsForegroundAppHelper(context) {
     companion object {
         private const val LOG_TAG = "LollipopForegroundApp"
@@ -115,7 +113,7 @@ class LollipopForegroundAppHelper(context: Context) : UsageStatsForegroundAppHel
                                 }
                             }
                         } else if (event.eventType == UsageEvents.Event.MOVE_TO_BACKGROUND) {
-                            if (effectiveEnableMultiAppDetection && Build.VERSION.SDK_INT >= Build.VERSION_CODES.P) {
+                            if (effectiveEnableMultiAppDetection) {
                                 val app = ForegroundApp(event.packageName, event.className)
 
                                 if (BuildConfig.DEBUG) {

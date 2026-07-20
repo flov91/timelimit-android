@@ -19,7 +19,6 @@ import android.app.Activity
 import android.app.usage.UsageStatsManager
 import android.content.Context
 import android.content.Intent
-import android.os.Build
 import android.os.Bundle
 import android.util.JsonWriter
 import android.util.Log
@@ -123,7 +122,6 @@ class DiagnoseForegroundAppFragment : Fragment(), FragmentWithCustomTitle {
             }
         }
 
-        binding.osUsageStatsTextExportButton.isEnabled = Build.VERSION.SDK_INT >= Build.VERSION_CODES.M
         binding.osUsageStatsTextExportButton.setOnClickListener {
             if (auth.requestAuthenticationOrReturnTrue()) {
                 try {
@@ -151,10 +149,6 @@ class DiagnoseForegroundAppFragment : Fragment(), FragmentWithCustomTitle {
                 val context = requireContext().applicationContext
 
                 Thread {
-                    if (Build.VERSION.SDK_INT < Build.VERSION_CODES.M) {
-                        throw RuntimeException("unsupported os version")
-                    }
-
                     try {
                         val now = System.currentTimeMillis()
                         val service = context.getSystemService(Context.USAGE_STATS_SERVICE) as UsageStatsManager

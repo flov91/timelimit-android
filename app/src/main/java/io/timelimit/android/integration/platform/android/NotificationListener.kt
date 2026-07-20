@@ -15,10 +15,8 @@
  */
 package io.timelimit.android.integration.platform.android
 
-import android.annotation.TargetApi
 import android.app.NotificationManager
 import android.content.Context
-import android.os.Build
 import android.service.notification.NotificationListenerService
 import android.service.notification.StatusBarNotification
 import android.util.Log
@@ -36,11 +34,9 @@ import io.timelimit.android.logic.blockingreason.AppBaseHandling
 import io.timelimit.android.logic.blockingreason.CategoryItselfHandling
 import kotlinx.coroutines.delay
 
-@TargetApi(Build.VERSION_CODES.LOLLIPOP)
 class NotificationListener: NotificationListenerService() {
     companion object {
         private const val LOG_TAG = "NotificationListenerLog"
-        private val SUPPORTS_HIDING_ONGOING_NOTIFICATIONS = Build.VERSION.SDK_INT >= Build.VERSION_CODES.O
     }
 
     private val appLogic: AppLogic by lazy { DefaultAppLogic.with(this) }
@@ -66,7 +62,7 @@ class NotificationListener: NotificationListenerService() {
 
             if (result is ShouldBlockNotificationResult.Yes) {
                 val success = try {
-                    if (sbn.isOngoing && SUPPORTS_HIDING_ONGOING_NOTIFICATIONS) {
+                    if (sbn.isOngoing) {
                         // only snooze for 5 seconds to show it again soon
                         snoozeNotification(sbn.key, 5000)
 
@@ -142,10 +138,6 @@ class NotificationListener: NotificationListenerService() {
 
     private suspend fun shouldRemoveNotification(sbn: StatusBarNotification): ShouldBlockNotificationResult {
         if (sbn.packageName == packageName) {
-            return ShouldBlockNotificationResult.No
-        }
-
-        if (sbn.isOngoing && (!SUPPORTS_HIDING_ONGOING_NOTIFICATIONS)) {
             return ShouldBlockNotificationResult.No
         }
 

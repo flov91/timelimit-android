@@ -1,5 +1,5 @@
 /*
- * TimeLimit Copyright <C> 2019 - 2024 Jonas Lochmann
+ * TimeLimit Copyright <C> 2019 - 2026 Jonas Lochmann
  *
  * This program is free software: you can redistribute it and/or modify
  * it under the terms of the GNU General Public License as published by
@@ -19,7 +19,6 @@ import android.content.Context
 import android.content.Intent
 import android.content.pm.ApplicationInfo
 import android.content.res.Configuration
-import android.os.Build
 import android.os.Bundle
 import android.util.Log
 import android.view.LayoutInflater
@@ -144,20 +143,18 @@ class AnnoyActivity : AppCompatActivity(), ActivityViewModelHolder, U2fManager.D
 
         U2fManager.setupActivity(this)
 
-        if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.LOLLIPOP) {
-            val systemImageApps = packageManager.getInstalledApplications(0)
-                .filter { it.flags and ApplicationInfo.FLAG_SYSTEM == ApplicationInfo.FLAG_SYSTEM }
-                .map { it.packageName }.toSet()
+        val systemImageApps = packageManager.getInstalledApplications(0)
+            .filter { it.flags and ApplicationInfo.FLAG_SYSTEM == ApplicationInfo.FLAG_SYSTEM }
+            .map { it.packageName }.toSet()
 
-            val lockTaskPackages = AndroidIntegrationApps.appsToIncludeInLockTasks + setOf(packageName) + systemImageApps
+        val lockTaskPackages = AndroidIntegrationApps.appsToIncludeInLockTasks + setOf(packageName) + systemImageApps
 
-            if (BuildConfig.DEBUG) {
-                Log.d(LOG_TAG, "setLockTaskPackages: $lockTaskPackages")
-            }
+        if (BuildConfig.DEBUG) {
+            Log.d(LOG_TAG, "setLockTaskPackages: $lockTaskPackages")
+        }
 
-            if (logic.platformIntegration.setLockTaskPackages(lockTaskPackages.toList())) {
-                startLockTask()
-            }
+        if (logic.platformIntegration.setLockTaskPackages(lockTaskPackages.toList())) {
+            startLockTask()
         }
 
         logic.annoyLogic.shouldAnnoyRightNow.observe(this) { shouldRun ->
@@ -176,10 +173,8 @@ class AnnoyActivity : AppCompatActivity(), ActivityViewModelHolder, U2fManager.D
     }
 
     private fun shutdown() {
-        if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.LOLLIPOP) {
-            stopLockTask()
-            finish()
-        }
+        stopLockTask()
+        finish()
     }
 
     override fun onResume() {

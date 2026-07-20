@@ -34,10 +34,8 @@ abstract class ForegroundAppHelper {
                     if (instance == null) {
                         if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.Q) {
                             instance = QForegroundAppHelper(context.applicationContext)
-                        } else if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.LOLLIPOP) {
-                            instance = LollipopForegroundAppHelper(context.applicationContext)
                         } else {
-                            instance = CompatForegroundAppHelper(context.applicationContext)
+                            instance = LollipopForegroundAppHelper(context.applicationContext)
                         }
                     }
                 }

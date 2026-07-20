@@ -15,8 +15,6 @@
  */
 package io.timelimit.android.sync.network.api
 
-import android.os.Build.VERSION
-import android.os.Build.VERSION_CODES
 import android.security.keystore.KeyGenParameterSpec
 import android.security.keystore.KeyProperties
 import android.util.JsonReader
@@ -710,7 +708,7 @@ class HttpServerApi(private val endpointWithoutSlashAtEnd: String): ServerApi {
     }
 
     private suspend fun <T> withDeviceVerification(enable: Boolean = true, block: suspend (client: OkHttpClient) -> T): T {
-        if (VERSION.SDK_INT >= VERSION_CODES.N && enable) {
+        if (enable) {
             val keyStoreName = "AndroidKeyStore"
             val keyStore = KeyStore.getInstance(keyStoreName).also { it.load(null) }
             val keyId = "temp-" + UUID.randomUUID().toString()

@@ -239,9 +239,7 @@ class SetCategorySpecialModeFragment: DialogFragment() {
             model.content.observe(viewLifecycleOwner) { update() }
             model.minTimestamp.observe(viewLifecycleOwner) { update() }
 
-            if (android.os.Build.VERSION.SDK_INT >= android.os.Build.VERSION_CODES.O) {
-                binding.datePicker.setOnDateChangedListener { _, _, _, _ -> update() }
-            }
+            binding.datePicker.setOnDateChangedListener { _, _, _, _ -> update() }
         }
 
         return binding.root

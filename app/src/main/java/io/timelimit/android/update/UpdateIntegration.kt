@@ -40,7 +40,6 @@ import io.timelimit.android.ui.update.InstallUpdateDialogFragment
 import okhttp3.Request
 import okio.buffer
 import okio.sink
-import okio.source
 import java.io.File
 import java.io.IOException
 import java.security.MessageDigest
@@ -182,65 +181,17 @@ object UpdateIntegration {
         }
     }
 
-    fun hasRequiredPermission(context: Context): Boolean = if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.O)
+    fun hasRequiredPermission(context: Context): Boolean =
         context.packageManager.canRequestPackageInstalls() ||
                 DefaultAppLogic.with(context).platformIntegration.getCurrentProtectionLevel() == ProtectionLevel.DeviceOwner
-    else
-        true
 
     fun requestPermission(context: Context) {
-        if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.O) {
-            Toast.makeText(context, R.string.update_toast_needs_permission, Toast.LENGTH_LONG).show()
+        Toast.makeText(context, R.string.update_toast_needs_permission, Toast.LENGTH_LONG).show()
 
-            context.startActivity(Intent(Settings.ACTION_MANAGE_UNKNOWN_APP_SOURCES).setData(Uri.parse("package:${BuildConfig.APPLICATION_ID}")));
-        }
+        context.startActivity(Intent(Settings.ACTION_MANAGE_UNKNOWN_APP_SOURCES).setData(Uri.parse("package:${BuildConfig.APPLICATION_ID}")));
     }
 
     fun installUpdate(fragmentActivity: FragmentActivity) {
-        if (Build.VERSION.SDK_INT < Build.VERSION_CODES.M) {
-            // compatibility version for old android versions
-            // it needs a file uri
-            // someone else could replace the APK before it is installed ...
-            val context = fragmentActivity.applicationContext
-            val externalFile = File(context.externalCacheDir, "update.apk")
-
-            Threads.update.submit {
-                try {
-                    externalFile.sink().buffer().use { sink ->
-                        updateSaveFile(context).source().use { source ->
-                            sink.writeAll(source)
-                        }
-                    }
-
-                    Threads.mainThreadHandler.post {
-                        try {
-                            context.startActivity(
-                                    Intent(Intent.ACTION_VIEW)
-                                            .addFlags(Intent.FLAG_ACTIVITY_NEW_TASK)
-                                            .setData(Uri.fromFile(externalFile))
-                            )
-                        } catch (ex: Exception) {
-                            if (BuildConfig.DEBUG) {
-                                Log.w(LOG_TAG, "error during installation", ex)
-                            }
-
-                            Threads.mainThreadHandler.post {
-                                Toast.makeText(context!!, R.string.error_general, Toast.LENGTH_SHORT).show()
-                            }
-                        }
-                    }
-                } catch (ex: Exception) {
-                    if (BuildConfig.DEBUG) {
-                        Log.w(LOG_TAG, "error during installation", ex)
-                    }
-
-                    Threads.mainThreadHandler.post {
-                        Toast.makeText(context!!, R.string.error_general, Toast.LENGTH_SHORT).show()
-                    }
-                }
-            }
-        } else {
-            InstallUpdateDialogFragment().show(fragmentActivity.supportFragmentManager)
-        }
+        InstallUpdateDialogFragment().show(fragmentActivity.supportFragmentManager)
     }
 }

@@ -37,36 +37,34 @@ class AndroidDeviceOwnerApi(
     }
 
     private val delegationList =
-        if (VERSION.SDK_INT >= VERSION_CODES.O)
-            listOfNotNull(
-                Pair(DevicePolicyManager.DELEGATION_APP_RESTRICTIONS, DeviceOwnerApi.DelegationScope("DELEGATION_APP_RESTRICTIONS")),
-                Pair(DevicePolicyManager.DELEGATION_BLOCK_UNINSTALL, DeviceOwnerApi.DelegationScope("DELEGATION_BLOCK_UNINSTALL")),
-                Pair(DevicePolicyManager.DELEGATION_CERT_INSTALL, DeviceOwnerApi.DelegationScope("DELEGATION_CERT_INSTALL")),
-                if (VERSION.SDK_INT >= VERSION_CODES.Q)
-                    Pair(DevicePolicyManager.DELEGATION_CERT_SELECTION, DeviceOwnerApi.DelegationScope("DELEGATION_CERT_SELECTION"))
-                else
-                    null,
-                Pair(DevicePolicyManager.DELEGATION_ENABLE_SYSTEM_APP, DeviceOwnerApi.DelegationScope("DELEGATION_ENABLE_SYSTEM_APP")),
-                if (VERSION.SDK_INT >= VERSION_CODES.P)
-                    Pair(DevicePolicyManager.DELEGATION_INSTALL_EXISTING_PACKAGE, DeviceOwnerApi.DelegationScope("DELEGATION_INSTALL_EXISTING_PACKAGE"))
-                else
-                    null,
-                if (VERSION.SDK_INT >= VERSION_CODES.P)
-                    Pair(DevicePolicyManager.DELEGATION_KEEP_UNINSTALLED_PACKAGES, DeviceOwnerApi.DelegationScope("DELEGATION_KEEP_UNINSTALLED_PACKAGES"))
-                else
-                    null,
-                if (VERSION.SDK_INT >= VERSION_CODES.Q)
-                    Pair(DevicePolicyManager.DELEGATION_NETWORK_LOGGING, DeviceOwnerApi.DelegationScope("DELEGATION_NETWORK_LOGGING"))
-                else
-                    null,
-                Pair(DevicePolicyManager.DELEGATION_PACKAGE_ACCESS, DeviceOwnerApi.DelegationScope("DELEGATION_PACKAGE_ACCESS")),
-                Pair(DevicePolicyManager.DELEGATION_PERMISSION_GRANT, DeviceOwnerApi.DelegationScope("DELEGATION_PERMISSION_GRANT")),
-                if (VERSION.SDK_INT >= VERSION_CODES.S)
-                    Pair(DevicePolicyManager.DELEGATION_SECURITY_LOGGING, DeviceOwnerApi.DelegationScope("DELEGATION_SECURITY_LOGGING"))
-                else
-                    null
-            )
-        else emptyList()
+        listOfNotNull(
+            Pair(DevicePolicyManager.DELEGATION_APP_RESTRICTIONS, DeviceOwnerApi.DelegationScope("DELEGATION_APP_RESTRICTIONS")),
+            Pair(DevicePolicyManager.DELEGATION_BLOCK_UNINSTALL, DeviceOwnerApi.DelegationScope("DELEGATION_BLOCK_UNINSTALL")),
+            Pair(DevicePolicyManager.DELEGATION_CERT_INSTALL, DeviceOwnerApi.DelegationScope("DELEGATION_CERT_INSTALL")),
+            if (VERSION.SDK_INT >= VERSION_CODES.Q)
+                Pair(DevicePolicyManager.DELEGATION_CERT_SELECTION, DeviceOwnerApi.DelegationScope("DELEGATION_CERT_SELECTION"))
+            else
+                null,
+            Pair(DevicePolicyManager.DELEGATION_ENABLE_SYSTEM_APP, DeviceOwnerApi.DelegationScope("DELEGATION_ENABLE_SYSTEM_APP")),
+            if (VERSION.SDK_INT >= VERSION_CODES.P)
+                Pair(DevicePolicyManager.DELEGATION_INSTALL_EXISTING_PACKAGE, DeviceOwnerApi.DelegationScope("DELEGATION_INSTALL_EXISTING_PACKAGE"))
+            else
+                null,
+            if (VERSION.SDK_INT >= VERSION_CODES.P)
+                Pair(DevicePolicyManager.DELEGATION_KEEP_UNINSTALLED_PACKAGES, DeviceOwnerApi.DelegationScope("DELEGATION_KEEP_UNINSTALLED_PACKAGES"))
+            else
+                null,
+            if (VERSION.SDK_INT >= VERSION_CODES.Q)
+                Pair(DevicePolicyManager.DELEGATION_NETWORK_LOGGING, DeviceOwnerApi.DelegationScope("DELEGATION_NETWORK_LOGGING"))
+            else
+                null,
+            Pair(DevicePolicyManager.DELEGATION_PACKAGE_ACCESS, DeviceOwnerApi.DelegationScope("DELEGATION_PACKAGE_ACCESS")),
+            Pair(DevicePolicyManager.DELEGATION_PERMISSION_GRANT, DeviceOwnerApi.DelegationScope("DELEGATION_PERMISSION_GRANT")),
+            if (VERSION.SDK_INT >= VERSION_CODES.S)
+                Pair(DevicePolicyManager.DELEGATION_SECURITY_LOGGING, DeviceOwnerApi.DelegationScope("DELEGATION_SECURITY_LOGGING"))
+            else
+                null
+        )
 
     override val delegations: List<DeviceOwnerApi.DelegationScope> = delegationList.map { it.second }
 

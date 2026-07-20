@@ -1,5 +1,5 @@
 /*
- * TimeLimit Copyright <C> 2019 - 2022 Jonas Lochmann
+ * TimeLimit Copyright <C> 2019 - 2026 Jonas Lochmann
  *
  * This program is free software: you can redistribute it and/or modify
  * it under the terms of the GNU General Public License as published by
@@ -17,7 +17,6 @@ package io.timelimit.android.integration.platform.android
 
 import android.accessibilityservice.AccessibilityService
 import android.accessibilityservice.AccessibilityServiceInfo
-import android.os.Build
 import android.view.accessibility.AccessibilityEvent
 
 class AccessibilityService: AccessibilityService() {
@@ -28,10 +27,8 @@ class AccessibilityService: AccessibilityService() {
     override fun onServiceConnected() {
         super.onServiceConnected()
 
-        if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.N) {
-            this.serviceInfo = AccessibilityServiceInfo().apply {
-                feedbackType = AccessibilityServiceInfo.FEEDBACK_GENERIC
-            }
+        this.serviceInfo = AccessibilityServiceInfo().apply {
+            feedbackType = AccessibilityServiceInfo.FEEDBACK_GENERIC
         }
 
         instance = this

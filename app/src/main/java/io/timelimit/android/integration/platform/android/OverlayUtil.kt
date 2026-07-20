@@ -1,5 +1,5 @@
 /*
- * TimeLimit Copyright <C> 2019 - 2022 Jonas Lochmann
+ * TimeLimit Copyright <C> 2019 - 2026 Jonas Lochmann
  *
  * This program is free software: you can redistribute it and/or modify
  * it under the terms of the GNU General Public License as published by
@@ -20,7 +20,6 @@ import android.app.AppOpsManager
 import android.app.Application
 import android.content.Context
 import android.graphics.PixelFormat
-import android.os.Build
 import android.os.Process
 import android.provider.Settings
 import android.view.LayoutInflater
@@ -54,10 +53,7 @@ class OverlayUtil(private var application: Application) {
         val params = WindowManager.LayoutParams(
                 WindowManager.LayoutParams.MATCH_PARENT,
                 WindowManager.LayoutParams.MATCH_PARENT,
-                if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.O)
-                    WindowManager.LayoutParams.TYPE_APPLICATION_OVERLAY
-                else
-                    WindowManager.LayoutParams.TYPE_SYSTEM_ALERT,
+                    WindowManager.LayoutParams.TYPE_APPLICATION_OVERLAY,
                 WindowManager.LayoutParams.FLAG_NOT_FOCUSABLE,
                 PixelFormat.TRANSLUCENT
         )
@@ -89,13 +85,11 @@ class OverlayUtil(private var application: Application) {
 
     fun isOverlayShown() = currentView?.root?.isShown ?: false
 
-    fun getOverlayPermissionStatus(strictChecking: Boolean) = if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.M)
+    fun getOverlayPermissionStatus(strictChecking: Boolean) =
         if (checkAppOp(strictChecking) || Settings.canDrawOverlays(application))
             RuntimePermissionStatus.Granted
         else
             RuntimePermissionStatus.NotGranted
-    else
-        RuntimePermissionStatus.NotRequired
 
     private fun checkAppOp(strictChecking: Boolean): Boolean {
         if (systemOverlayOp == null) return false

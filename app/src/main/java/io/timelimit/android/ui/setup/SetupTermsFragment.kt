@@ -1,5 +1,5 @@
 /*
- * TimeLimit Copyright <C> 2019 - 2023 Jonas Lochmann
+ * TimeLimit Copyright <C> 2019 - 2026 Jonas Lochmann
  *
  * This program is free software: you can redistribute it and/or modify
  * it under the terms of the GNU General Public License as published by
@@ -28,18 +28,9 @@ import io.timelimit.android.databinding.FragmentSetupTermsBinding
 import io.timelimit.android.logic.DefaultAppLogic
 import io.timelimit.android.ui.model.UpdateStateCommand
 import io.timelimit.android.ui.model.execute
-import io.timelimit.android.ui.obsolete.ObsoleteDialogFragment
 import io.timelimit.android.ui.setup.customserver.SelectCustomServerDialogFragment
 
 class SetupTermsFragment : Fragment() {
-    override fun onCreate(savedInstanceState: Bundle?) {
-        super.onCreate(savedInstanceState)
-
-        if (savedInstanceState == null) {
-            ObsoleteDialogFragment.show(activity!!, true)
-        }
-    }
-
     override fun onCreateView(inflater: LayoutInflater, container: ViewGroup?, savedInstanceState: Bundle?): View? {
         val binding = FragmentSetupTermsBinding.inflate(inflater, container, false)
 
