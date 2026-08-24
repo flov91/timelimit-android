@@ -36,7 +36,7 @@ import io.timelimit.proto.applist.InstalledAppsDifferenceProto
 import io.timelimit.proto.applist.SavedAppsDifferenceProto
 
 object CryptoAppListSync {
-    private val ENCRYPT_LEGACY = Math.random() >= 0.9
+    private val ENCRYPT_LEGACY = Math.random() >= 0.5
 
     class TooLargeException(val size: Int): RuntimeException("app list is too big: $size")
 
