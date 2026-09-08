@@ -24,9 +24,13 @@ import okhttp3.logging.HttpLoggingInterceptor
 
 val httpClient: OkHttpClient by lazy {
     val builder = OkHttpClient.Builder()
-            .certificatePinner(SslConfig.certificatePinner)
-            .sslSocketFactory(SslConfig.certificates.sslSocketFactory(), SslConfig.certificates.trustManager)
             .dns(Dns.instance)
+
+    if (!BuildConfig.userCaTrust) {
+        builder
+                .certificatePinner(SslConfig.certificatePinner)
+                .sslSocketFactory(SslConfig.certificates.sslSocketFactory(), SslConfig.certificates.trustManager)
+    }
 
     if (BuildConfig.DEBUG) {
         builder.addInterceptor (HttpLoggingInterceptor {

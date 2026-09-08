@@ -27,6 +27,11 @@ plugins {
 android {
     namespace 'io.timelimit.android'
     compileSdk 36
+    // Set with -PuserCaTrust=true to build a variant which trusts user/admin-installed
+    // CA certificates instead of pinning to the official server certificates. This is
+    // meant for people who run their own TimeLimit server with a certificate issued by
+    // a private/local CA (e.g. on a home network) instead of a publicly trusted one.
+    def userCaTrust = project.findProperty("userCaTrust")?.toString()?.toBoolean() ?: false
     defaultConfig {
         applicationId "io.timelimit.android"
         minSdkVersion 26
@@ -47,6 +52,7 @@ android {
         // set to empty string to disable this check
         buildConfigField 'String', 'updateServerBuildsCertificate', '"2170068198547F15129DE8CC46E2A8BF1485A6E5030916E26DDE41AE0E81DAC2"'
         buildConfigField 'int', 'minimumRecommendServerVersion', '5'
+        buildConfigField 'boolean', 'userCaTrust', userCaTrust.toString()
     }
     buildFeatures {
         compose true

@@ -127,15 +127,22 @@ object SslConfig {
         "sha256/fk6IOKit1ild5647BH06ujSIq5XbCgqlbYl6ANhhi88=",
     )
 
-    val certificatePinner: CertificatePinner = CertificatePinner.Builder()
-        .add(BuildConfig.serverDomain, *certHashes)
-        .add(BuildConfig.updateServerDomain, *certHashes)
-        // This is theoretically not required because the fallback happens at
-        // the DNS query level => original domain is assumed for certificate verification.
-        // However, in case this is changed in the future, then there is already
-        // a host pinning for the other domain.
-        .add(BuildConfig.backupServerDomain, *certHashes)
-        .build()
+    val certificatePinner: CertificatePinner =
+        if (BuildConfig.userCaTrust) {
+            // no pinning: rely on the platform trust manager (system + user CAs)
+            // configured via the network security config instead
+            CertificatePinner.Builder().build()
+        } else {
+            CertificatePinner.Builder()
+                .add(BuildConfig.serverDomain, *certHashes)
+                .add(BuildConfig.updateServerDomain, *certHashes)
+                // This is theoretically not required because the fallback happens at
+                // the DNS query level => original domain is assumed for certificate verification.
+                // However, in case this is changed in the future, then there is already
+                // a host pinning for the other domain.
+                .add(BuildConfig.backupServerDomain, *certHashes)
+                .build()
+        }
 
     val certificates: HandshakeCertificates = HandshakeCertificates.Builder()
             .addTrustedCertificate(ISRG_ROOT_X1.decodeCertificatePem())
