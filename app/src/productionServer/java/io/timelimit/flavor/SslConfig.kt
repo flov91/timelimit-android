@@ -122,8 +122,11 @@ object SslConfig {
             "tX8K3m8UYQvK51BrXclM6WfrdeZlUBKyhTXUmFAtJw4X6A0x9mQFPAIwJa/No+KQ\n" +
             "UAM1u34E36neL/Zba7ombkIOchSgx1iVxzqtFWGddgoG+tppRPWhuhhn\n" +
             "-----END CERTIFICATE-----\n"
-
-    val certificatePinner: CertificatePinner = CertificatePinner.Builder()
+    val certificatePinner: CertificatePinner =
+        if (BuildConfig.userCaTrust) {
+            CertificatePinner.Builder().build()
+        } else {
+            CertificatePinner.Builder()
             .add(
                     BuildConfig.serverDomain,
                     // echo -n "sha256/"; curl -s https://letsencrypt.org/certs/lets-encrypt-r3.pem | openssl x509 -pubkey | openssl pkey -pubin -outform der | openssl dgst -sha256 -binary | base64
@@ -162,6 +165,7 @@ object SslConfig {
                     "sha256/vZNucrIS7293MQLGt304+UKXMi78JTlrwyeUIuDIknA="
             )
             .build()
+        }
 
     val certificates: HandshakeCertificates = HandshakeCertificates.Builder()
             .addTrustedCertificate(LETS_ENCRYPT_R3.decodeCertificatePem())
